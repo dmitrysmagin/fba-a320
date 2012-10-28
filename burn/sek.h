@@ -128,45 +128,29 @@ extern int nSekActive;										// The cpu which is currently being emulated
 extern int nSekCyclesTotal, nSekCyclesScanline, nSekCyclesSegment, nSekCyclesDone, nSekCyclesToDo;
 
 unsigned int SekReadByte(unsigned int a);
-unsigned int meSekReadByte(unsigned int a);
 unsigned int SekReadWord(unsigned int a);
-unsigned int meSekReadWord(unsigned int a);
 unsigned int SekReadLong(unsigned int a);
-unsigned int meSekReadLong(unsigned int a);
 
 unsigned int SekFetchByte(unsigned int a);
-unsigned int meSekFetchByte(unsigned int a);
 unsigned int SekFetchWord(unsigned int a);
-unsigned int meSekFetchWord(unsigned int a);
 unsigned int SekFetchLong(unsigned int a);
-unsigned int meSekFetchLong(unsigned int a);
 
 void SekWriteByte(unsigned int a, unsigned char d);
-void meSekWriteByte(unsigned int a, unsigned char d);
 void SekWriteWord(unsigned int a, unsigned short d);
-void meSekWriteWord(unsigned int a, unsigned short d);
 void SekWriteLong(unsigned int a, unsigned int d);
-void meSekWriteLong(unsigned int a, unsigned int d);
 
 void SekWriteByteROM(unsigned int a, unsigned char d);
-void meSekWriteByteROM(unsigned int a, unsigned char d);
 void SekWriteWordROM(unsigned int a, unsigned short d);
-void meSekWriteWordROM(unsigned int a, unsigned short d);
 void SekWriteLongROM(unsigned int a, unsigned int d);
-void meSekWriteLongROM(unsigned int a, unsigned int d);
 
 int SekInit(int nCount, int nCPUType);
 int SekExit();
 
 void SekNewFrame();
-void meSekNewFrame();
 void SekSetCyclesScanline(int nCycles);
-void meSekSetCyclesScanline(int nCycles);
 
 void SekClose();
-void meSekClose();
 void SekOpen(const int i);
-void meSekOpen(const int i);
 int SekGetActive();
 
 #define SEK_IRQSTATUS_NONE (0x0000)
@@ -174,27 +158,20 @@ int SekGetActive();
 #define SEK_IRQSTATUS_ACK  (0x1000)
 
 void SekSetIRQLine(const int line, const int status);
-void meSekSetIRQLine(const int line, const int status);
 void SekReset();
 
 void SekRunEnd();
-void meSekRunEnd();
 void SekRunAdjust(const int nCycles);
 
 int SekRun(const int nCycles);
-int meSekRun(const int nCycles);
 
 int SekIdle(int nCycles);
-int meSekIdle(int nCycles);
 
 int SekSegmentCycles();
-int meSekSegmentCycles();
 
 int SekTotalCycles();
-int meSekTotalCycles();
 
 int SekCurrentScanline();
-int meSekCurrentScanline();
 
 // SekMemory types:
 #define SM_READ  (1)
@@ -223,7 +200,6 @@ int SekSetCmpCallback(pSekCmpCallback pCallback);
 
 // Get a CPU's PC
 int SekGetPC(int n);
-int meSekGetPC(int n);
 
 int SekScan(int nAction);
 

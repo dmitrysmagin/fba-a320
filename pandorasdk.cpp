@@ -35,8 +35,6 @@ SDL_Joystick *joys[4];
 const char* WINDOW_TITLE = "FBA";
 
 SDL_Surface* myscreen;
-//SDL_Surface* framebuffer[4];
-//SDL_Surface* SDL_VideoBuffer;
 
 int vb;
 

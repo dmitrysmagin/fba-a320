@@ -116,9 +116,4 @@ void ZetSetWriteHandler(void (__fastcall *pHandler)(unsigned short, unsigned cha
 void ZetSetInHandler(unsigned char (__fastcall *pHandler)(unsigned short));
 void ZetSetOutHandler(void (__fastcall *pHandler)(unsigned short, unsigned char));
 
-#define CZetSetReadHandler ZetSetReadHandler
-#define CZetSetWriteHandler ZetSetWriteHandler
-#define CZetSetInHandler ZetSetInHandler
-#define CZetSetOutHandler ZetSetOutHandler
-
 #endif //_ZET_H_

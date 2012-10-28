@@ -11,19 +11,19 @@
 CC	=	gcc
 CXX	=	g++
 
-CFLAGS	= -DOOPSWARE_FIX -DNEOGEO_HACKS -DUSE_SPEEDHACKS -DNEO_DISPLAY_OVERSCAN 
+CFLAGS	= -DOOPSWARE_FIX -DUSE_SPEEDHACKS
 CFLAGS += -DBUILD_C68K -Wno-write-strings
 CFLAGS +=
 
-CFLAGSPROFILE = -DOOPSWARE_FIX -DNEOGEO_HACKS -DUSE_SPEEDHACKS -DNEO_DISPLAY_OVERSCAN 
+CFLAGSPROFILE = -DOOPSWARE_FIX -DUSE_SPEEDHACKS
 CFLAGSPROFILE += -DBUILD_C68K -Wno-write-strings
 CFLAGSPROFILE += 
 
-CXXFLAGS= -DOOPSWARE_FIX -DNEOGEO_HACKS -DUSE_SPEEDHACKS -DNEO_DISPLAY_OVERSCAN 
+CXXFLAGS= -DOOPSWARE_FIX -DUSE_SPEEDHACKS
 CXXFLAGS += -DBUILD_C68K -Wno-write-strings
 CXXFLAGS += 
 
-CXXFLAGSPROFILE= -DOOPSWARE_FIX -DNEOGEO_HACKS -DUSE_SPEEDHACKS -DNEO_DISPLAY_OVERSCAN 
+CXXFLAGSPROFILE= -DOOPSWARE_FIX -DUSE_SPEEDHACKS
 CXXFLAGSPROFILE += -DBUILD_C68K -Wno-write-strings
 CXXFLAGSPROFILE +=
 
@@ -35,6 +35,7 @@ INCPATH	= \
 			-I./burn/cave \
 			-I./burn/toaplan \
 			-I./cpu/cz80 \
+			-I./cpu/z80 \
 			-I./cpu/c68k \
 			-I./cpu/nec \
 			-I./cpu/sh2 \
@@ -57,6 +58,8 @@ HEADERS = pandorasdk.h \
 		font.h \
 		snd.h \
 		cz80.h \
+		z80.h \
+		z80daisy.h \
 		c68k.h \
 		burn.h \
 		burnint.h \
@@ -97,6 +100,8 @@ SOURCES = \
 		cpu/c86k/c86.c \
 		cpu/nec/nec.cpp \
 		cpu/nec/sh2.cpp \
+		cpu/z80/z80.cpp \
+		cpu/z80/z80daisy.cpp \
 		burn/ay8910.c \
 		burn/burn_ym2151.cpp \
 		burn/burn_ym2610.cpp \
@@ -305,6 +310,8 @@ OBJECTS = \
 		.obj/snd.o \
 		.obj/cache.o \
 		.obj/cz80.o \
+		.obj/z80.o \
+		.obj/z80daisy.o \
 		.obj/c68k.o \
 		.obj/nec.o \
 		.obj/sh2.o \
@@ -595,6 +602,12 @@ clean:
 
 .obj/sh2.o: cpu/sh2/sh2.cpp
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o .obj/sh2.o cpu/sh2/sh2.cpp
+
+.obj/z80.o: cpu/z80/z80.cpp
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o .obj/z80.o cpu/z80/z80.cpp
+
+.obj/z80daisy.o: cpu/z80/z80daisy.cpp
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o .obj/z80daisy.o cpu/z80/z80daisy.cpp
 
 .obj/ay8910.o: burn/ay8910.c \
 		burn/driver.h \

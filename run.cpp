@@ -21,11 +21,6 @@ static int PhysicalBufferWidth = 0;
 extern SDL_Surface* myscreen;
 extern SDL_Surface* SDL_VideoBuffer;
 
-/*#ifndef HighCol16(r,g,b,i)
-#define HighCol16(r,g,b,i) ((r<<8)&0xf800)|((g<<3)&0x07e0)|(b>>3)
-#endif
-*/
-
 static unsigned short * BurnVideoBuffer = NULL;	// think max enough
 static bool BurnVideoBufferAlloced = false;
 
@@ -50,39 +45,38 @@ int RunOneFrame(bool bDraw, int fps)
 {
 	do_keypad();
 	InpMake(FBA_KEYPAD);
-	if (bPauseOn==false)
+	if (!bPauseOn)
 	{
+		nFramesEmulated++;
+		nCurrentFrame++;
 
-	nFramesEmulated++;
-	nCurrentFrame++;
-
-	pBurnDraw = NULL;
-	if ( bDraw )
-	{
-		nFramesRendered++;
-		VideoBufferUpdate();
-		pBurnDraw = (unsigned char *)&BurnVideoBuffer[0];
-	}
-//	printf("vbupdate %2d  ",(SDL_GetTicks()-profile));
-	BurnDrvFrame();
- //   printf("bdframe %2d  \n",(SDL_GetTicks()-profile));
-	pBurnDraw = NULL;
-	if ( bDraw )
-	{
-		VideoTrans();
-		if (bShowFPS)
+		pBurnDraw = NULL;
+		if ( bDraw )
 		{
-			char buf[10];
-			int x;
-			sprintf(buf, "FPS: %2d/%2d", fps,(nBurnFPS/100));
-			DrawRect((uint16 *) (unsigned short *) &VideoBuffer[0],0, 0, 60, 9, 0,PhysicalBufferWidth);
-			DrawString (buf, (unsigned short *) &VideoBuffer[0], 0, 0,PhysicalBufferWidth);
+			nFramesRendered++;
+			VideoBufferUpdate();
+			pBurnDraw = (unsigned char *)&BurnVideoBuffer[0];
 		}
 
-		gp2x_video_flip();
-	}
-	}
-	if (bPauseOn)
+		BurnDrvFrame();
+
+		pBurnDraw = NULL;
+		if ( bDraw )
+		{
+			VideoTrans();
+			if (bShowFPS)
+			{
+				char buf[10];
+				int x;
+				sprintf(buf, "FPS: %2d/%2d", fps,(nBurnFPS/100));
+				DrawRect((uint16 *) (unsigned short *) &VideoBuffer[0],0, 0, 60, 9, 0,PhysicalBufferWidth);
+				DrawString (buf, (unsigned short *) &VideoBuffer[0], 0, 0,PhysicalBufferWidth);
+			}
+
+			gp2x_video_flip();
+		}
+	} 
+	else
 	{
 		DrawString ("PAUSED", (unsigned short *) &VideoBuffer[0], (PhysicalBufferWidth>>1)-24, 120,PhysicalBufferWidth);
 		gp2x_video_flip();
@@ -91,17 +85,6 @@ int RunOneFrame(bool bDraw, int fps)
 }
 
 // --------------------------------
-
-/*static unsigned int HighCol16(int r, int g, int b, int )
-{
-	unsigned int t;
-
-	t  = (r << 8) & 0xF800;
-	t |= (g << 3) & 0x07E0;
-	t |= (b >> 3) & 0x001F;
-
-	return t;
-}*/
 
 static unsigned int myHighCol16(int r, int g, int b, int /* i */)
 {
@@ -115,8 +98,6 @@ static unsigned int myHighCol16(int r, int g, int b, int /* i */)
 static void BurnerVideoTransDemo(){}
 
 static void (*BurnerVideoTrans) () = BurnerVideoTransDemo;
-
-//typedef unsigned long long UINT64;
 
 static void BurnerVideoTrans384x224Clip() 
 {
@@ -139,7 +120,6 @@ static void BurnerVideoTrans384x224SW()
 	
 	for (int i=0; i<224; i++)
 		for (int j=0; j<64; j++) {
-			//*((UINT64 *)p) = *((UINT64 *)q);
 			p[0] = q[0];
 			p[1] = q[1];
 			p[2] = q[2];

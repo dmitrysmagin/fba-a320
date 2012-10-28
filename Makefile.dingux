@@ -13,25 +13,33 @@ CXX	=	mipsel-linux-g++
 
 COPTS = -falign-functions -falign-loops -falign-labels -falign-jumps \
 	-ffast-math -fsingle-precision-constant -funsafe-math-optimizations \
-	-fomit-frame-pointer -fno-builtin -fno-common \
-	-fstrict-aliasing  -fexpensive-optimizations \
-	-finline -finline-functions -fpeel-loops -mno-shared -pipe -G0
+	-fomit-frame-pointer -fno-builtin -fno-common -finline-functions \
+	-fstrict-aliasing -fexpensive-optimizations \
+	-mno-shared -pipe -ffunction-sections -mips32 -O2 -G0
+COPTS += $(PROFILE)
 
-CFLAGS	= -DOOPSWARE_FIX -DNEOGEO_HACKS -DUSE_SPEEDHACKS -DNEO_DISPLAY_OVERSCAN 
+# comment out to exclude libao from build
+#USE_LIBAO = 1
+
+ifdef USE_LIBAO
+COPTS += -DUSE_LIBAO
+endif
+
+CFLAGS	= -DOOPSWARE_FIX #-DUSE_SPEEDHACKS
 CFLAGS += -DBUILD_C68K -Wno-write-strings
-CFLAGS += -O2 -march=mips32 -mtune=r4600 -D__cdecl="" -D__fastcall="" $(COPTS)
+CFLAGS += -D__cdecl="" -D__fastcall="" $(COPTS)
 
-CFLAGSPROFILE = -DOOPSWARE_FIX -DNEOGEO_HACKS -DUSE_SPEEDHACKS -DNEO_DISPLAY_OVERSCAN 
+CFLAGSPROFILE = -DOOPSWARE_FIX #-DUSE_SPEEDHACKS
 CFLAGSPROFILE += -DBUILD_C68K -Wno-write-strings -pipe
-CFLAGSPROFILE += -O2 -march=mips32 -mtune=r4600 -D__cdecl="" -D__fastcall="" $(COPTS)
+CFLAGSPROFILE += -D__cdecl="" -D__fastcall="" $(COPTS)
 
-CXXFLAGS= -DOOPSWARE_FIX -DNEOGEO_HACKS -DUSE_SPEEDHACKS -DNEO_DISPLAY_OVERSCAN 
+CXXFLAGS= -DOOPSWARE_FIX #-DUSE_SPEEDHACKS
 CXXFLAGS += -DBUILD_C68K -Wno-write-strings
-CXXFLAGS += -O2 -march=mips32 -mtune=r4600 -D__cdecl="" -D__fastcall="" $(COPTS)
+CXXFLAGS += -D__cdecl="" -D__fastcall="" $(COPTS)
 
-CXXFLAGSPROFILE= -DOOPSWARE_FIX -DNEOGEO_HACKS -DUSE_SPEEDHACKS -DNEO_DISPLAY_OVERSCAN 
+CXXFLAGSPROFILE= -DOOPSWARE_FIX #-DUSE_SPEEDHACKS
 CXXFLAGSPROFILE += -DBUILD_C68K -Wno-write-strings -pipe
-CXXFLAGSPROFILE += -O2 -march=mips32 -mtune=r4600 -D__cdecl="" -D__fastcall="" $(COPTS)
+CXXFLAGSPROFILE += -D__cdecl="" -D__fastcall="" $(COPTS)
 
 INCPATH	= \
 			-I. \
@@ -41,6 +49,7 @@ INCPATH	= \
 			-I./burn/cave \
 			-I./burn/toaplan \
 			-I./cpu/cz80 \
+			-I./cpu/z80 \
 			-I./cpu/c68k \
 			-I./cpu/nec \
 			-I./cpu/sh2 \
@@ -48,8 +57,12 @@ INCPATH	= \
 
 
 LINK	= mipsel-linux-gcc
-LFLAGS	= -s
-LIBS	= -lz -lSDL -lstdc++
+LFLAGS	= -s $(PROFILE)
+LIBS = -lz -lSDL -lstdc++
+
+ifdef USE_LIBAO
+LIBS += -lao
+endif
 
 TAR	=	tar -cf
 GZIP	=	gzip -9f
@@ -63,6 +76,8 @@ HEADERS = pandorasdk.h \
 		font.h \
 		snd.h \
 		cz80.h \
+		z80.h \
+		z80daisy.h \
 		c68k.h \
 		burn.h \
 		burnint.h \
@@ -103,6 +118,8 @@ SOURCES = \
 		cpu/c86k/c86.c \
 		cpu/nec/nec.cpp \
 		cpu/nec/sh2.cpp \
+		cpu/z80/z80.cpp \
+		cpu/z80/z80daisy.cpp \
 		burn/ay8910.c \
 		burn/burn_ym2151.cpp \
 		burn/burn_ym2610.cpp \
@@ -311,6 +328,8 @@ OBJECTS = \
 		.obj/snd.o \
 		.obj/cache.o \
 		.obj/cz80.o \
+		.obj/z80.o \
+		.obj/z80daisy.o \
 		.obj/c68k.o \
 		.obj/nec.o \
 		.obj/sh2.o \
@@ -591,7 +610,7 @@ clean:
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o .obj/cache.o cache.cpp
 
 .obj/cz80.o: cpu/cz80/cz80.c
-	$(CC) -c $(CFLAGSPROFILE) $(INCPATH) -o .obj/cz80.o cpu/cz80/cz80.c
+	$(CC) -c $(CFLAGS) $(INCPATH) -o .obj/cz80.o cpu/cz80/cz80.c
 
 .obj/c68k.o: cpu/c68k/c68k.c
 	$(CC) -c $(CFLAGSPROFILE) $(INCPATH) -o .obj/c68k.o cpu/c68k/c68k.c
@@ -601,6 +620,12 @@ clean:
 
 .obj/sh2.o: cpu/sh2/sh2.cpp
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o .obj/sh2.o cpu/sh2/sh2.cpp
+
+.obj/z80.o: cpu/z80/z80.cpp
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o .obj/z80.o cpu/z80/z80.cpp
+
+.obj/z80daisy.o: cpu/z80/z80daisy.cpp
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o .obj/z80daisy.o cpu/z80/z80daisy.cpp
 
 .obj/ay8910.o: burn/ay8910.c \
 		burn/driver.h \
