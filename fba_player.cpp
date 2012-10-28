@@ -567,7 +567,7 @@ void run_fba_emulator(const char *fn)
 			//if(wait <= -frametime) if(++skipped_frames < frame_limit) draw_this_frame = false;
 			if(config_options.option_sound_enable != 2 && wait > 0) sleep_us(wait);
 
-			//printf("%i:, diff: %i, lim: %i, wait: %i, late_us: %i\n", frame_count, now-start, lim, wait, late_us);
+			//printf("%i:, diff: %i, lim: %i, wait: %i\n", frame_count, now-start, lim, wait);
 		}
 	}
 

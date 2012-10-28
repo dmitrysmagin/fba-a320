@@ -71,7 +71,7 @@ static int sdl_read_buffer(unsigned char* data,int len)
 {
 	SDL_LockMutex(sound_mutex);
 
-	//while(buffered_bytes < len) SDL_CondWait(sound_cv, sound_mutex);
+	while(buffered_bytes < len) SDL_CondWait(sound_cv, sound_mutex);
 
 	if(buffered_bytes >= len) {
 		if(buf_read_pos + len <= BUFFSIZE ) {
