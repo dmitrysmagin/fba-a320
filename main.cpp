@@ -191,7 +191,7 @@ int main(int argc, char **argv )
 	config_options.option_create_lists=0;
 	config_options.option_forcem68k=0;
 	config_options.option_forcec68k=0;
-	config_options.option_z80core=0;
+	config_options.option_z80core=0; // 0 - cz80, 1 - mame_z80
 	config_options.option_sense=100;
 	strcpy(config_options.option_startspeed,"NULL");
 	strcpy(config_options.option_selectspeed,"NULL");
@@ -214,6 +214,9 @@ int main(int argc, char **argv )
 	config_keymap.start1=SDLK_RETURN;	// START
 	config_keymap.pause=SDLK_BACKSPACE;
 	config_keymap.quit=SDLK_TAB;
+
+	extern int nZetCpuCore; // 0 - CZ80, 1 - MAME_Z80
+	nZetCpuCore = config_options.option_z80core;
 
 	// Run emu loop
 	run_fba_emulator (path);
