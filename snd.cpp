@@ -36,7 +36,7 @@ static int AudioBufferSize = 0;
 
 // General purpose Ring-buffering routines
 int SAMPLESIZE=256;
-int sample_sizes[3] = {512, 1024, 1536}; // 11025, 22050, 44100
+int sample_sizes[3] = {256, 256, 512}; // 11025, 22050, 44100
 int sample_rates[3] = {11025, 22050, 44100};
 
 int BUFFSIZE;
