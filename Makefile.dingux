@@ -71,7 +71,7 @@ GZIP	=	gzip -9f
 
 HEADERS = pandorasdk.h \
 		main.h \
-		configfile.h \
+		config.h \
 		fba_player.h \
 		font.h \
 		snd.h \
@@ -583,7 +583,7 @@ clean:
 
 .obj/main.o: main.cpp \
 		main.h \
-		configfile.h \
+		config.h \
 		fba_player.h \
 		burner.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o .obj/main.o main.cpp
