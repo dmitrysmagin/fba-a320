@@ -33,14 +33,12 @@
 #include "burner.h"
 #include "snd.h"
 #include "config.h"
-
-extern "C"
-{
 #include "pandorasdk.h"
-};
 
 CFG_OPTIONS config_options;
 CFG_KEYMAP config_keymap;
+
+extern char szAppBurnVer[16];
 
 int nAppVirtualFps = 6000; // App fps * 100
 bool bRunPause=0;

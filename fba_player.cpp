@@ -44,6 +44,7 @@
 //extern INT32 create_datfile(TCHAR* szFilename, INT32 bType);
 
 extern char szAppRomPaths[20] [20];
+char szAppBurnVer[16] = VERSION;
 
 extern int nAnalogSpeed;
 
@@ -328,7 +329,7 @@ void CreateCapexLists()
 	fclose(romf);
 	/*char temp[24];
 	strcpy(temp,"FBA ");
-	strcat(temp,VERSION);
+	strcat(temp,szAppBurnVer);
 	strcat(temp,".dat");
 	create_datfile(temp, 0);*/
 
