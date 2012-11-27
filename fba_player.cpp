@@ -19,8 +19,6 @@
  * $Id: fba_player.cpp,v 0.10 2006/12/03 $
  */
 
-#define CALC_FPS
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <SDL/SDL.h>
@@ -33,11 +31,7 @@
 #include "burnint.h"
 #include "config.h"
 #include "cache.h"
-
-extern "C"
-{
 #include "pandorasdk.h"
-};
 
 #ifndef DRV_NAME
 #define DRV_NAME (0)
@@ -53,11 +47,7 @@ extern char szAppRomPaths[20] [20];
 
 extern int nAnalogSpeed;
 
-//extern int ConfigAppLoad();
-//extern int ConfigAppSave();
-
 void uploadfb(void);
-extern char szAppBurnVer[16];
 
 int fwidth = 320, fheight = 240; // text surface
 
@@ -336,11 +326,11 @@ void CreateCapexLists()
 	}
 	fclose(zipf);
 	fclose(romf);
-	char temp[24];
+	/*char temp[24];
 	strcpy(temp,"FBA ");
-	strcat(temp,szAppBurnVer);
+	strcat(temp,VERSION);
 	strcat(temp,".dat");
-	//create_datfile(temp, 0);
+	create_datfile(temp, 0);*/
 
 }
 
@@ -369,10 +359,10 @@ void load_keymap(char * nm)
 	signed long argd;
 	char line[256];
 	char fullpath[256];
-	strcpy(fullpath,"/home/user/.config/fba/");
+	strcpy(fullpath,"./config/");
 	strcat(fullpath,nm);
 	strcat(fullpath,".kmp");
-	if ((f = fopen(fullpath,"r")) == NULL) f = fopen("/home/user/.config/fba/default.kmp", "r");
+	if ((f = fopen(fullpath,"r")) == NULL) f = fopen("./config/default.kmp", "r");
 	if (f==NULL) return;
 
 			while(fgets(line,sizeof(line),f) != NULL){
@@ -441,7 +431,7 @@ void run_fba_emulator(const char *fn)
 	BurnLibInit();
 	printf("completed burnlibinit()\n");
 
-	//ConfigAppLoad();
+	ConfigAppLoad();
 
 	// process rom path and name
 	printf("about to load rom\n");
@@ -586,7 +576,7 @@ void run_fba_emulator(const char *fn)
 
 finish:
 	printf("---- Shutdown Finalburn Alpha plus ----\n\n");
-	//ConfigAppSave();
+	ConfigAppSave();
 }
 
 int BurnStateLoad(const char * szName, int bAll, int (*pLoadGame)());

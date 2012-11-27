@@ -31,9 +31,9 @@ typedef struct
 	int right;
 	int fire1;
 	int fire2;
-    int fire3;
-    int fire4;
-    int fire5;
+	int fire3;
+	int fire4;
+	int fire5;
 	int fire6;
 	int coin1;
 	int coin2;
@@ -44,5 +44,8 @@ typedef struct
 	int fps;
 
 } CFG_KEYMAP;
+
+int ConfigAppLoad();
+int ConfigAppSave();
 
 #endif

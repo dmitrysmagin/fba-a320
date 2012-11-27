@@ -301,7 +301,8 @@ SOURCES = \
 		state.cpp \
 		drv.cpp \
 		run.cpp \
-		input.cpp
+		input.cpp \
+		config.cpp
 OBJECTS = \
 		.obj/pandorasdk.o \
 		.obj/main.o \
@@ -514,7 +515,8 @@ OBJECTS = \
 		.obj/state.o \
 		.obj/drv.o \
 		.obj/run.o \
-		.obj/input.o
+		.obj/input.o \
+		.obj/config.o
 
 INTERFACES =	
 DIST	=	
@@ -576,8 +578,8 @@ clean:
 		snd.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o .obj/fba_player.o fba_player.cpp
 
-#.obj/config.o: config.cpp
-#	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o .obj/config.o config.cpp
+.obj/config.o: config.cpp config.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o .obj/config.o config.cpp
 
 .obj/font.o: font.cpp \
 		font.h
