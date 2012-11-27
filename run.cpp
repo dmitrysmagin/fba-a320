@@ -3,11 +3,12 @@
 #include <SDL/SDL.h>
 
 #include "burner.h"
-#include "snd.h"
 #include "fba_player.h"
+#include "snd.h"
 #include "font.h"
 #include "pandorasdk.h"
 #include "config.h"
+
 
 extern int fps;
 extern unsigned int FBA_KEYPAD[4];
@@ -21,7 +22,7 @@ static int PhysicalBufferWidth = 0;
 extern SDL_Surface* myscreen;
 extern SDL_Surface* SDL_VideoBuffer;
 
-static unsigned short * BurnVideoBuffer = NULL;	// think max enough
+static unsigned short * BurnVideoBuffer = NULL;
 static bool BurnVideoBufferAlloced = false;
 
 bool bShowFPS = false;
@@ -45,7 +46,7 @@ int RunOneFrame(bool bDraw, int fps)
 {
 	do_keypad();
 	InpMake(FBA_KEYPAD);
-	if (!bPauseOn)
+	if (bPauseOn==false)
 	{
 		nFramesEmulated++;
 		nCurrentFrame++;
@@ -75,8 +76,8 @@ int RunOneFrame(bool bDraw, int fps)
 
 			gp2x_video_flip();
 		}
-	} 
-	else
+	}
+	if (bPauseOn)
 	{
 		DrawString ("PAUSED", (unsigned short *) &VideoBuffer[0], (PhysicalBufferWidth>>1)-24, 120,PhysicalBufferWidth);
 		gp2x_video_flip();
@@ -98,6 +99,26 @@ static unsigned int myHighCol16(int r, int g, int b, int /* i */)
 static void BurnerVideoTransDemo(){}
 
 static void (*BurnerVideoTrans) () = BurnerVideoTransDemo;
+
+static void BurnerVideoTrans384x256()
+{
+#define COLORMIX(a, b) ( ((((a & 0xF81F) + (b & 0xF81F)) >> 1) & 0xF81F) | ((((a & 0x07E0) + (b & 0x07E0)) >> 1) & 0x07E0) )
+	// Irem 384x256
+	unsigned short * p = &VideoBuffer[0];
+	unsigned short * q = BurnVideoBuffer + 384*8;
+	
+	for (int i=0; i<240; i++)
+		for (int j=0; j<64; j++) {
+			p[0] = q[0];
+			p[1] = q[1];
+			p[2] = COLORMIX(q[2],q[3]);
+			p[3] = q[4];
+			p[4] = q[5];
+			p += 5;
+			q += 6;
+		}
+#undef COLORMIX
+}
 
 static void BurnerVideoTrans384x224Clip() 
 {
@@ -122,12 +143,13 @@ static void BurnerVideoTrans384x224SW()
 		for (int j=0; j<64; j++) {
 			p[0] = q[0];
 			p[1] = q[1];
-			p[2] = q[2];
-			p[3] = COLORMIX(q[3],q[4]);
+			p[2] = COLORMIX(q[2],q[3]);
+			p[3] = q[4];
 			p[4] = q[5];
 			p += 5;
 			q += 6;
 		}
+#undef COLORMIX
 }
 
 static void BurnerVideoTrans304x224() 
@@ -180,6 +202,30 @@ static void BurnerVideoTrans384x240Flipped()
 	register unsigned short * q = &BurnVideoBuffer[92159]; //384*240-1
 	for (int x = 92160; x > 0; x --) {
 		*p++ = *q--;
+	}
+}
+
+static void BurnerVideoTrans288x224()
+{
+	// 288x224
+	unsigned short * p = &VideoBuffer[2576];
+	unsigned short * q = &BurnVideoBuffer[0];
+	for (int i=0; i<224; i ++) {
+		memcpy( p, q, 288 * 2 );
+		p += 320;
+		q += 288;
+	}
+}
+
+static void BurnerVideoTrans288x224Flipped()
+{
+	// 288x224
+	register unsigned short * p = &VideoBuffer[2576];
+	register unsigned short * q = &BurnVideoBuffer[64511]; //288*224-1
+	for (int y = 224; y > 0; y--, p += 32) {
+		for (int x = 288; x > 0; x --) {
+			*p++ = *q--;
+		}
 	}
 }
 
@@ -262,6 +308,14 @@ int VideoInit()
 
 	BurnRecalcPal();
 
+	if (VideoBufferWidth == 384 && VideoBufferHeight == 256) {
+		// Irem
+		nBurnPitch  = VideoBufferWidth * 2;
+		BurnVideoBuffer = (unsigned short *)malloc( VideoBufferWidth * VideoBufferHeight * 2 );
+		BurnVideoBufferAlloced = true;
+		BurnerVideoTrans = BurnerVideoTrans384x256;
+		PhysicalBufferWidth = 320;
+	} else 
 	if (VideoBufferWidth == 384 && VideoBufferHeight == 224) {
 		// CPS1 & CPS2
 		nBurnPitch  = VideoBufferWidth * 2;
@@ -283,7 +337,7 @@ int VideoInit()
 				BurnVideoBuffer = &VideoBuffer[3072];
 				BurnVideoBufferAlloced = false;
 				BurnerVideoTrans = BurnerVideoTransDemo;
-				PhysicalBufferWidth	= VideoBufferWidth;						
+				PhysicalBufferWidth	= VideoBufferWidth;
 		}*/
 	} else
 	if (VideoBufferWidth == 384 && VideoBufferHeight == 240) {
@@ -294,7 +348,7 @@ int VideoInit()
 		{
 			BurnVideoBuffer = (unsigned short *)malloc( VideoBufferWidth * VideoBufferHeight * 2 );
 			BurnVideoBufferAlloced = true;
-			BurnerVideoTrans = BurnerVideoTrans384x240Flipped;				
+			BurnerVideoTrans = BurnerVideoTrans384x240Flipped;
 		}
 		else
 		{
@@ -302,7 +356,7 @@ int VideoInit()
 			BurnVideoBufferAlloced = false;
 			BurnerVideoTrans = BurnerVideoTransDemo;
 		}
-		PhysicalBufferWidth	= VideoBufferWidth;						
+		PhysicalBufferWidth	= VideoBufferWidth;
 	} else
 	if (VideoBufferWidth == 304 && VideoBufferHeight == 224) {
 		// Neogeo
@@ -326,6 +380,17 @@ int VideoInit()
 		BurnVideoBufferAlloced = false;
 		nBurnPitch  = VideoBufferWidth * 2;
 		BurnerVideoTrans = BurnerVideoTransDemo;
+		PhysicalBufferWidth = 320;
+	} else
+	if (VideoBufferWidth == 288 && VideoBufferHeight == 224) {
+		// Pac-man
+		BurnVideoBuffer = (unsigned short *)malloc( VideoBufferWidth * VideoBufferHeight * 2 );
+		BurnVideoBufferAlloced = true;
+		nBurnPitch  = VideoBufferWidth * 2;
+		if (BurnDrvGetFlags() & BDF_ORIENTATION_FLIPPED)
+			BurnerVideoTrans = BurnerVideoTrans288x224Flipped;
+		else
+			BurnerVideoTrans = BurnerVideoTrans288x224;
 		PhysicalBufferWidth = 320;
 	} else
 	if (VideoBufferWidth == 256 && VideoBufferHeight == 224) {
