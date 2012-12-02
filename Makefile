@@ -303,7 +303,8 @@ SOURCES = \
 		run.cpp \
 		input.cpp \
 		config.cpp \
-		sdlinput.cpp
+		sdlinput.cpp \
+		sdlvideo.cpp
 
 OBJECTS = \
 		.obj/pandorasdk.o \
@@ -519,7 +520,8 @@ OBJECTS = \
 		.obj/run.o \
 		.obj/input.o \
 		.obj/config.o \
-		.obj/sdlinput.o
+		.obj/sdlinput.o \
+		.obj/sdlvideo.o
 
 INTERFACES =	
 DIST	=	
@@ -567,6 +569,9 @@ clean:
 
 .obj/sdlinput.o: sdlinput.cpp sdlinput.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o .obj/sdlinput.o sdlinput.cpp
+
+.obj/sdlvideo.o: sdlvideo.cpp sdlvideo.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o .obj/sdlvideo.o sdlvideo.cpp
 
 .obj/pandorasdk.o: pandorasdk.cpp pandorasdk.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o .obj/pandorasdk.o pandorasdk.cpp
