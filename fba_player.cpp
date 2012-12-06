@@ -1,6 +1,5 @@
 /*
- * FinalBurn Alpha for MOTO EZX Modile Phone
- * Copyright (C) 2006 OopsWare. CHINA.
+ * FinalBurn Alpha for Dingux/OpenDingux
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +15,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Id: fba_player.cpp,v 0.10 2006/12/03 $
  */
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <sys/time.h>
 #include <SDL/SDL.h>
 
 #include "version.h"
@@ -31,7 +31,7 @@
 #include "burnint.h"
 #include "config.h"
 #include "cache.h"
-#include "pandorasdk.h"
+#include "sdlvideo.h"
 #include "sdlinput.h"
 
 #ifndef DRV_NAME
@@ -59,7 +59,6 @@ void ChangeFrameskip();
 
 extern CFG_OPTIONS config_options;
 extern CFG_KEYMAP config_keymap;
-
 extern bool bPauseOn;
 
 bool GameLooping;
@@ -108,7 +107,7 @@ void show_rom_loading_text(char * szText, int nSize, int nTotalSize)
 
 	//if (config_options.option_rescale<3) memcpy (VideoBuffer, titlefb, fwidth*fheight*2); else memcpy (VideoBuffer, titlefb, pwidth*fwidth*2);
 	memcpy (VideoBuffer,titlefb, 320*240*2 /*fwidth*fheight*2*/);
-	gp2x_video_flip();
+	VideoFlip();
 
 }
 
@@ -129,7 +128,7 @@ void show_rom_error_text(char * szText)
 
 
 	memcpy (VideoBuffer, titlefb, 320*240*2/*fwidth*fheight*2*/);
-	gp2x_video_flip();
+	VideoFlip();
 	SDL_Event event;
 	while (event.type!=SDL_KEYDOWN)
 		SDL_WaitEvent(&event);
@@ -165,7 +164,6 @@ void CreateCapexLists()
 	strcat(temp,szAppBurnVer);
 	strcat(temp,".dat");
 	create_datfile(temp, 0);*/
-
 }
 
 void shutdown()
@@ -182,7 +180,7 @@ void shutdown()
 	InpExit();
 
 	BurnCacheExit();
-	gp2x_terminate(config_options.option_frontend);
+	SystemExit(config_options.option_frontend);
 }
 
 
@@ -257,7 +255,7 @@ unsigned int GetTicks (void)
 	unsigned int ticks;
 	struct timeval now;
 	gettimeofday(&now, NULL);
-	ticks=(now.tv_sec-start.tv_sec)*1000000+now.tv_usec-start.tv_usec;
+	ticks=(now.tv_sec-start.tv_sec)*1000000 + now.tv_usec-start.tv_usec;
 	return ticks;
 }
 
@@ -328,7 +326,7 @@ void run_fba_emulator(const char *fn)
 
 	load_keymap(BurnDrvGetTextA(DRV_NAME));
 
-	gp2x_initialize();
+	SystemInit();
 	VideoInit();
 	printf("completed videoinit()\n");
 
@@ -342,11 +340,10 @@ void run_fba_emulator(const char *fn)
 	DrawString ("Now loading ... ", titlefb, 10, 105, fwidth);
 	show_rom_loading_text("Open Zip", 0, 0);
 	memcpy (VideoBuffer, titlefb, 320*240*2 /*fwidth*fheight*2*/);
-	gp2x_video_flip();
+	VideoFlip();
 
 	InpInit();
 	InpDIP();
-
 
 	if (DrvInit(nBurnDrvSelect, false) != 0)
 	{
@@ -370,7 +367,7 @@ void run_fba_emulator(const char *fn)
 
 	printf ("Let's go!\n");
 
-	gp2x_clear_framebuffers();
+	VideoClear();
 
 	if(SndOpen()) config_options.option_sound_enable = 0; // disable sound if error
 
@@ -418,7 +415,6 @@ void run_fba_emulator(const char *fn)
 		}
 	}
 #else
-	
 	{
 		int now, done=0, timer = 0, ticks=0, tick=0, i=0, fps = 0;
 		unsigned int frame_limit = nBurnFPS/100, frametime = 100000000/nBurnFPS;

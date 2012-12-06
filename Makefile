@@ -51,7 +51,7 @@ GZIP	=	gzip -9f
 
 ####### Files
 
-HEADERS = pandorasdk.h \
+HEADERS = \
 		main.h \
 		config.h \
 		fba_player.h \
@@ -90,7 +90,6 @@ HEADERS = pandorasdk.h \
 		toaplan.h \
 		cache.h
 SOURCES = \
-		pandorasdk.cpp \
 		main.cpp \
 		fba_player.cpp \
 		font.cpp \
@@ -307,7 +306,6 @@ SOURCES = \
 		sdlvideo.cpp
 
 OBJECTS = \
-		.obj/pandorasdk.o \
 		.obj/main.o \
 		.obj/fba_player.o \
 		.obj/font.o \
@@ -572,9 +570,6 @@ clean:
 
 .obj/sdlvideo.o: sdlvideo.cpp sdlvideo.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o .obj/sdlvideo.o sdlvideo.cpp
-
-.obj/pandorasdk.o: pandorasdk.cpp pandorasdk.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o .obj/pandorasdk.o pandorasdk.cpp
 
 .obj/main.o: main.cpp \
 		main.h \

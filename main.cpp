@@ -33,7 +33,7 @@
 #include "burner.h"
 #include "snd.h"
 #include "config.h"
-#include "pandorasdk.h"
+#include "sdlvideo.h"
 
 CFG_OPTIONS config_options;
 CFG_KEYMAP config_keymap;
