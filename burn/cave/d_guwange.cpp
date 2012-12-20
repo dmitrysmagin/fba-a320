@@ -1,6 +1,7 @@
 // Guwange
 #include "cave.h"
 #include "ymz280b.h"
+#include "cache.h"
 
 #define CAVE_VBLANK_LINES 12
 #include "cache.h"
@@ -270,7 +271,7 @@ static int DrvExit()
 	free(Mem);
 	Mem = NULL;
 
-	free(CaveTileROM[0]);
+	CachedFree(CaveTileROM[0]);
 	CaveTileROM[0] = NULL;
 
 	return 0;
@@ -453,7 +454,7 @@ static int MemIndex()
 	MemEnd			= Next;
 
 	if (CaveTileROM[0] == NULL)
-		CaveTileROM[0] = (unsigned char*)malloc(0x800000);
+		CaveTileROM[0] = (unsigned char*)CachedMalloc(0x800000);
 	return 0;
 }
 

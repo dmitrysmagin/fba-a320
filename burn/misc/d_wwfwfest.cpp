@@ -1,6 +1,7 @@
 #include "tiles_generic.h"
 #include "burn_ym2151.h"
 #include "msm6295.h"
+#include "cache.h"
 
 static unsigned char DrvInputPort0[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 static unsigned char DrvInputPort1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
@@ -633,7 +634,7 @@ static int DrvInit()
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	DrvTempRom = (unsigned char *)malloc(0x800000);
+	DrvTempRom = (unsigned char *)CachedMalloc(0x800000);
 
 	// Load 68000 Program Roms
 	nRet = BurnLoadRom(Drv68KRom + 0x00000, 0, 2); if (nRet != 0) return 1;
@@ -675,7 +676,7 @@ static int DrvInit()
 	nRet = BurnLoadRom(DrvMSM6295ROMSrc + 0x00000, 14 + RomOffset, 1); if (nRet != 0) return 1;
 	memcpy(MSM6295ROM, DrvMSM6295ROMSrc, 0x40000);
 	
-	free(DrvTempRom);
+	CachedFree(DrvTempRom);
 	
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);

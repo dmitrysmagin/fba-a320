@@ -1,4 +1,5 @@
 #include "burnint.h"
+#include "cache.h"
 
 #include <fcntl.h>
 #include <unistd.h>
@@ -6,6 +7,7 @@
 
 #ifndef WIN32
 #include <sys/mman.h>
+#include <errno.h>
 #else
 
 // emulate mmap/munmap on windows, just replace with malloc/free
@@ -165,4 +167,99 @@ void BurnCacheExit()
 	bBurnUseRomCache = 0;
 }
 
+#define BLOCKSIZE 1024
+#define MEMSIZE 0x8000000
 
+static int fd = -1;
+void *CachedMem = NULL;
+int TakenSize[MEMSIZE / BLOCKSIZE];
+char SwapPath[512] = "./";
+
+void InitMemPool()
+{
+#ifdef WIN32
+	CachedMem = (void *)malloc(MEMSIZE);
+#else
+	char *home = getenv("HOME");
+	if(home) sprintf(SwapPath, "%s/.fba", home); else sprintf(SwapPath, "./.fba", home);
+	mkdir(SwapPath, 0777);
+
+	if(errno == EROFS || errno == EACCES || errno == EPERM) {
+		getcwd(SwapPath, 512);
+		strcat(SwapPath, "/.fba");
+		mkdir(SwapPath, 0777);
+	}
+
+	strcat(SwapPath, "/fba.swp");
+	fd = open(SwapPath, O_CREAT | O_RDWR | O_SYNC);
+	if(fd < 0) {
+		printf("Error creating swap\n");
+		exit(-1);
+	}
+	lseek(fd, MEMSIZE, SEEK_SET);
+	write(fd, " ", 1);
+
+	CachedMem = mmap(0, MEMSIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+#endif
+	memset(TakenSize, 0, sizeof(TakenSize));
+}
+
+void DestroyMemPool()
+{
+#ifdef WIN32
+	free(CachedMem);
+#else
+	munmap (CachedMem, MEMSIZE);
+	if(fd >= 0) close(fd);
+#endif
+	CachedMem = NULL;
+}
+
+// Allocates memory
+void *CachedMalloc(size_t size)
+{
+	int i = 0; printf("CachedMalloc: %x\n", size);
+ReDo:
+	for(; TakenSize[i]; i += TakenSize[i]);
+	if(i >= MEMSIZE / BLOCKSIZE) {
+		printf("CachedMalloc out of mem!");
+		return NULL;
+	}
+
+	int BSize = (size - 1) / BLOCKSIZE + 1;
+	for(int j = 1; j < BSize; j++) {
+		if (TakenSize[i + j]) {
+			i += j;
+			goto ReDo; //OMG Goto, kill me.
+		}
+	}
+  
+	TakenSize[i] = BSize;
+	void *mem = ((char*)CachedMem) + i * BLOCKSIZE; printf("%x, %x, %i\n", CachedMem, mem, i);
+	memset(mem, 0, size);
+	return mem;
+}
+
+// Releases CachedMalloc'ed memory
+void CachedFree(void* mem)
+{
+	int i = (((int)mem) - ((int)CachedMem));
+	if (i < 0 || i >= MEMSIZE) {
+		printf("CachedFree of not CachedMalloced mem: %p\n", mem);
+	} else {
+		if (i % BLOCKSIZE)
+			printf("delete error: %p\n", mem);
+		TakenSize[i / BLOCKSIZE] = 0;
+	}
+}
+
+// Returns the size of a CachedMalloced block.
+int GetCachedSize(void* mem)
+{
+	int i = (((int)mem) - ((int)CachedMem));
+	if (i < 0 || i >= MEMSIZE) {
+		printf("GetCachedSize of not CachedMalloced mem: %p\n", mem);
+		return -1;
+	}
+	return TakenSize[i / BLOCKSIZE] * BLOCKSIZE;
+}

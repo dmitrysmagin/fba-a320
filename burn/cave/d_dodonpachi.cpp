@@ -1,6 +1,7 @@
 // DoDonpachi
 #include "cave.h"
 #include "ymz280b.h"
+#include "cache.h"
 
 #define CAVE_VBLANK_LINES 12
 
@@ -256,7 +257,7 @@ static int DrvExit()
 
 	// Deallocate all used memory
 	free(Rom01);		// 68K program
-	free(CaveSpriteROM);
+	CachedFree(CaveSpriteROM);
 	free(CaveTileROM[0]);		// Tile layer 0
 	free(CaveTileROM[1]);		// Tile layer 1
 	free(CaveTileROM[2]);		// Tile layer 2
@@ -416,7 +417,7 @@ static int MemIndex()
 {
 	Rom01			= (unsigned char*)malloc(0x100000);		// 68K program
 	memset(Rom01,0,0x100000);
-	CaveSpriteROM	= (unsigned char*)malloc(0x1000000);
+	CaveSpriteROM	= (unsigned char*)CachedMalloc(0x1000000);
 	memset(CaveSpriteROM,0,0x100000);
 	CaveTileROM[0]	= (unsigned char*)malloc(0x400000);		// Tile layer 0
 	memset(CaveTileROM[0],0,0x400000);

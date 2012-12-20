@@ -9,6 +9,7 @@
 #include "burnint.h"
 #include "msm6295.h"
 #include "burn_ym2203.h"
+#include "cache.h"
 
 static unsigned char *Mem = NULL, *MemEnd = NULL;
 static unsigned char *RamStart, *RamEnd;
@@ -348,7 +349,7 @@ static int MemIndex()
 
 	MemEnd		= Next;
 	if (RomSpr == NULL)
-		RomSpr = (unsigned char*)malloc(0x1000000);
+		RomSpr = (unsigned char*)CachedMalloc(0x1000000);
 
 	return 0;
 }
@@ -856,7 +857,7 @@ static int powerinsExit()
 	Mem = NULL;
 	if (RomSpr != NULL)
 	{
-		free(RomSpr);
+		CachedFree(RomSpr);
 		RomSpr = NULL;
 	}
 	return 0;

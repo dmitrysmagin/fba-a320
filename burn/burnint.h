@@ -9,6 +9,7 @@
 
 #include "tchar.h"
 #include "burn.h"
+#include "cache.h"
 
 #ifndef MAX_PATH
  #define MAX_PATH (260)

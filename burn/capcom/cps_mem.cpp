@@ -68,7 +68,7 @@ static int AllocateMemory()
 	CpsMemIndex();
 	nLen = CpsMemEnd - (unsigned char*)0;
 
-	if ((CpsMem = (unsigned char*)malloc(nLen)) == NULL) {
+	if ((CpsMem = (unsigned char*)BurnMalloc(nLen)) == NULL) {
 		return 1;
 	}
 
@@ -329,7 +329,7 @@ int CpsMemExit()
 #endif
 
 	// Deallocate all used memory
-	free(CpsMem);
+	BurnFree(CpsMem);
 	CpsMem = NULL;
 
 	return 0;

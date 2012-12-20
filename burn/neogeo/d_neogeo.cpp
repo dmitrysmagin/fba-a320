@@ -1072,7 +1072,7 @@ static void PCM2DecryptP()
 {
 	// Descamble P-ROMs
 
-	unsigned char* pTemp = (unsigned char*)malloc(0x400000);
+	unsigned char* pTemp = (unsigned char*)BurnMalloc(0x400000);
 
 	if (pTemp) {
 		unsigned int nBank[] = { 0x100000, 0x280000, 0x300000, 0x180000, 0x000000, 0x380000, 0x200000, 0x080000 };
@@ -1083,7 +1083,7 @@ static void PCM2DecryptP()
 			memcpy(Neo68KROM + 0x100000 + i * 0x80000, pTemp + nBank[i], 0x80000);
 		}
 
-		free(pTemp);
+		BurnFree(pTemp);
 	}
 }
 
@@ -1094,7 +1094,7 @@ static void PCM2DecryptV(PCM2DecryptVInfo* pInfo)
 
 	extern unsigned char* YM2610ADPCMAROM;
 
-	unsigned char* pTemp = (unsigned char*)malloc(0x01000000);
+	unsigned char* pTemp = (unsigned char*)BurnMalloc(0x01000000);
 
 	if (pTemp) {
 		memcpy(pTemp, YM2610ADPCMAROM, 0x01000000);
@@ -1105,7 +1105,7 @@ static void PCM2DecryptV(PCM2DecryptVInfo* pInfo)
 			YM2610ADPCMAROM[nAddress] = pTemp[(i + pInfo->nAddressXor) & 0xffffff] ^ pInfo->nDataXor[nAddress & 0x07];
 		}
 
-		free(pTemp);
+		BurnFree(pTemp);
 	}
 }
 
@@ -1116,7 +1116,7 @@ void NeogeoBootlegCXDecrypt(int nSize)
 {
 	int i;
 	UINT8 *rom = NeoSpriteROM;
-	UINT8 *buf = (UINT8*)malloc( nSize );
+	UINT8 *buf = (UINT8*)BurnMalloc( nSize );
 
 	memcpy( buf, rom, nSize );
 
@@ -1124,7 +1124,7 @@ void NeogeoBootlegCXDecrypt(int nSize)
 		memcpy( &rom[ i * 0x40 ], &buf[ (i ^ 1) * 0x40 ], 0x40 );
 	}
 
-	free( buf );
+	BurnFree( buf );
 }
 
 void NeogeoBootlegSXDecrypt(int value)
@@ -1135,7 +1135,7 @@ void NeogeoBootlegSXDecrypt(int value)
 
 	if (value == 1)
 	{
-		UINT8 *buf = (UINT8*)malloc( sx_size );
+		UINT8 *buf = (UINT8*)BurnMalloc( sx_size );
 		memcpy( buf, rom, sx_size );
 
 		for( i = 0; i < sx_size; i += 0x10 )
@@ -1143,7 +1143,7 @@ void NeogeoBootlegSXDecrypt(int value)
 			memcpy( &rom[ i ], &buf[ i + 8 ], 8 );
 			memcpy( &rom[ i + 8 ], &buf[ i ], 8 );
 		}
-		free( buf );
+		BurnFree( buf );
 	}
 	else if (value == 2)
 	{
@@ -2824,7 +2824,7 @@ static void lans2004Callback()
 	int i;
 	UINT8 *src = Neo68KROM;
 	UINT16 *rom = (UINT16*)Neo68KROM;
-	UINT8 *dst = (UINT8*)malloc(0x600000);
+	UINT8 *dst = (UINT8*)BurnMalloc(0x600000);
 
 	if (dst) {
 		static const int sec[] = { 0x3, 0x8, 0x7, 0xC, 0x1, 0xA, 0x6, 0xD };
@@ -4886,7 +4886,7 @@ static void mslug5Callback()
 	int ofst;
 	int rom_size = 0x800000;
 	UINT8 *rom = Neo68KROM;
-	UINT8 *buf = (UINT8*)malloc( rom_size );
+	UINT8 *buf = (UINT8*)BurnMalloc( rom_size );
 
 	for( i = 0; i < 0x100000; i++ )
 	{
@@ -4919,7 +4919,7 @@ static void mslug5Callback()
 	memcpy( buf, rom, rom_size );
 	memcpy( &rom[ 0x100000 ], &buf[ 0x700000 ], 0x100000 );
 	memcpy( &rom[ 0x200000 ], &buf[ 0x100000 ], 0x600000 );
-	free( buf );
+	BurnFree( buf );
 }
 
 static int mslug5Init()
@@ -4977,7 +4977,7 @@ static void ms5pcbCallback()
 	int ofst;
 	int rom_size = 0x800000;
 	UINT8 *rom = Neo68KROM;
-	UINT8 *buf = (UINT8*)malloc( rom_size );
+	UINT8 *buf = (UINT8*)BurnMalloc( rom_size );
 
 	for( i = 0; i < 0x100000; i++ )
 	{
@@ -5010,7 +5010,7 @@ static void ms5pcbCallback()
 	memcpy( buf, rom, rom_size );
 	memcpy( &rom[ 0x100000 ], &buf[ 0x700000 ], 0x100000 );
 	memcpy( &rom[ 0x200000 ], &buf[ 0x100000 ], 0x600000 );
-	free( buf );
+	BurnFree( buf );
 	
 	// S ROM
 	for(i = 0; i < nNeoTextROMSize; i++) {
@@ -6522,7 +6522,7 @@ static void kf2k2mpCallback()
 	int i,j;
 
 	unsigned char *src = Neo68KROM;
-	unsigned char *dst = (unsigned char*)malloc(0x80);
+	unsigned char *dst = (unsigned char*)BurnMalloc(0x80);
 
 	memmove(src, src + 0x300000, 0x500000);
 
@@ -6538,7 +6538,7 @@ static void kf2k2mpCallback()
 			memcpy(src + i, dst, 0x80);
 		}
 	}
-	free(dst);
+	BurnFree(dst);
 	
 	NeogeoBootlegSXDecrypt(2);
 }
@@ -6598,7 +6598,7 @@ STD_ROM_FN(kf2k2mp2);
 static void kf2k2mp2Callback()
 {
 	unsigned char *src = Neo68KROM;
-	unsigned char *dst = (unsigned char*)malloc(0x600000);
+	unsigned char *dst = (unsigned char*)BurnMalloc(0x600000);
 
 	memcpy (dst + 0x000000, src + 0x1C0000, 0x040000);
 	memcpy (dst + 0x040000, src + 0x140000, 0x080000);
@@ -6723,7 +6723,7 @@ void __fastcall kof10thWriteWordBankswitch(unsigned int sekAddress, unsigned sho
 static void kof10thCallback()
 {
 	int i, j;
-	UINT8 *dst = (UINT8*)malloc(0x900000);
+	UINT8 *dst = (UINT8*)BurnMalloc(0x900000);
 	UINT8 *src = Neo68KROM;
 
 	if (dst) {
@@ -6735,7 +6735,7 @@ static void kof10thCallback()
 			src[j] = dst[i];
 		}
 
-		free(dst);
+		BurnFree(dst);
 	}
 
 	// Altera protection chip patches these over P ROM
@@ -6862,8 +6862,8 @@ static void kf10thepCallback()
 	BurnLoadRom(Neo68KROM + 0x200000, 1, 1);
 	BurnLoadRom(Neo68KROM + 0x600000, 2, 1);
 	
-	unsigned char* pTemp = (unsigned char*)malloc(0x8000000);
-	unsigned char* pTemp1 = (unsigned char*)malloc(0x2000000);
+	unsigned char* pTemp = (unsigned char*)BurnMalloc(0x8000000);
+	unsigned char* pTemp1 = (unsigned char*)BurnMalloc(0x2000000);
 	memset(pTemp + 0x000000, 0, 0x100000);
 	memcpy(pTemp + 0x100000, Neo68KROM + 0x200000, 0x600000);
 	memset(pTemp + 0x700000, 0, 0x100000);
@@ -6874,9 +6874,9 @@ static void kf10thepCallback()
 	UINT8  *src = pTemp;
 	UINT16 *buf = (UINT16*)pTemp1;
 	UINT8 *srom = NeoTextROM + 0x20000;
-	UINT8 *sbuf = (UINT8*)malloc(0x20000);
+	UINT8 *sbuf = (UINT8*)BurnMalloc(0x20000);
 
-	UINT8 *dst = (UINT8*)malloc(0x200000);
+	UINT8 *dst = (UINT8*)BurnMalloc(0x200000);
 
 	memcpy(dst,buf,0x200000);
 	memcpy(src+0x000000,dst+0x060000,0x20000);
@@ -6895,7 +6895,7 @@ static void kf10thepCallback()
 		if (rom[i+0] == 0x4ef9 && rom[i+1] == 0x0000) rom[i+1] = 0x000F; // correct JMP in moved code
 	}
 	rom[0x00342/2] = 0x000f;
-	free(dst);
+	BurnFree(dst);
 	
 	memcpy(Neo68KROM, pTemp, 0x800000);
 
@@ -6903,10 +6903,10 @@ static void kf10thepCallback()
 		sbuf[i]=srom[i^0x8];
 
 	memcpy(srom,sbuf,0x20000);
-	free(sbuf);	
+	BurnFree(sbuf);	
 	
-	free(pTemp);
-	free(pTemp1);
+	BurnFree(pTemp);
+	BurnFree(pTemp1);
 }
 
 
@@ -6968,7 +6968,7 @@ static void kf2k5uniCallback()
 	// P ROM
 	int i, j, ofst;
 	unsigned char *src = Neo68KROM;
-	unsigned char *dst = (unsigned char*)malloc(0x80);
+	unsigned char *dst = (unsigned char*)BurnMalloc(0x80);
 
 	for (i = 0; i < 0x800000; i+=0x80)
 	{
@@ -6979,7 +6979,7 @@ static void kf2k5uniCallback()
 		}
 		memcpy(src + i, dst, 0x80);
 	}
-	free(dst);
+	BurnFree(dst);
 
 	memcpy(src, src + 0x600000, 0x100000);
 	
@@ -7135,7 +7135,7 @@ STD_ROM_FN(kof2k4se);
 static void kof2k4seCallback()
 {
 	UINT8 *src = Neo68KROM+0x100000;
-	UINT8 *dst = (UINT8*)malloc(0x400000);
+	UINT8 *dst = (UINT8*)BurnMalloc(0x400000);
 	int i;
 	static const unsigned int sec[] = {0x300000,0x200000,0x100000,0x000000};
 	if (dst)
@@ -7146,7 +7146,7 @@ static void kof2k4seCallback()
 		{
 		memcpy(src+i*0x100000,dst+sec[i],0x100000);
 		}
-			free(dst);
+			BurnFree(dst);
 	}
 }
 
@@ -7205,7 +7205,7 @@ static void kof2003Callback()
 	int ofst;
 	int rom_size = 0x900000;
 	UINT8 *rom = Neo68KROM;
-	UINT8 *buf = (UINT8*)malloc( rom_size );
+	UINT8 *buf = (UINT8*)BurnMalloc( rom_size );
 
 	for (i = 0; i < 0x100000; i++)
 	{
@@ -7240,7 +7240,7 @@ static void kof2003Callback()
 	memcpy (&rom[0x000000], &buf[0x000000], 0x100000);
 	memcpy (&rom[0x100000], &buf[0x800000], 0x100000);
 	memcpy (&rom[0x200000], &buf[0x100000], 0x700000);
-	free( buf );
+	BurnFree( buf );
 }
 
 static int kof2003Init()
@@ -7303,7 +7303,7 @@ static void kf2k3pcbCallback()
 	int ofst;
 	int rom_size = 0x900000;
 	UINT8 *rom = Neo68KROM;
-	UINT8 *buf = (UINT8*)malloc( rom_size );
+	UINT8 *buf = (UINT8*)BurnMalloc( rom_size );
 
 	for (i = 0; i < 0x100000; i++)
 	{
@@ -7334,7 +7334,7 @@ static void kf2k3pcbCallback()
 	memcpy (&rom[0x000000], &buf[0x000000], 0x100000);
 	memcpy (&rom[0x100000], &buf[0x800000], 0x100000);
 	memcpy (&rom[0x200000], &buf[0x100000], 0x700000);
-	free( buf );
+	BurnFree( buf );
 	
 	// S ROM
 	for(i = 0; i < nNeoTextROMSize; i++) {
@@ -7523,7 +7523,7 @@ static void kf2k3blaCallback()
 	BurnLoadRom(Neo68KROM + 0x500000, 2, 1);
 
 
-	UINT16*tmp = (UINT16*)malloc(0x100000);
+	UINT16*tmp = (UINT16*)BurnMalloc(0x100000);
 	UINT16*rom = (UINT16*)Neo68KROM;
 	int j;
 	int i;
@@ -7534,7 +7534,7 @@ static void kf2k3blaCallback()
 		for (j = 0;j < 0x100000/2;j++)
 			rom[i+j] = tmp[BITSWAP24(j,23,22,21,20,19,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18)];
 	}
-	free(tmp);
+	BurnFree(tmp);
 
 	/* patched by Altera protection chip on PCB */
 	rom[0xf38ac/2] = 0x4e75;
@@ -8023,7 +8023,7 @@ static void kogCallback()
 {
 	// P ROMs
 	UINT8 *src = Neo68KROM;
-	UINT8 *dst = (UINT8*)malloc( 0x600000 );
+	UINT8 *dst = (UINT8*)BurnMalloc( 0x600000 );
 	UINT16 *rom = (UINT16 *)Neo68KROM;
 	int i;
 	static const unsigned int sec[] = { 0x3, 0x8, 0x7, 0xC, 0x1, 0xA, 0x6, 0xD };
@@ -8145,7 +8145,7 @@ static void kof98Decrypt()
 	int sec[] = {0x000000, 0x100000, 0x000004, 0x100004, 0x10000a, 0x00000a, 0x10000e, 0x00000e};
 	int pos[] = {0x000, 0x004, 0x00a, 0x00e};
 
-	unsigned char* pTemp = (unsigned char*)malloc(0x200000);
+	unsigned char* pTemp = (unsigned char*)BurnMalloc(0x200000);
 
 	if (pTemp == NULL) {
 		return;
@@ -8181,7 +8181,7 @@ static void kof98Decrypt()
 
 	memcpy(&Neo68KROM[0x100000], &Neo68KROM[0x200000], 0x400000);
 
-	free(pTemp);
+	BurnFree(pTemp);
 }
 
 static unsigned short nkof98Protection;
@@ -10405,7 +10405,7 @@ static void cthd2003_neogeo_gfx_address_fix_do(int start, int bit3shift, int bit
 {
 	const int tilesize = 128;
 
-	unsigned char* rom = (unsigned char*)malloc(16 * tilesize);	// 16 tiles buffer
+	unsigned char* rom = (unsigned char*)BurnMalloc(16 * tilesize);	// 16 tiles buffer
 	unsigned char* realrom = NeoSpriteROM + start * tilesize;
 
 	for (int i = 0; i < 32; i++) {
@@ -10420,7 +10420,7 @@ static void cthd2003_neogeo_gfx_address_fix_do(int start, int bit3shift, int bit
 		memcpy(realrom, rom, tilesize * 16);
 		realrom += 16 * tilesize;
 	}
-	free(rom);
+	BurnFree(rom);
 }
 
 static void cthd2003_neogeo_gfx_address_fix(int start)
@@ -10447,7 +10447,7 @@ static void cthdCallback()
 	{
 		extern unsigned char* NeoZ80ROM;
 
-		unsigned char* tmp = (unsigned char*)malloc(0x020000);
+		unsigned char* tmp = (unsigned char*)BurnMalloc(0x020000);
 
 		memcpy(tmp + 0 * 0x8000, NeoZ80ROM + 0 * 0x8000, 0x8000);
 		memcpy(tmp + 1 * 0x8000, NeoZ80ROM + 2 * 0x8000, 0x8000);
@@ -10461,7 +10461,7 @@ static void cthdCallback()
 		memcpy(tmp + 3 * 0x8000, NeoTextROM + 0x020000 + 3 * 0x8000, 0x8000);
 		memcpy(NeoTextROM + 0x020000, tmp, 0x20000);
 
-		free(tmp);
+		BurnFree(tmp);
 
 		cthd2003_c();
 	}
@@ -10560,7 +10560,7 @@ static void ct2k3spCallback()
 	{
 		extern unsigned char* NeoZ80ROM;
 
-		unsigned char* tmp = (unsigned char*)malloc(0x020000);
+		unsigned char* tmp = (unsigned char*)BurnMalloc(0x020000);
 
 		memcpy(tmp + 0 * 0x8000, NeoZ80ROM + 0 * 0x8000, 0x8000);
 		memcpy(tmp + 1 * 0x8000, NeoZ80ROM + 2 * 0x8000, 0x8000);
@@ -10568,11 +10568,11 @@ static void ct2k3spCallback()
 		memcpy(tmp + 3 * 0x8000, NeoZ80ROM + 3 * 0x8000, 0x8000);
 		memcpy(NeoZ80ROM, tmp, 0x20000);
 		
-		free(tmp);
+		BurnFree(tmp);
 		
 		int rom_size = nNeoTextROMSize;
 		UINT8 *rom = NeoTextROM + 0x20000;
-		UINT8 *buf = (UINT8*)malloc( rom_size );
+		UINT8 *buf = (UINT8*)BurnMalloc( rom_size );
 		int i;
 		int ofst;
 
@@ -10596,7 +10596,7 @@ static void ct2k3spCallback()
 		memcpy( &rom[ 0x28000 ], &buf[ 0x30000 ], 0x8000 );
 		memcpy( &rom[ 0x30000 ], &buf[ 0x28000 ], 0x8000 );
 
-		free( buf );
+		BurnFree( buf );
 		
 		nNeoTextROMSize = 0x20000;
 
@@ -10732,7 +10732,7 @@ static void svcCallback()
 	int ofst;
 	int rom_size = 0x800000;
 	UINT8 *rom = Neo68KROM;
-	UINT8 *buf = (UINT8*)malloc( rom_size );
+	UINT8 *buf = (UINT8*)BurnMalloc( rom_size );
 
 	for( i = 0; i < 0x100000; i++ )
 	{
@@ -10765,7 +10765,7 @@ static void svcCallback()
 	memcpy( buf, rom, rom_size );
 	memcpy( &rom[ 0x100000 ], &buf[ 0x700000 ], 0x100000 );
 	memcpy( &rom[ 0x200000 ], &buf[ 0x100000 ], 0x600000 );
-	free( buf );
+	BurnFree( buf );
 }
 
 static int svcInit()
@@ -10832,7 +10832,7 @@ static void svcbootCallback()
 	int i;
 	int size = 0x800000;
 	UINT8 *src = Neo68KROM;
-	UINT8 *dst = (UINT8*)malloc( size );
+	UINT8 *dst = (UINT8*)BurnMalloc( size );
 	int ofst;
 	for( i = 0; i < size / 0x100000; i++ ){
 		memcpy( &dst[ i * 0x100000 ], &src[ sec[ i ] * 0x100000 ], 0x100000 );
@@ -10842,7 +10842,7 @@ static void svcbootCallback()
 		ofst += (i & 0xffff00);
 		memcpy( &src[ i * 2 ], &dst[ ofst * 2 ], 0x02 );
 	}
-	free( dst );
+	BurnFree( dst );
 	
 	// C ROM
 	static const unsigned char idx_tbl[ 0x10 ] = {
@@ -10858,7 +10858,7 @@ static void svcbootCallback()
 	};
 	size = 0x800000 * 8;
 	UINT8 *Csrc = NeoSpriteROM;
-	UINT8 *Cdst = (UINT8*)malloc( size );
+	UINT8 *Cdst = (UINT8*)BurnMalloc( size );
 	memcpy( Cdst, Csrc, size );
 	for( i = 0; i < size / 0x80; i++ ){
 		int idx = idx_tbl[ (i & 0xf00) >> 8 ];
@@ -10870,24 +10870,24 @@ static void svcbootCallback()
 		ofst += (i & 0xfffff00);
 		memcpy( &Csrc[ i * 0x80 ], &Cdst[ ofst * 0x80 ], 0x80 );
 	}
-	free( Cdst );
+	BurnFree( Cdst );
 	
 	// S ROM
-	unsigned char *pTemp = (unsigned char*)malloc(0x20000);
+	unsigned char *pTemp = (unsigned char*)BurnMalloc(0x20000);
 	memcpy(pTemp, NeoTextROM + 0x20000, 0x20000);
 	memcpy(NeoTextROM + 0x20000, pTemp + 0x10000, 0x10000);
 	memcpy(NeoTextROM + 0x30000, pTemp + 0x00000, 0x10000);
-	free(pTemp);
+	BurnFree(pTemp);
 	
 	// M ROM
 	extern unsigned char* NeoZ80ROM;
 	
-	pTemp = (unsigned char*)malloc(0x20000);
+	pTemp = (unsigned char*)BurnMalloc(0x20000);
 	memset(pTemp, 0, 0x20000);
 	memcpy(pTemp, NeoZ80ROM, 0x20000);
 	memcpy(NeoZ80ROM + 0x00000, pTemp + 0x10000, 0x10000);
 	memcpy(NeoZ80ROM + 0x10000, pTemp + 0x00000, 0x10000);
-	free(pTemp);
+	BurnFree(pTemp);
 	
 	// V ROM
 	extern unsigned char* YM2610ADPCMAROM;
@@ -10947,7 +10947,7 @@ static void svcplusCallback()
 	};
 	int size = 0x600000;
 	UINT8 *src = Neo68KROM;
-	UINT8 *dst = (UINT8*)malloc( size );
+	UINT8 *dst = (UINT8*)BurnMalloc( size );
 	int i;
 	int ofst;
 	memcpy( dst, src, size );
@@ -10963,7 +10963,7 @@ static void svcplusCallback()
 	for( i = 0; i < 6; i++ ){
 		memcpy( &src[ i * 0x100000 ], &dst[ sec[ i ] * 0x100000 ], 0x100000 );
 	}
-	free( dst );
+	BurnFree( dst );
 	
 	// P ROM Hack
 	src[ 0x0f8010 ] = 0x40;
@@ -10989,7 +10989,7 @@ static void svcplusCallback()
 	};
 	int Csize = 0x800000 * 8;
 	UINT8 *Csrc = NeoSpriteROM;
-	UINT8 *Cdst = (UINT8*)malloc( Csize );
+	UINT8 *Cdst = (UINT8*)BurnMalloc( Csize );
 	memcpy( Cdst, Csrc, Csize );
 	for( i = 0; i < Csize / 0x80; i++ ){
 		int idx = idx_tbl[ (i & 0xf00) >> 8 ];
@@ -11001,7 +11001,7 @@ static void svcplusCallback()
 		ofst += (i & 0xfffff00);
 		memcpy( &Csrc[ i * 0x80 ], &Cdst[ ofst * 0x80 ], 0x80 );
 	}
-	free( Cdst );
+	BurnFree( Cdst );
 	
 	// S ROM
 	NeogeoBootlegSXDecrypt(1);
@@ -11009,12 +11009,12 @@ static void svcplusCallback()
 	// M ROM
 	extern unsigned char* NeoZ80ROM;
 	
-	unsigned char *pTemp = (unsigned char*)malloc(0x20000);
+	unsigned char *pTemp = (unsigned char*)BurnMalloc(0x20000);
 	memset(pTemp, 0, 0x20000);
 	memcpy(pTemp, NeoZ80ROM, 0x20000);
 	memcpy(NeoZ80ROM + 0x00000, pTemp + 0x10000, 0x10000);
 	memcpy(NeoZ80ROM + 0x10000, pTemp + 0x00000, 0x10000);
-	free(pTemp);
+	BurnFree(pTemp);
 	
 	// V ROM
 	extern unsigned char* YM2610ADPCMAROM;
@@ -11074,12 +11074,12 @@ static void svcplusaCallback()
 	};
 	int size = 0x600000;
 	UINT8 *src = Neo68KROM;
-	UINT8 *dst = (UINT8*)malloc( size );
+	UINT8 *dst = (UINT8*)BurnMalloc( size );
 	memcpy( dst, src, size );
 	for( i = 0; i < 6; i++ ){
 		memcpy( &src[ i * 0x100000 ], &dst[ sec[ i ] * 0x100000 ], 0x100000 );
 	}
-	free( dst );
+	BurnFree( dst );
 	
 	// P ROM Hack
 	src[ 0x0f8010 ] = 0x40;
@@ -11105,7 +11105,7 @@ static void svcplusaCallback()
 	};
 	int Csize = 0x800000 * 8;
 	UINT8 *Csrc = NeoSpriteROM;
-	UINT8 *Cdst = (UINT8*)malloc( Csize );
+	UINT8 *Cdst = (UINT8*)BurnMalloc( Csize );
 	int ofst;
 	memcpy( Cdst, Csrc, Csize );
 	for( i = 0; i < Csize / 0x80; i++ ){
@@ -11118,24 +11118,24 @@ static void svcplusaCallback()
 		ofst += (i & 0xfffff00);
 		memcpy( &Csrc[ i * 0x80 ], &Cdst[ ofst * 0x80 ], 0x80 );
 	}
-	free( Cdst );
+	BurnFree( Cdst );
 	
 	// S ROM
-	unsigned char *pTemp = (unsigned char*)malloc(0x20000);
+	unsigned char *pTemp = (unsigned char*)BurnMalloc(0x20000);
 	memcpy(pTemp, NeoTextROM + 0x20000, 0x20000);
 	memcpy(NeoTextROM + 0x20000, pTemp + 0x10000, 0x10000);
 	memcpy(NeoTextROM + 0x30000, pTemp + 0x00000, 0x10000);
-	free(pTemp);
+	BurnFree(pTemp);
 	
 	// M ROM
 	extern unsigned char* NeoZ80ROM;
 	
-	pTemp = (unsigned char*)malloc(0x20000);
+	pTemp = (unsigned char*)BurnMalloc(0x20000);
 	memset(pTemp, 0, 0x20000);
 	memcpy(pTemp, NeoZ80ROM, 0x20000);
 	memcpy(NeoZ80ROM + 0x00000, pTemp + 0x10000, 0x10000);
 	memcpy(NeoZ80ROM + 0x10000, pTemp + 0x00000, 0x10000);
-	free(pTemp);
+	BurnFree(pTemp);
 	
 	// V ROM
 	extern unsigned char* YM2610ADPCMAROM;
@@ -11194,7 +11194,7 @@ static void svcsplusCallback()
 	};
 	int size = 0x800000;
 	UINT8 *src = Neo68KROM;
-	UINT8 *dst = (UINT8*)malloc( size );
+	UINT8 *dst = (UINT8*)BurnMalloc( size );
 	int i;
 	int ofst;
 	memcpy( dst, src, size );
@@ -11206,7 +11206,7 @@ static void svcsplusCallback()
 		ofst += sec[ (i & 0xf80000) >> 19 ] << 19;
 		memcpy( &src[ i * 2 ], &dst[ ofst * 2 ], 0x02 );
 	}
-	free( dst );
+	BurnFree( dst );
 	
 	// P ROM Hack
 	UINT16 *mem16 = (UINT16 *)Neo68KROM;
@@ -11230,7 +11230,7 @@ static void svcsplusCallback()
 	};
 	int Csize = 0x800000 * 8;
 	UINT8 *Csrc = NeoSpriteROM;
-	UINT8 *Cdst = (UINT8*)malloc( Csize );
+	UINT8 *Cdst = (UINT8*)BurnMalloc( Csize );
 	memcpy( Cdst, Csrc, Csize );
 	for( i = 0; i < Csize / 0x80; i++ ){
 		int idx = idx_tbl[ (i & 0xf00) >> 8 ];
@@ -11242,7 +11242,7 @@ static void svcsplusCallback()
 		ofst += (i & 0xfffff00);
 		memcpy( &Csrc[ i * 0x80 ], &Cdst[ ofst * 0x80 ], 0x80 );
 	}
-	free( Cdst );
+	BurnFree( Cdst );
 	
 	// S ROM
 	NeogeoBootlegSXDecrypt(2);
@@ -11250,12 +11250,12 @@ static void svcsplusCallback()
 	// M ROM
 	extern unsigned char* NeoZ80ROM;
 	
-	unsigned char *pTemp = (unsigned char*)malloc(0x20000);
+	unsigned char *pTemp = (unsigned char*)BurnMalloc(0x20000);
 	memset(pTemp, 0, 0x20000);
 	memcpy(pTemp, NeoZ80ROM, 0x20000);
 	memcpy(NeoZ80ROM + 0x00000, pTemp + 0x10000, 0x10000);
 	memcpy(NeoZ80ROM + 0x10000, pTemp + 0x00000, 0x10000);
-	free(pTemp);
+	BurnFree(pTemp);
 	
 	// V ROM
 	extern unsigned char* YM2610ADPCMAROM;
@@ -11304,7 +11304,7 @@ static void svcpcbCallback()
 	int ofst;
 	int rom_size = 0x800000;
 	UINT8 *rom = Neo68KROM;
-	UINT8 *buf = (UINT8*)malloc( rom_size );
+	UINT8 *buf = (UINT8*)BurnMalloc( rom_size );
 
 	for( i = 0; i < 0x100000; i++ )
 	{
@@ -11337,7 +11337,7 @@ static void svcpcbCallback()
 	memcpy( buf, rom, rom_size );
 	memcpy( &rom[ 0x100000 ], &buf[ 0x700000 ], 0x100000 );
 	memcpy( &rom[ 0x200000 ], &buf[ 0x100000 ], 0x600000 );
-	free( buf );
+	BurnFree( buf );
 	
 	// S ROM
 	for(i = 0; i < nNeoTextROMSize; i++) {
@@ -11482,7 +11482,7 @@ static void samsho5Callback()
 	int i;
 	static const unsigned int sec[]={0x000000,0x080000,0x700000,0x680000,0x500000,0x180000,0x200000,0x480000,0x300000,0x780000,0x600000,0x280000,0x100000,0x580000,0x400000,0x380000};
 	UINT8 *src = Neo68KROM;
-	UINT8 *dst = (UINT8*)malloc(0x800000);
+	UINT8 *dst = (UINT8*)BurnMalloc(0x800000);
 
 	if (dst) // Descramble P
 	{
@@ -11491,7 +11491,7 @@ static void samsho5Callback()
 		{
 			memcpy( src+i*0x80000, dst+sec[i], 0x80000 );
 		}
-	free(dst);
+	BurnFree(dst);
 	}
 }
 
@@ -11499,7 +11499,7 @@ static void samsho5bCallback()
 {
 	int px_size = 0x800000;
 	UINT8 *rom = Neo68KROM;
-	UINT8 *buf = (UINT8*)malloc( px_size );
+	UINT8 *buf = (UINT8*)BurnMalloc( px_size );
 	int ofst;
 	int i;
 
@@ -11518,7 +11518,7 @@ static void samsho5bCallback()
 	memcpy( &rom[ 0x000000 ], &buf[ 0x700000 ], 0x100000 );
 	memcpy( &rom[ 0x100000 ], &buf[ 0x000000 ], 0x700000 );
 
-	free( buf );
+	BurnFree( buf );
 }
 
 static int samsho5Init()
@@ -11652,7 +11652,7 @@ static void samsh5spCallback()
 	int i;
 	static const unsigned int sec[]={0x000000,0x080000,0x500000,0x480000,0x600000,0x580000,0x700000,0x280000,0x100000,0x680000,0x400000,0x780000,0x200000,0x380000,0x300000,0x180000};
 	UINT8 *src = Neo68KROM;
-	UINT8 *dst = (UINT8*)malloc(0x800000);
+	UINT8 *dst = (UINT8*)BurnMalloc(0x800000);
 
 	if (dst) // Descramble P
 	{
@@ -11661,7 +11661,7 @@ static void samsh5spCallback()
 		{
 			memcpy( src+i*0x80000, dst+sec[i], 0x80000 );
 		}
-	free(dst);
+	BurnFree(dst);
 	}
 }
 

@@ -1,6 +1,7 @@
 // Gaia Crusaders
 #include "cave.h"
 #include "ymz280b.h"
+#include "cache.h"
 
 #define CAVE_VBLANK_LINES 12
 
@@ -408,19 +409,19 @@ static int DrvExit()
 
 	if (CaveSpriteROM != NULL)
 	{
-		free(CaveSpriteROM);
+		CachedFree(CaveSpriteROM);
 		CaveSpriteROM = NULL;
 	}
 
 	if (CaveTileROM[0] != NULL)
 	{
-		free(CaveTileROM[0]);
+		CachedFree(CaveTileROM[0]);
 		CaveTileROM[0] = NULL;
 	}
 
 	if (CaveTileROM[1] != NULL)
 	{
-		free(CaveTileROM[1]);
+		CachedFree(CaveTileROM[1]);
 		CaveTileROM[1] = NULL;
 	}
 
@@ -586,13 +587,13 @@ static int MemIndex()
 	MemEnd			= Next;
 
 	if (CaveSpriteROM == NULL)
-		CaveSpriteROM = (unsigned char*)malloc(0x1000000);
+		CaveSpriteROM = (unsigned char*)CachedMalloc(0x1000000);
 
 	if (CaveTileROM[0] == NULL)
-		CaveTileROM[0] = (unsigned char*)malloc(0x400000);
+		CaveTileROM[0] = (unsigned char*)CachedMalloc(0x400000);
 
 	if (CaveTileROM[1] == NULL)
-		CaveTileROM[1] = (unsigned char*)malloc(0x400000);
+		CaveTileROM[1] = (unsigned char*)CachedMalloc(0x400000);
 
 	return 0;
 }

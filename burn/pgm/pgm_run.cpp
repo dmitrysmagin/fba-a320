@@ -507,7 +507,7 @@ int pgmInit()
 		nPGM68KROMLen = BurnCacheBlockSize(0)-0x0220000;
 		pgmMemIndex();
 		int nLen = MemEnd - (unsigned char *)0;
-		if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+		if ((Mem = (unsigned char *)BurnMalloc(nLen)) == NULL) return 1;
 		memset(Mem, 0, nLen);
 		pgmMemIndex();
 
@@ -516,12 +516,12 @@ int pgmInit()
 		nPGMSPRColROMLen = BurnCacheBlockSize(2);
 		nPGMSPRMaskROMLen = BurnCacheBlockSize(3);
 		nPGMSNDROMLen = BurnCacheBlockSize(4);
-		PGMTileROM      = (unsigned char *)malloc(nPGMTileROMLen);	// 8x8 Text Tiles + 32x32 BG Tiles
-		PGMTileROMExp   = (unsigned char *)malloc((nPGMTileROMLen / 5) * 8);	// Expanded 8x8 Text Tiles and 32x32 BG Tiles
+		PGMTileROM      = (unsigned char *)BurnMalloc(nPGMTileROMLen);	// 8x8 Text Tiles + 32x32 BG Tiles
+		PGMTileROMExp   = (unsigned char *)CachedMalloc((nPGMTileROMLen / 5) * 8);	// Expanded 8x8 Text Tiles and 32x32 BG Tiles
 		PGMSPRColROM	= (unsigned char *)BurnCacheMap(2);
 		PGMSPRMaskROM	= (unsigned char *)BurnCacheMap(3);
 		
-		PGMSNDROM		= (unsigned char *)malloc(nPGMSNDROMLen);
+		PGMSNDROM		= (unsigned char *)CachedMalloc(nPGMSNDROMLen);
 		BurnCacheRead(PGMTileROM, 1);
 		BurnCacheRead(PGMSNDROM, 4);
 		// expand gfx1 into gfx2
@@ -531,15 +531,15 @@ int pgmInit()
 	{
 		pgmGetRoms(false);
 	
-		PGMTileROMExp   = (unsigned char*)malloc((nPGMTileROMLen / 5) * 8);	// Expanded 8x8 Text Tiles and 32x32 BG Tiles
-		PGMTileROM      = (unsigned char*)malloc(nPGMTileROMLen);		// 8x8 Text Tiles + 32x32 BG Tiles
-		PGMSPRColROM	= (unsigned char*)malloc(nPGMSPRColROMLen);
-		PGMSPRMaskROM	= (unsigned char*)malloc(nPGMSPRMaskROMLen);
-		PGMSNDROM		= (unsigned char*)malloc(nPGMSNDROMLen);
+		PGMTileROMExp   = (unsigned char*)BurnMalloc((nPGMTileROMLen / 5) * 8);	// Expanded 8x8 Text Tiles and 32x32 BG Tiles
+		PGMTileROM      = (unsigned char*)BurnMalloc(nPGMTileROMLen);		// 8x8 Text Tiles + 32x32 BG Tiles
+		PGMSPRColROM	= (unsigned char*)CachedMalloc(nPGMSPRColROMLen);
+		PGMSPRMaskROM	= (unsigned char*)CachedMalloc(nPGMSPRMaskROMLen);
+		PGMSNDROM		= (unsigned char*)BurnMalloc(nPGMSNDROMLen);
 	
 		pgmMemIndex();
 		int nLen = MemEnd - (unsigned char *)0;
-		if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+		if ((Mem = (unsigned char *)BurnMalloc(nLen)) == NULL) return 1;
 		memset(Mem, 0, nLen);
 		pgmMemIndex();
 
@@ -633,7 +633,7 @@ int pgmExit()
 	SekExit();
 	ZetExit();
 	
-	free(Mem);
+	BurnFree(Mem);
 	Mem = NULL;
 
 	ics2115_exit();
@@ -642,13 +642,13 @@ int pgmExit()
 
 	if ( !bBurnUseRomCache )
 	{
-		free (PGMTileROM);
-		free (PGMTileROMExp);
-		free (PGMSPRColROM);
-		free (PGMSPRMaskROM);
+		BurnFree (PGMTileROM);
+		BurnFree (PGMTileROMExp);
+		CachedFree (PGMSPRColROM);
+		CachedFree (PGMSPRMaskROM);
 	}
 
-	free (PGMSNDROM);
+	BurnFree (PGMSNDROM);
 	
 	PGM68KBIOS = NULL;
 	PGM68KROM = NULL;
