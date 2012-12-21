@@ -486,10 +486,7 @@ static int FindROMs(unsigned int nType, int* pOffset, int* pNum)
 
 static int LoadRoms(NeoGameInfo* pInfo)
 {
-//	NeoSpriteROM = (unsigned char*)BurnMalloc(nSpriteSize);
-unsigned int nSpriteROMSize = nSpriteSize < (nNeoTileMask << 7) ? ((nNeoTileMask + 1) << 7) : nSpriteSize;
-	if (nSpriteROMSize > 0x1600000)
-		return 1;
+	unsigned int nSpriteROMSize = nSpriteSize < (nNeoTileMask << 7) ? ((nNeoTileMask + 1) << 7) : nSpriteSize;
 	NeoSpriteROM = (unsigned char*)CachedMalloc(nSpriteROMSize);
 	if (NeoSpriteROM == NULL) {
 		return 1;
