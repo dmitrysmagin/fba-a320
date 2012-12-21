@@ -1,7 +1,6 @@
 // E.S.P. Ra De
 #include "cave.h"
 #include "ymz280b.h"
-#include "cache.h"
 
 #define CAVE_VBLANK_LINES 12
 
@@ -271,19 +270,19 @@ static int DrvExit()
 
 	if (CaveSpriteROM != NULL)
 	{
-		CachedFree(CaveSpriteROM);
+		free(CaveSpriteROM);
 		CaveSpriteROM = NULL;
 	}
 	
 	if (CaveTileROM[1] != NULL)
 	{
-		CachedFree(CaveTileROM[1]);
+		free(CaveTileROM[1]);
 		CaveTileROM[1] = NULL;
 	}
 
 	if (CaveTileROM[2] != NULL)
 	{
-		CachedFree(CaveTileROM[2]);
+		free(CaveTileROM[2]);
 		CaveTileROM[2] = NULL;
 	}
 
@@ -449,11 +448,11 @@ static int MemIndex()
 	MemEnd			= Next;
 
 	if (CaveSpriteROM == NULL)
-		CaveSpriteROM = (unsigned char*)CachedMalloc(0x1000000);
+		CaveSpriteROM = (unsigned char*)malloc(0x1000000);
 	if (CaveTileROM[1] == NULL)
-		CaveTileROM[1] = (unsigned char*)CachedMalloc(0x800000);
+		CaveTileROM[1] = (unsigned char*)malloc(0x800000);
 	if (CaveTileROM[2] == NULL)
-		CaveTileROM[2] = (unsigned char*)CachedMalloc(0x400000);
+		CaveTileROM[2] = (unsigned char*)malloc(0x400000);
 	return 0;
 }
 

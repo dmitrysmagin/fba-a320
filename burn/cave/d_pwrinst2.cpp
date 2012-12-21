@@ -407,7 +407,7 @@ static int DrvExit()
 	free(Mem);
 	Mem = NULL;
 
-	CachedFree(MSM6295ROM);
+	free(MSM6295ROM);
 	MSM6295ROM = NULL;
 	
 	return 0;
@@ -636,7 +636,7 @@ static int MemIndex()
 	MemEnd			= Next;
 
 	if (MSM6295ROM == NULL)
-		MSM6295ROM = (unsigned char *) CachedMalloc(0x800000);
+		MSM6295ROM = (unsigned char *) malloc(0x800000);
 
 	return 0;
 }

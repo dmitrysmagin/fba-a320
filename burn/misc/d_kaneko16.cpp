@@ -3,7 +3,6 @@
 #include "burn_ym2151.h"
 #include "eeprom_93cxx.h"
 #include "kanekotb.h"
-#include "cache.h"
 
 #include "driver.h"
 extern "C" {
@@ -1318,13 +1317,13 @@ static int GtmrMemIndex()
 	MemEnd = Next;
 	if (Kaneko16Sprites == NULL)
 	{
-		Kaneko16Sprites       = (unsigned char*)CachedMalloc(Kaneko16NumSprites * 16 * 16);
+		Kaneko16Sprites       = (unsigned char*)malloc(Kaneko16NumSprites * 16 * 16);
 		if (Kaneko16Sprites)
 			memset(Kaneko16Sprites,0,Kaneko16NumSprites * 16 * 16);
 	}
 	if (Kaneko16Tiles == NULL)
 	{
-		Kaneko16Tiles         = (unsigned char*)CachedMalloc(Kaneko16NumTiles * 16 * 16);
+		Kaneko16Tiles         = (unsigned char*)malloc(Kaneko16NumTiles * 16 * 16);
 		if (Kaneko16Tiles)
 			memset(Kaneko16Tiles,0,Kaneko16NumTiles * 16 * 16);
 	}
@@ -3485,7 +3484,7 @@ int Gtmr2Init()
 	memset(Mem, 0, nLen);
 	GtmrMemIndex();
 
-	Kaneko16TempGfx = (unsigned char*)CachedMalloc(0x800000);
+	Kaneko16TempGfx = (unsigned char*)malloc(0x800000);
 	
 	// Load and byte-swap 68000 Program roms
 	nRet = BurnLoadRom(Kaneko16Rom + 0x00001, 0, 2); if (nRet != 0) return 1;
@@ -3507,7 +3506,7 @@ int Gtmr2Init()
 	nRet = BurnLoadRom(Kaneko16TempGfx + 0x400001, 11, 2); if (nRet != 0) return 1;
 	UnscrambleTiles(0x440000);
 	Kaneko16Decode4BppGfx(Kaneko16Tiles, Kaneko16NumTiles);
-	CachedFree(Kaneko16TempGfx);
+	free(Kaneko16TempGfx);
 	memcpy(Kaneko16Tiles2, Kaneko16Tiles, Kaneko16NumTiles * 16 * 16);
 
 	// Load Sample Rom
@@ -3706,12 +3705,12 @@ int Kaneko16Exit()
 	
 	if (Kaneko16Sprites != NULL)
 	{
-		CachedFree(Kaneko16Sprites);
+		free(Kaneko16Sprites);
 		Kaneko16Sprites = NULL;
 	}
 	if (Kaneko16Tiles != NULL)
 	{
-		CachedFree(Kaneko16Tiles);
+		free(Kaneko16Tiles);
 		Kaneko16Tiles = NULL;
 	}
 	

@@ -37,7 +37,7 @@ int CpsObjInit()
 	nFrameCount = 2;			// CPS2 sprites lagged by 1 frame and double buffered
 								// CPS1 sprites lagged by 1 frame
 
-	ObjMem = (unsigned char*)BurnMalloc((nMax << 3) * nFrameCount);
+	ObjMem = (unsigned char*)malloc((nMax << 3) * nFrameCount);
 	if (ObjMem == NULL) {
 		return 1;
 	}
@@ -66,7 +66,7 @@ int CpsObjExit()
 		of[i].nCount = 0;
 	}
 
-	BurnFree(ObjMem);
+	free(ObjMem);
 	ObjMem = NULL;
 
 	nFrameCount = 0;

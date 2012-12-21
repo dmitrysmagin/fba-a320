@@ -108,6 +108,7 @@ void show_rom_loading_text(char * szText, int nSize, int nTotalSize)
 	//if (config_options.option_rescale<3) memcpy (VideoBuffer, titlefb, fwidth*fheight*2); else memcpy (VideoBuffer, titlefb, pwidth*fwidth*2);
 	memcpy (VideoBuffer,titlefb, 320*240*2 /*fwidth*fheight*2*/);
 	VideoFlip();
+
 }
 
 void show_rom_error_text(char * szText)
@@ -171,7 +172,6 @@ void shutdown()
 	DrvExit();
 
 	BurnLibExit();
-	DestroyMemPool();
 
 	if (config_options.option_sound_enable)
 		SndExit();
@@ -271,7 +271,6 @@ void run_fba_emulator(const char *fn)
 	}
 
 	printf("about to burnlibinit()\n");
-	InitMemPool();
 	BurnLibInit();
 	printf("completed burnlibinit()\n");
 
@@ -283,7 +282,7 @@ void run_fba_emulator(const char *fn)
 	char *p;
 	if (BurnCacheInit(fn, romname))
 		goto finish;
-/*
+
 	strcpy(szAppRomPaths[0], fn);
 	p = strrchr(szAppRomPaths[0], '/');
 	if (p) {
@@ -301,7 +300,7 @@ void run_fba_emulator(const char *fn)
 		// error
 		goto finish;
 	}
-*/
+
 	// find rom by name
 	for (nBurnDrvSelect=0; nBurnDrvSelect<nBurnDrvCount; nBurnDrvSelect++)
 	{

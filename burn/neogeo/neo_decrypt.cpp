@@ -572,7 +572,7 @@ void NeoGfxDecryptCMC50Init()
 void svcpcb_gfx_decrypt(unsigned char* rom)
 {
 	const unsigned char xor1[4] = {0x34, 0x21, 0xc4, 0xe9};
-	unsigned char *buf = (unsigned char*)BurnMalloc(0x800000);
+	unsigned char *buf = (unsigned char*)malloc(0x800000);
 
 	for (int i = 0; i < 4; i++) {
 		int ofst;
@@ -596,7 +596,7 @@ void svcpcb_gfx_decrypt(unsigned char* rom)
 			memcpy(&gfxrom[j * 4], &buf[ofst * 4], 0x04);
 		}
 	}
-	BurnFree(buf);
+	free(buf);
 }
 
 void kf2k3pcb_gfx_decrypt(unsigned char *rom)
@@ -604,7 +604,7 @@ void kf2k3pcb_gfx_decrypt(unsigned char *rom)
 	NeoGfxDecryptCMC50Init();
 
 	int i;
-	unsigned char *buf = (unsigned char*)BurnMalloc(0x6000000);
+	unsigned char *buf = (unsigned char*)malloc(0x6000000);
 	
 	// PCB protection
 	for (i = 0; i < 0x6000000; i+=4) {
@@ -640,5 +640,5 @@ void kf2k3pcb_gfx_decrypt(unsigned char *rom)
 		memcpy(rom + i * 4, buf + baser * 4, 4);
 	}
 
-	BurnFree(buf);
+	free(buf);
 }

@@ -2,7 +2,6 @@
 #include "psikyo.h"
 #include "burn_ym2610.h"
 #include "burn_ymf278b.h"
-#include "cache.h"
 
 // #undef USE_SPEEDHACKS
 
@@ -1249,13 +1248,13 @@ static int DrvExit()
 	free(Mem);
 	Mem = NULL;
 
-	CachedFree(PsikyoSpriteROM);
+	free(PsikyoSpriteROM);
 	PsikyoSpriteROM = NULL;
-	CachedFree(PsikyoTileROM);
+	free(PsikyoTileROM);
 	PsikyoTileROM = NULL;
-	CachedFree(PsikyoSampleROM01);
+	free(PsikyoSampleROM01);
 	PsikyoSampleROM01 = NULL;
-	CachedFree(PsikyoSampleROM02);
+	free(PsikyoSampleROM02);
 	PsikyoSampleROM02 = NULL;
 	return 0;
 }
@@ -1810,32 +1809,32 @@ static int DrvInit()
 	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) {
 		return 1;
 	}
-	PsikyoSpriteROM		= (unsigned char *)CachedMalloc(PsikyoSpriteROMSize);
-	PsikyoTileROM		= (unsigned char *)CachedMalloc(PsikyoTileROMSize);
-	PsikyoSampleROM01	= (unsigned char *)CachedMalloc(PsikyoSampleROM01Size);
-	PsikyoSampleROM02	= (unsigned char *)CachedMalloc(PsikyoSampleROM02Size);
+	PsikyoSpriteROM		= malloc(PsikyoSpriteROMSize);
+	PsikyoTileROM		= malloc(PsikyoTileROMSize);
+	PsikyoSampleROM01	= malloc(PsikyoSampleROM01Size);
+	PsikyoSampleROM02	= malloc(PsikyoSampleROM02Size);
 	if (PsikyoSpriteROM == NULL || PsikyoTileROM == NULL || PsikyoSampleROM01 == NULL || PsikyoSampleROM02 == NULL)
 	{
 		free(Mem);
 		Mem = NULL;
 		if (PsikyoSpriteROM)
 		{
-			CachedFree(PsikyoSpriteROM);
+			free(PsikyoSpriteROM);
 			PsikyoSpriteROM = NULL;
 		}
 		if (PsikyoTileROM)
 		{
-			CachedFree(PsikyoTileROM);
+			free(PsikyoTileROM);
 			PsikyoTileROM = NULL;
 		}
 		if (PsikyoSampleROM01)
 		{
-			CachedFree(PsikyoSampleROM01);
+			free(PsikyoSampleROM01);
 			PsikyoSampleROM01 = NULL;
 		}
 		if (PsikyoSampleROM02)
 		{
-			CachedFree(PsikyoSampleROM02);
+			free(PsikyoSampleROM02);
 			PsikyoSampleROM02 = NULL;
 		}
 		return 1;

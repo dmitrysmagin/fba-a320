@@ -1,7 +1,6 @@
 // Fever SOS / Dangun Feveron
 #include "cave.h"
 #include "ymz280b.h"
-#include "cache.h"
 
 #define CAVE_VBLANK_LINES 12
 
@@ -250,7 +249,7 @@ static int DrvExit()
 
 	if (CaveSpriteROM != NULL)
 	{
-		CachedFree(CaveSpriteROM);
+		free(CaveSpriteROM);
 		CaveSpriteROM = NULL;
 	}
 
@@ -419,7 +418,7 @@ static int MemIndex()
 	MemEnd			= Next;
 
 	if (CaveSpriteROM == NULL)
-		CaveSpriteROM = (unsigned char*)CachedMalloc(0x1000000);
+		CaveSpriteROM = (unsigned char*)malloc(0x1000000);
 	return 0;
 }
 

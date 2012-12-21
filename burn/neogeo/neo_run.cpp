@@ -295,7 +295,7 @@ static inline bool NeoCheckAESBIOS()
 void kof2003biosdecode()
 {
 	unsigned short *pTemp = (unsigned short*)Neo68KBIOS;
-	unsigned short *pData = (unsigned short*)BurnMalloc(0x80000);
+	unsigned short *pData = (unsigned short*)malloc(0x80000);
 
 	for (int i = 0; i < 0x80000 / 2; i++) {
 		int j = (i ^ (0xA0 ^ ((i & 4) << 5)));
@@ -315,7 +315,7 @@ void kof2003biosdecode()
 
 	memcpy (pTemp, pData, 0x80000);
 
-	BurnFree(pData);
+	free(pData);
 }
 static void install_BIOS_memory_patch()
 {
@@ -486,11 +486,11 @@ static int FindROMs(unsigned int nType, int* pOffset, int* pNum)
 
 static int LoadRoms(NeoGameInfo* pInfo)
 {
-//	NeoSpriteROM = (unsigned char*)BurnMalloc(nSpriteSize);
+//	NeoSpriteROM = (unsigned char*)malloc(nSpriteSize);
 unsigned int nSpriteROMSize = nSpriteSize < (nNeoTileMask << 7) ? ((nNeoTileMask + 1) << 7) : nSpriteSize;
 	if (nSpriteROMSize > 0x1600000)
 		return 1;
-	NeoSpriteROM = (unsigned char*)CachedMalloc(nSpriteROMSize);
+	NeoSpriteROM = (unsigned char*)malloc(nSpriteROMSize);
 	if (NeoSpriteROM == NULL) {
 		return 1;
 	}
@@ -508,7 +508,7 @@ unsigned int nSpriteROMSize = nSpriteSize < (nNeoTileMask << 7) ? ((nNeoTileMask
 	// Load sprite data
 	NeoLoadSprites(pInfo->nSpriteOffset, pInfo->nSpriteNum, NeoSpriteROM, nSpriteSize);
 
-	NeoTextROM = (unsigned char*)BurnMalloc(nNeoTextROMSize + 0x020000);
+	NeoTextROM = (unsigned char*)malloc(nNeoTextROMSize + 0x020000);
 	if (NeoTextROM == NULL) {
 		return 1;
 	}
@@ -534,7 +534,7 @@ unsigned int nSpriteROMSize = nSpriteSize < (nNeoTileMask << 7) ? ((nNeoTileMask
 
 		ROMIndex();													// Get amount of memory needed
 		nLen = ROMEnd - (unsigned char*)0;
-		if ((AllROM = (unsigned char*)BurnMalloc(nLen)) == NULL) {		// Allocate memory
+		if ((AllROM = (unsigned char*)malloc(nLen)) == NULL) {		// Allocate memory
 			return 1;
 		}
 		memset(AllROM, 0, nLen);									// Initialise memory
@@ -547,7 +547,7 @@ unsigned int nSpriteROMSize = nSpriteSize < (nNeoTileMask << 7) ? ((nNeoTileMask
 		NeoLoadCode(pInfo->nCodeOffset + 1, pInfo->nCodeNum - 1, Neo68KROM + 0x100000);
 	} else {
 		if (BurnDrvGetHardwareCode() & HARDWARE_SNK_P32) {
-			unsigned char* pTemp = (unsigned char*)BurnMalloc(0x800000);
+			unsigned char* pTemp = (unsigned char*)malloc(0x800000);
 			if (pTemp == NULL) return 1;
 			
 			BurnLoadRom(pTemp, 0, 1);
@@ -558,7 +558,7 @@ unsigned int nSpriteROMSize = nSpriteSize < (nNeoTileMask << 7) ? ((nNeoTileMask
 				((unsigned short*)Neo68KROM)[2 * i + 1] = ((unsigned short*)pTemp)[0x200000 + i];
 			}
 
-			BurnFree(pTemp);
+			free(pTemp);
 			
 			if (!strcmp(BurnDrvGetTextA(DRV_NAME), "kof2003")) {
 				BurnLoadRom(Neo68KROM + 0x800000, 2, 1);
@@ -575,7 +575,7 @@ unsigned int nSpriteROMSize = nSpriteSize < (nNeoTileMask << 7) ? ((nNeoTileMask
 		struct BurnRomInfo ri;
 		unsigned char* pADPCMData;
 
-		YM2610ADPCMAROM	= (unsigned char*)BurnMalloc(nYM2610ADPCMASize);
+		YM2610ADPCMAROM	= (unsigned char*)malloc(nYM2610ADPCMASize);
 		if (YM2610ADPCMAROM == NULL) {
 			return 1;
 		}
@@ -604,7 +604,7 @@ unsigned int nSpriteROMSize = nSpriteSize < (nNeoTileMask << 7) ? ((nNeoTileMask
 	}
 	
 	if (pInfo->nADPCMBNum) {
-		YM2610ADPCMBROM	= (unsigned char*)BurnMalloc(nYM2610ADPCMBSize);
+		YM2610ADPCMBROM	= (unsigned char*)malloc(nYM2610ADPCMBSize);
 		if (YM2610ADPCMBROM == NULL) {
 			return 1;
 		}
@@ -2131,7 +2131,7 @@ int NeoInit()
 		AllROM = 0;
 		ROMIndex();													// Get amount of memory needed
 		int nLen = ROMEnd - (unsigned char*)0;
-		if ((AllROM = (unsigned char*)BurnMalloc(nLen)) == NULL) {		// Allocate memory
+		if ((AllROM = (unsigned char*)malloc(nLen)) == NULL) {		// Allocate memory
 			return 1;
 		}
 		ROMIndex();	
@@ -2142,12 +2142,12 @@ int NeoInit()
 		
 		if (nYM2610ADPCMASize)
 		{
-			YM2610ADPCMAROM = (unsigned char *)CachedMalloc(nYM2610ADPCMASize);
+			YM2610ADPCMAROM = (unsigned char *)malloc(nYM2610ADPCMASize);
 			BurnCacheRead(YM2610ADPCMAROM, 3);			
 		}
 		if (nYM2610ADPCMBSize)
 		{
-			YM2610ADPCMAROM = (unsigned char *)CachedMalloc(nYM2610ADPCMBSize);
+			YM2610ADPCMAROM = (unsigned char *)malloc(nYM2610ADPCMBSize);
 			BurnCacheRead(YM2610ADPCMAROM, 4);			
 		}
 		//YM2610ADPCMAROM	= (unsigned char *)BurnCacheMap(3);
@@ -2171,7 +2171,7 @@ int NeoInit()
 
 		RAMIndex();													// Get amount of memory needed
 		nLen = RAMEnd - (unsigned char*)0;
-		if ((AllRAM = (unsigned char*)BurnMalloc(nLen)) == NULL) {		// Allocate memory
+		if ((AllRAM = (unsigned char*)malloc(nLen)) == NULL) {		// Allocate memory
 			return 1;
 		}
 		memset(AllRAM, 0, nLen);									// Initialise memory
@@ -2371,33 +2371,33 @@ int NeoExit()
 
 	// Deallocate all used memory
 	if ( !bBurnUseRomCache )
-	BurnFree(NeoTextROM);						// Text ROM
+	free(NeoTextROM);						// Text ROM
 	NeoTextROM = NULL;
 	if ( !bBurnUseRomCache )
-		CachedFree(NeoSpriteROM);						// Sprite ROM
+		free(NeoSpriteROM);						// Sprite ROM
 	NeoSpriteROM = NULL;
 
 	if (nYM2610ADPCMASize) {				// ADPCM data
 		if ( !bBurnUseRomCache )
-			BurnFree(YM2610ADPCMAROM);
+			free(YM2610ADPCMAROM);
 		else
-			CachedFree(YM2610ADPCMAROM);
+			free(YM2610ADPCMAROM);
 	}
 	if (YM2610ADPCMBROM != YM2610ADPCMAROM) {
 		if ( !bBurnUseRomCache )
-			BurnFree(YM2610ADPCMBROM);
+			free(YM2610ADPCMBROM);
 		else
-			CachedFree(YM2610ADPCMAROM);
+			free(YM2610ADPCMAROM);
 	}
 	YM2610ADPCMAROM = NULL;
 	YM2610ADPCMBROM = NULL;
 
 	Neo68KROM = NULL;						// 68000 ROM
 
-	BurnFree(AllROM);							// Misc ROM
+	free(AllROM);							// Misc ROM
 	AllROM = NULL;
 
-	BurnFree(AllRAM);							// Misc RAM
+	free(AllRAM);							// Misc RAM
 	AllRAM = NULL;
 
 	nNeoSRAMProtection = -1;

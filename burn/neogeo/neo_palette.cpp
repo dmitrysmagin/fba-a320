@@ -13,10 +13,10 @@ unsigned char NeoRecalcPalette;
 int NeoInitPalette()
 {
 	for (int i = 0; i < 2; i++) {
-		BurnFree(NeoPaletteData[i]);
-		BurnFree(NeoPaletteCopy[i]);
-		NeoPaletteData[i] = (unsigned int*)BurnMalloc(4096 * sizeof(int));
-		NeoPaletteCopy[i] = (unsigned short*)BurnMalloc(4096 * sizeof(short));
+		free(NeoPaletteData[i]);
+		free(NeoPaletteCopy[i]);
+		NeoPaletteData[i] = (unsigned int*)malloc(4096 * sizeof(int));
+		NeoPaletteCopy[i] = (unsigned short*)malloc(4096 * sizeof(short));
 	}
 
 	NeoRecalcPalette = 1;
@@ -27,8 +27,8 @@ int NeoInitPalette()
 void NeoExitPalette()
 {
 	for (int i = 0; i < 2; i++) {
-		BurnFree(NeoPaletteData[i]);
-		BurnFree(NeoPaletteCopy[i]);
+		free(NeoPaletteData[i]);
+		free(NeoPaletteCopy[i]);
 		NeoPaletteData[i] = NULL;
 		NeoPaletteCopy[i] = NULL;
 	}

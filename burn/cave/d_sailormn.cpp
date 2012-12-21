@@ -2,7 +2,6 @@
 #include "cave.h"
 #include "msm6295.h"
 #include "burn_ym2151.h"
-#include "cache.h"
 
 #include "bitswap.h"
 
@@ -486,25 +485,25 @@ static int DrvExit()
 
 	if (MSM6295ROM)
 	{
-		CachedFree(MSM6295ROM);
+		free(MSM6295ROM);
 		MSM6295ROM = NULL;
 	}
 	if (nWhichGame)
 	{
 		if (CaveSpriteROM != NULL)
 		{
-			CachedFree(CaveSpriteROM);
+			free(CaveSpriteROM);
 			CaveSpriteROM = NULL;
 		}
 		if (CaveTileROM[0] != NULL)
 		{
-			CachedFree(CaveTileROM[0]);
+			free(CaveTileROM[0]);
 			CaveTileROM[0] = NULL;
 		}
 	
 		if (CaveTileROM[1] != NULL)
 		{
-			CachedFree(CaveTileROM[1]);
+			free(CaveTileROM[1]);
 			CaveTileROM[1] = NULL;
 		}
 	}
@@ -512,7 +511,7 @@ static int DrvExit()
 	{
 		if (CaveTileROM[2] != NULL)
 		{
-			CachedFree(CaveTileROM[2]);
+			free(CaveTileROM[2]);
 			CaveTileROM[2] = NULL;
 		}
 	}
@@ -724,17 +723,17 @@ static int MemIndex()
 	RomZ80			= Next; Next += 0x080000;
 	if (nWhichGame) {
 		if (CaveTileROM[0] == NULL)
-			CaveTileROM[0] = (unsigned char*)CachedMalloc(0x400000);
+			CaveTileROM[0] = (unsigned char*)malloc(0x400000);
 		if (CaveTileROM[1] == NULL)
-			CaveTileROM[1] = (unsigned char*)CachedMalloc(0x400000);
+			CaveTileROM[1] = (unsigned char*)malloc(0x400000);
 		CaveTileROM[2]	= Next; Next += 0x400000;		// Tile layer 2 (agallet)
 		if (CaveSpriteROM == NULL)
-			CaveSpriteROM = (unsigned char*)CachedMalloc(0x800000);
+			CaveSpriteROM = (unsigned char*)malloc(0x800000);
 	} else {
 		CaveTileROM[0]	= Next; Next += 0x400000;		// Tile layer 2 (agallet)
 		CaveTileROM[1]	= Next; Next += 0x400000;		// Tile layer 2 (agallet)
 		if (CaveTileROM[2] == NULL)
-			CaveTileROM[2]	= (unsigned char*)CachedMalloc(0x01400000);		// Tile layer 2 (Sailor Moon)
+			CaveTileROM[2]	= (unsigned char*)malloc(0x01400000);		// Tile layer 2 (Sailor Moon)
 		CaveSpriteROM	= Next; Next += 0x800000;		// Tile layer 2 (agallet)
 	}
 	RamStart		= Next;
@@ -790,13 +789,13 @@ static int sailormnLoadRoms()
 	// Load Z80 ROM
 	BurnLoadRom(RomZ80, 2, 1);
 
-	pTemp = (unsigned char*)CachedMalloc(0x400000);
+	pTemp = (unsigned char*)malloc(0x400000);
 	BurnLoadRom(pTemp + 0x000000, 3, 1);
 	BurnLoadRom(pTemp + 0x200000, 4, 1);
 	for (int i = 0; i < 0x400000; i++) {
 		CaveSpriteROM[i ^ 0x950C4] = pTemp[BITSWAP24(i, 23, 22, 21, 20, 15, 10, 12, 6, 11, 1, 13, 3, 16, 17, 2, 5, 14, 7, 18, 8, 4, 19, 9, 0)];
 	}
-	CachedFree(pTemp);
+	free(pTemp);
 	sailormnDecodeSprites(CaveSpriteROM, 0x400000);
 
 	BurnLoadRom(CaveTileROM[0], 5, 1);
@@ -810,7 +809,7 @@ static int sailormnLoadRoms()
 	BurnLoadRom(CaveTileROM[2] + 0x800000, 11, 1);
 	sailormnDecodeTiles(CaveTileROM[2], 0xA00000);
 
-	pTemp = (unsigned char*)CachedMalloc(0x600000);
+	pTemp = (unsigned char*)malloc(0x600000);
 	BurnLoadRom(pTemp + 0x000000, 12, 1);
 	BurnLoadRom(pTemp + 0x200000, 13, 1);
 	BurnLoadRom(pTemp + 0x400000, 14, 1);
@@ -820,9 +819,9 @@ static int sailormnLoadRoms()
 		CaveTileROM[2][(i << 2) + 2] |= (pTemp[i] & 0x30);
 		CaveTileROM[2][(i << 2) + 3] |= (pTemp[i] & 0xC0) >> 2;
 	}
-	CachedFree(pTemp);
+	free(pTemp);
 
-	MSM6295ROM		= (unsigned char*)CachedMalloc(0x400000);		// MSM6295 ADPCM data
+	MSM6295ROM		= (unsigned char*)malloc(0x400000);		// MSM6295 ADPCM data
 	// Load OKIM6295 data
 	BurnLoadRom(MSM6295ROM + 0x0000000, 15, 1);
 	BurnLoadRom(MSM6295ROM + 0x0200000, 16, 1);
@@ -852,7 +851,7 @@ static int agalletLoadRoms()
 	BurnLoadRom(CaveTileROM[2], 6, 1);
 	sailormnDecodeTiles(CaveTileROM[2], 0x200000);
 
-	unsigned char* pTemp = (unsigned char*)CachedMalloc(0x200000);
+	unsigned char* pTemp = (unsigned char*)malloc(0x200000);
 	BurnLoadRom(pTemp, 7, 1);
 	for (int i = 0; i < 0x0100000; i++) {
 		CaveTileROM[2][(i << 2) + 0] |= (pTemp[i] & 0x03) << 4;
@@ -860,9 +859,9 @@ static int agalletLoadRoms()
 		CaveTileROM[2][(i << 2) + 2] |= (pTemp[i] & 0x30);
 		CaveTileROM[2][(i << 2) + 3] |= (pTemp[i] & 0xC0) >> 2;
 	}
-	CachedFree(pTemp);
+	free(pTemp);
 
-	MSM6295ROM		= (unsigned char*)CachedMalloc(0x400000);		// MSM6295 ADPCM data
+	MSM6295ROM		= (unsigned char*)malloc(0x400000);		// MSM6295 ADPCM data
 	// Load OKIM6295 data
 	BurnLoadRom(MSM6295ROM + 0x0000000, 8, 1);
 	BurnLoadRom(MSM6295ROM + 0x0200000, 9, 1);

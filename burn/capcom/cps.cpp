@@ -63,13 +63,13 @@ static int LoadUp(unsigned char** pRom, int* pnRomLen, int nNum)
 	}
 
 	// Load the rom
-	Rom = (unsigned char*)BurnMalloc(ri.nLen);
+	Rom = (unsigned char*)malloc(ri.nLen);
 	if (Rom == NULL) {
 		return 1;
 	}
 
 	if (BurnLoadRom(Rom,nNum,1)) {
-		BurnFree(Rom);
+		free(Rom);
 		return 1;
 	}
 
@@ -109,7 +109,7 @@ static int CpsLoadOne(unsigned char* Tile, int nNum, int nWord, int nShift)
 		*((unsigned int *)pt) |= Pix;
 	}
 
-	BurnFree(Rom);
+	free(Rom);
 	return 0;
 }
 
@@ -153,8 +153,8 @@ static int CpsLoadOneHack160(unsigned char *Tile, int nNum, int nWord, int nOffs
 		*((unsigned int *)pt) |= Pix;
 	}
 
-	BurnFree(Rom2);
-	BurnFree(Rom1);
+	free(Rom2);
+	free(Rom1);
 	return 0;
 }
 
@@ -183,7 +183,7 @@ static int CpsLoadOnePang(unsigned char *Tile,int nNum,int nWord,int nShift)
 		*((unsigned int *)pt) |= Pix;
 	}
 
-	BurnFree(Rom);
+	free(Rom);
 	return 0;
 }
 
@@ -237,8 +237,8 @@ int CpsLoadStars(unsigned char* pStar, int nStart)
 
 	for (int i = 0; i < 2; i++) {
 		if (LoadUp(&pTemp[i], &nLen, nStart + (i << 1))) {
-			BurnFree(pTemp[0]);
-			BurnFree(pTemp[1]);
+			free(pTemp[0]);
+			free(pTemp[1]);
 		}
 	}
 
@@ -247,8 +247,8 @@ int CpsLoadStars(unsigned char* pStar, int nStart)
 		pStar[0x01000 + i] = pTemp[1][i << 1];
 	}
 
-	BurnFree(pTemp[0]);
-	BurnFree(pTemp[1]);
+	free(pTemp[0]);
+	free(pTemp[1]);
 
 	return 0;
 }
@@ -301,10 +301,10 @@ static int Cps2LoadOne(unsigned char* Tile, int nNum, int nWord, int nShift)
 		}
 
 		nRomLen <<= 1;
-		Rom = (unsigned char*)BurnMalloc(nRomLen);
+		Rom = (unsigned char*)malloc(nRomLen);
 		if (Rom == NULL) {
-			BurnFree(Rom2);
-			BurnFree(Rom3);
+			free(Rom2);
+			free(Rom3);
 			return 1;
 		}
 
@@ -313,8 +313,8 @@ static int Cps2LoadOne(unsigned char* Tile, int nNum, int nWord, int nShift)
 			Rom[(i << 1) + 1] = Rom2[i];
 		}
 
-		BurnFree(Rom2);
-		BurnFree(Rom3);
+		free(Rom2);
+		free(Rom3);
 	}
 
 	// Go through each section
@@ -325,7 +325,7 @@ static int Cps2LoadOne(unsigned char* Tile, int nNum, int nWord, int nShift)
 		pr += 0x80000;
 	}
 
-	BurnFree(Rom);
+	free(Rom);
 
 	return 0;
 }
@@ -566,11 +566,11 @@ int CpsInit()
 	{
 		if (nCpsGfxLen <= 0x1600000)
 		{
-			CpsGfx = (unsigned char*)CachedMalloc(nCpsGfxLen);
+			CpsGfx = (unsigned char*)malloc(nCpsGfxLen);
 			memset(CpsGfx, 0, nCpsGfxLen);
 			UpperReserved = 1;
 			nMemLen -= nCpsGfxLen;
-			CpsRom = (unsigned char*)BurnMalloc(nMemLen);		
+			CpsRom = (unsigned char*)malloc(nMemLen);		
 			if (CpsRom == NULL) {
 				return 1;
 			}
@@ -587,18 +587,18 @@ int CpsInit()
 		}
 		else
 		{
-			CpsGfxSeg[0]=(unsigned char*)CachedMalloc(0x1000000);
+			CpsGfxSeg[0]=(unsigned char*)malloc(0x1000000);
 			if (CpsGfxSeg[0] == NULL)
 				return 1;
-			CpsQSam = (char *)CachedMalloc(nCpsQSamLen);
+			CpsQSam = (char *)malloc(nCpsQSamLen);
 			if (CpsQSam == NULL)
 				return 1;
-			CpsGfxSeg[1]=(unsigned char*)BurnMalloc(nCpsGfxLen-0x1000000);
+			CpsGfxSeg[1]=(unsigned char*)malloc(nCpsGfxLen-0x1000000);
 			if (CpsGfxSeg[1] == NULL)
 				return 1;
 			memset(CpsGfxSeg[1], 0, nCpsGfxLen-0x1000000);
 			nMemLen -= nCpsGfxLen+nCpsQSamLen;
-			CpsRom = (unsigned char*)BurnMalloc(nMemLen);		
+			CpsRom = (unsigned char*)malloc(nMemLen);		
 			if (CpsRom == NULL) {
 				return 1;
 			}
@@ -613,7 +613,7 @@ int CpsInit()
 	else
 	{
 		// Allocate Gfx, Rom and Z80 Roms
-		CpsGfx = (unsigned char*)BurnMalloc(nMemLen);
+		CpsGfx = (unsigned char*)malloc(nMemLen);
 		if (CpsGfx == NULL) {
 			return 1;
 		}
@@ -721,19 +721,19 @@ int CpsExit()
 	switch(UpperReserved)
 	{
 		case 0:
-			BurnFree(CpsGfx);
+			free(CpsGfx);
 		break;
 		case 1:
-		BurnFree(CpsRom);
+		free(CpsRom);
 		CpsRom = NULL;
-		CachedFree(CpsGfx);
+		free(CpsGfx);
 		break;
 		case 2:
-		BurnFree(CpsRom);
+		free(CpsRom);
 		CpsRom = NULL;
-		BurnFree(CpsGfxSeg[1]);
-		CachedFree(CpsGfxSeg[0]);
-		CachedFree(CpsQSam);
+		free(CpsGfxSeg[1]);
+		free(CpsGfxSeg[0]);
+		free(CpsQSam);
 		break;
 	}
 	CpsRom = NULL;
