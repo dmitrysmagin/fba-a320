@@ -99,7 +99,7 @@ int NeoRenderSprites()
 int NeoInitSprites()
 {
 	// Create a table that indicates if a tile is transparent
-	NeoTileAttrib = (unsigned char*)malloc(nNeoTileMask + 1);
+	NeoTileAttrib = (unsigned char*)BurnMalloc(nNeoTileMask + 1);
 	if ( bBurnUseRomCache ) {
 		BurnCacheRead(NeoTileAttrib, 5);
 	} else {
@@ -128,6 +128,6 @@ int NeoInitSprites()
 
 void NeoExitSprites()
 {
-	free(NeoTileAttrib);
+	BurnFree(NeoTileAttrib);
 }
 

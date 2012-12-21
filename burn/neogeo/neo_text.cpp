@@ -177,7 +177,7 @@ void NeoUpdateTextOne(int nOffset, const unsigned char byteValue)
 
 void NeoExitText()
 {
-	free(NeoTextTileAttrib);
+	BurnFree(NeoTextTileAttrib);
 	NeoTextTileAttrib = NULL;
 }
 
@@ -185,8 +185,8 @@ int NeoInitText()
 {
 	int nTileNum = (0x020000 + nNeoTextROMSize) >> 5;
 
-	free(NeoTextTileAttrib);
-	NeoTextTileAttrib = (char*)malloc((nTileNum < 0x2000) ? 0x2000 : nTileNum);
+	BurnFree(NeoTextTileAttrib);
+	NeoTextTileAttrib = (char*)BurnMalloc((nTileNum < 0x2000) ? 0x2000 : nTileNum);
 
 	if (nNeoScreenWidth == 304) {
 		nMinX = 1;

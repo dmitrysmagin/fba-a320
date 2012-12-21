@@ -2,6 +2,7 @@
 #include "cave.h"
 #include "burn_ym2151.h"
 #include "msm6295.h"
+#include "cache.h"
 
 #define CAVE_VBLANK_LINES 12
 
@@ -547,7 +548,7 @@ static int MemIndex()
 	MemEnd			= Next;
 
 	if (CaveSpriteROM == NULL)
-		CaveSpriteROM = (unsigned char *)malloc(0x1000000);
+		CaveSpriteROM = (unsigned char *)CachedMalloc(0x1000000);
 	return 0;
 }
 

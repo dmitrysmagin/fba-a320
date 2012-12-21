@@ -120,6 +120,7 @@ the decryption keys.
 #if 1
 #include "cps.h"
 #include "bitswap.h"
+#include "cache.h"
 
 #define BIT(x,n) (((x)>>(n))&1)
 #define BITSWAP8(a, b, c, d, e, f, g, h, i) BITSWAP08(a, b, c, d, e, f, g, h, i)
@@ -662,7 +663,7 @@ static void cps2_decrypt(const UINT32 *master_key, unsigned int upper_limit)
 #if 1
 	UINT16 *rom = (UINT16 *)CpsRom;
 	unsigned int length = upper_limit;
-	CpsCode = (UINT8*)malloc(length);
+	CpsCode = (UINT8*)CachedMalloc(length);
 	UINT16 *dec = (UINT16*)CpsCode;
 	unsigned int i;
 #endif

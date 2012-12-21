@@ -79,7 +79,7 @@ int CpsPalInit()
 	int nLen = 0;
 
 	nLen = 0x1000 * sizeof(short);
-	CpsPalSrc = (unsigned char*)malloc(nLen);
+	CpsPalSrc = (unsigned char*)BurnMalloc(nLen);
 	if (CpsPalSrc == NULL) {
 		return 1;
 	}
@@ -87,7 +87,7 @@ int CpsPalInit()
 
 	// The star layer palettes are at the end of the normal palette, so double the size
 	nLen = 0x1000 * sizeof(int);
-	CpsPal = (unsigned int*)malloc(nLen);
+	CpsPal = (unsigned int*)BurnMalloc(nLen);
 	if (CpsPal == NULL) {
 		return 1;
 	}
@@ -111,11 +111,11 @@ int CpsPalInit()
 int CpsPalExit()
 {
 	if (CpsPal) {
-		free(CpsPal);
+		BurnFree(CpsPal);
 		CpsPal = NULL;
 	}
 	if (CpsPalSrc) {
-		free(CpsPalSrc);
+		BurnFree(CpsPalSrc);
 		CpsPalSrc = NULL;
 	}
 	return 0;
