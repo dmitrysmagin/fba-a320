@@ -863,15 +863,15 @@ int CaveTileRender(int nMode)
 void CaveTileExit()
 {
 	for (int nLayer = 0; nLayer < 4; nLayer++) {
-		free(CaveTileAttrib[nLayer]);
+		BurnFree(CaveTileAttrib[nLayer]);
 		CaveTileAttrib[nLayer] = NULL;
 
-		free(CaveTileQueueMemory[nLayer]);
+		BurnFree(CaveTileQueueMemory[nLayer]);
 		CaveTileQueueMemory[nLayer] = NULL;
 
-		free(pRowScroll[nLayer]);
+		BurnFree(pRowScroll[nLayer]);
 		pRowScroll[nLayer] = NULL;
-		free(pRowSelect[nLayer]);
+		BurnFree(pRowSelect[nLayer]);
 		pRowSelect[nLayer] = NULL;
 	}
 
@@ -912,8 +912,8 @@ int CaveTileInitLayer(int nLayer, int nROMSize, int nBitdepth, int nOffset)
 	for (nTileMask[nLayer] = 1; nTileMask[nLayer] < nNumTiles; nTileMask[nLayer] <<= 1) { }
 	nTileMask[nLayer]--;
 
-	free(CaveTileAttrib[nLayer]);
-	CaveTileAttrib[nLayer] = (char*)malloc(nTileMask[nLayer] + 1);
+	BurnFree(CaveTileAttrib[nLayer]);
+	CaveTileAttrib[nLayer] = (char*)BurnMalloc(nTileMask[nLayer] + 1);
 	if (CaveTileAttrib[nLayer] == NULL) {
 		return 1;
 	}
@@ -937,19 +937,19 @@ int CaveTileInitLayer(int nLayer, int nROMSize, int nBitdepth, int nOffset)
 		CaveTileAttrib[nLayer][i] = 1;
 	}
 
-	free(CaveTileQueueMemory[nLayer]);
-	CaveTileQueueMemory[nLayer] = (CaveTile*)malloc(4 * 1536 * sizeof(CaveTile));
+	BurnFree(CaveTileQueueMemory[nLayer]);
+	CaveTileQueueMemory[nLayer] = (CaveTile*)BurnMalloc(4 * 1536 * sizeof(CaveTile));
 	if (CaveTileQueueMemory[nLayer] == NULL) {
 		return 1;
 	}
 
-	free(pRowScroll[nLayer]);
-	pRowScroll[nLayer] = (int*)malloc(nCaveYSize * sizeof(int));
+	BurnFree(pRowScroll[nLayer]);
+	pRowScroll[nLayer] = (int*)BurnMalloc(nCaveYSize * sizeof(int));
 	if (pRowScroll[nLayer] == NULL) {
 		return 1;
 	}
-	free(pRowSelect[nLayer]);
-	pRowSelect[nLayer] = (int*)malloc(nCaveYSize * sizeof(int));
+	BurnFree(pRowSelect[nLayer]);
+	pRowSelect[nLayer] = (int*)BurnMalloc(nCaveYSize * sizeof(int));
 	if (pRowSelect[nLayer] == NULL) {
 		return 1;
 	}

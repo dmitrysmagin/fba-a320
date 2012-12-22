@@ -1,7 +1,6 @@
 // Gaia Crusaders
 #include "cave.h"
 #include "ymz280b.h"
-#include "cache.h"
 
 #define CAVE_VBLANK_LINES 12
 
@@ -404,26 +403,8 @@ static int DrvExit()
 	SekExit();				// Deallocate 68000s
 
 	// Deallocate all used memory
-	free(Mem);
+	BurnFree(Mem);
 	Mem = NULL;
-
-	if (CaveSpriteROM != NULL)
-	{
-		CachedFree(CaveSpriteROM);
-		CaveSpriteROM = NULL;
-	}
-
-	if (CaveTileROM[0] != NULL)
-	{
-		CachedFree(CaveTileROM[0]);
-		CaveTileROM[0] = NULL;
-	}
-
-	if (CaveTileROM[1] != NULL)
-	{
-		CachedFree(CaveTileROM[1]);
-		CaveTileROM[1] = NULL;
-	}
 
 	return 0;
 }
@@ -574,6 +555,9 @@ static int MemIndex()
 {
 	unsigned char* Next; Next = Mem;
 	Rom01			= Next; Next += 0x100000;		// 68K program
+	CaveSpriteROM	= Next; Next += 0x1000000;
+	CaveTileROM[0]	= Next; Next += 0x400000;		// Tile layer 0
+	CaveTileROM[1]	= Next; Next += 0x400000;		// Tile layer 1
 	CaveTileROM[2]	= Next; Next += 0x400000;		// Tile layer 2
 	YMZ280BROM		= Next; Next += 0xC00000;
 	RamStart		= Next;
@@ -585,15 +569,6 @@ static int MemIndex()
 	CavePalSrc		= Next; Next += 0x010000;		// palette
 	RamEnd			= Next;
 	MemEnd			= Next;
-
-	if (CaveSpriteROM == NULL)
-		CaveSpriteROM = (unsigned char*)CachedMalloc(0x1000000);
-
-	if (CaveTileROM[0] == NULL)
-		CaveTileROM[0] = (unsigned char*)CachedMalloc(0x400000);
-
-	if (CaveTileROM[1] == NULL)
-		CaveTileROM[1] = (unsigned char*)CachedMalloc(0x400000);
 
 	return 0;
 }
@@ -738,7 +713,7 @@ static int DrvInit()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) {
+	if ((Mem = (unsigned char *)BurnMalloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);										// blank all memory

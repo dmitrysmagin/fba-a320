@@ -8,10 +8,10 @@ static unsigned short* CavePalCopy = NULL;
 
 int CavePalInit(int nPalSize)
 {
-	CavePalette = (unsigned int*)malloc(nPalSize * sizeof(int));
+	CavePalette = (unsigned int*)BurnMalloc(nPalSize * sizeof(int));
 	memset(CavePalette, 0, nPalSize * sizeof(int));
 
-	CavePalCopy = (unsigned short*)malloc(nPalSize * sizeof(short));
+	CavePalCopy = (unsigned short*)BurnMalloc(nPalSize * sizeof(short));
 	memset(CavePalCopy, 0, nPalSize * sizeof(short));
 
 	return 0;
@@ -19,9 +19,9 @@ int CavePalInit(int nPalSize)
 
 int CavePalExit()
 {
-	free(CavePalette);
+	BurnFree(CavePalette);
 	CavePalette = NULL;
-	free(CavePalCopy);
+	BurnFree(CavePalCopy);
 	CavePalCopy = NULL;
 
 	return 0;

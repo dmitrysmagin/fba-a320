@@ -289,7 +289,7 @@ static int DrvExit()
 	DrvOkiBank2 = 0;
 
 	// Deallocate all used memory
-	free(Mem);
+	BurnFree(Mem);
 	Mem = NULL;
 
 	return 0;
@@ -612,7 +612,7 @@ static int DrvInit()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) {
+	if ((Mem = (unsigned char *)BurnMalloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);										// blank all memory

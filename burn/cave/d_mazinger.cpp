@@ -337,7 +337,7 @@ static int DrvExit()
 	DrvOkiBank2 = 0;
 
 	// Deallocate all used memory
-	free(Mem);
+	BurnFree(Mem);
 	Mem = NULL;
 
 	return 0;
@@ -550,25 +550,25 @@ static int LoadRoms()
 	
 	BurnLoadRom(RomZ80, 2, 1);
 
-	unsigned char *pTemp = (unsigned char*)malloc(0x400000);
+	unsigned char *pTemp = (unsigned char*)BurnMalloc(0x400000);
 	BurnLoadRom(pTemp + 0x000000, 3, 1);
 	BurnLoadRom(pTemp + 0x200000, 4, 1);
 	for (int i = 0; i < 0x400000; i++) {
 		CaveSpriteROM[i ^ 0xdf88] = pTemp[BITSWAP24(i,23,22,21,20,19,9,7,3,15,4,17,14,18,2,16,5,11,8,6,13,1,10,12,0)];
 	}
-	free(pTemp);
+	BurnFree(pTemp);
 	NibbleSwap1(CaveSpriteROM, 0x400000);
 
 	BurnLoadRom(CaveTileROM[0], 5, 1);
 	NibbleSwap2(CaveTileROM[0], 0x200000);
 	
-	pTemp = (unsigned char*)malloc(0x200000);
+	pTemp = (unsigned char*)BurnMalloc(0x200000);
 	BurnLoadRom(pTemp, 6, 1);
 	for (int i = 0; i < 0x0100000; i++) {
 		CaveTileROM[1][(i << 1) + 1] = (pTemp[(i << 1) + 0] & 15) | ((pTemp[(i << 1) + 1] & 15) << 4);
 		CaveTileROM[1][(i << 1) + 0] = (pTemp[(i << 1) + 0] >> 4) | (pTemp[(i << 1) + 1] & 240);
 	}
-	free(pTemp);
+	BurnFree(pTemp);
 
 	// Load MSM6295 ADPCM data
 	BurnLoadRom(MSM6295ROMSrc, 7, 1);
@@ -691,7 +691,7 @@ static int DrvInit()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) {
+	if ((Mem = (unsigned char *)BurnMalloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);										// blank all memory

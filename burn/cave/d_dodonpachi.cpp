@@ -1,7 +1,6 @@
 // DoDonpachi
 #include "cave.h"
 #include "ymz280b.h"
-#include "cache.h"
 
 #define CAVE_VBLANK_LINES 12
 
@@ -9,7 +8,7 @@ static unsigned char DrvJoy1[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 static unsigned char DrvJoy2[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 static unsigned short DrvInput[2] = {0x0000, 0x0000};
 
-//static unsigned char *Mem = NULL, *MemEnd = NULL;
+static unsigned char *Mem = NULL, *MemEnd = NULL;
 static unsigned char *RamStart, *RamEnd;
 static unsigned char *Rom01;
 static unsigned char *Ram01;
@@ -256,13 +255,8 @@ static int DrvExit()
 	SekExit();				// Deallocate 68000s
 
 	// Deallocate all used memory
-	free(Rom01);		// 68K program
-	CachedFree(CaveSpriteROM);
-	free(CaveTileROM[0]);		// Tile layer 0
-	free(CaveTileROM[1]);		// Tile layer 1
-	free(CaveTileROM[2]);		// Tile layer 2
-	free(YMZ280BROM);
-	free(RamStart);
+	BurnFree(Mem);
+	Mem = NULL;
 
 	return 0;
 }
@@ -415,27 +409,22 @@ static int DrvFrame()
 // and then afterwards to set up all the pointers
 static int MemIndex()
 {
-	Rom01			= (unsigned char*)malloc(0x100000);		// 68K program
-	memset(Rom01,0,0x100000);
-	CaveSpriteROM	= (unsigned char*)CachedMalloc(0x1000000);
-	memset(CaveSpriteROM,0,0x100000);
-	CaveTileROM[0]	= (unsigned char*)malloc(0x400000);		// Tile layer 0
-	memset(CaveTileROM[0],0,0x400000);
-	CaveTileROM[1]	= (unsigned char*)malloc(0x400000);		// Tile layer 1
-	memset(CaveTileROM[1],0,0x400000);
-	CaveTileROM[2]	= (unsigned char*)malloc(0x200000);		// Tile layer 2
-	memset(CaveTileROM[2],0,0x200000);
-	YMZ280BROM		= (unsigned char*)malloc(0x400000);
-	memset(YMZ280BROM,0,0x400000);
-	RamStart		= (unsigned char*)malloc(0x010000+0x008000+0x008000+0x008000+0x010000+0x010000);
-	memset(RamStart,0,0x010000+0x008000+0x008000+0x008000+0x010000+0x010000);
-	Ram01			= RamStart;		// CPU #0 work RAM
-	CaveTileRAM[0]	= Ram01+0x010000;
-	CaveTileRAM[1]	= CaveTileRAM[0]+0x008000;
-	CaveTileRAM[2]	= CaveTileRAM[1]+0x008000;
-	CaveSpriteRAM	= CaveTileRAM[2]+0x008000;
-	CavePalSrc		= CaveSpriteRAM+0x010000;		// palette
-	RamEnd			= CavePalSrc+0x010000;
+	unsigned char* Next; Next = Mem;
+	Rom01			= Next; Next += 0x100000;		// 68K program
+	CaveSpriteROM	= Next; Next += 0x1000000;
+	CaveTileROM[0]	= Next; Next += 0x400000;		// Tile layer 0
+	CaveTileROM[1]	= Next; Next += 0x400000;		// Tile layer 1
+	CaveTileROM[2]	= Next; Next += 0x200000;		// Tile layer 2
+	YMZ280BROM		= Next; Next += 0x400000;
+	RamStart		= Next;
+	Ram01			= Next; Next += 0x010000;		// CPU #0 work RAM
+	CaveTileRAM[0]	= Next; Next += 0x008000;
+	CaveTileRAM[1]	= Next; Next += 0x008000;
+	CaveTileRAM[2]	= Next; Next += 0x008000;
+	CaveSpriteRAM	= Next; Next += 0x010000;
+	CavePalSrc		= Next; Next += 0x010000;		// palette
+	RamEnd			= Next;
+	MemEnd			= Next;
 
 	return 0;
 }
@@ -471,13 +460,13 @@ static int LoadRoms()
 	BurnLoadRom(CaveTileROM[1], 7, 1);
 	NibbleSwap2(CaveTileROM[1], 0x200000);
 
-	unsigned char* pTemp = (unsigned char*)malloc(0x200000);
+	unsigned char* pTemp = (unsigned char*)BurnMalloc(0x200000);
 	BurnLoadRom(pTemp, 8, 1);
 	for (int i = 0; i < 0x0100000; i++) {
 		CaveTileROM[2][(i << 1) + 1] = (pTemp[(i << 1) + 0] & 15) | ((pTemp[(i << 1) + 1] & 15) << 4);
 		CaveTileROM[2][(i << 1) + 0] = (pTemp[(i << 1) + 0] >> 4) | (pTemp[(i << 1) + 1] & 240);
 	}
-	free(pTemp);
+	BurnFree(pTemp);
 
 	// Load YMZ280B data
 	BurnLoadRom(YMZ280BROM + 0x000000, 9, 1);
@@ -524,10 +513,20 @@ static int DrvScan(int nAction, int *pnMin)
 
 static int DrvInit()
 {
+	int nLen;
+
 	BurnSetRefreshRate(CAVE_REFRESHRATE);
 
 	// Find out how much memory is needed
+	Mem = NULL;
 	MemIndex();
+	nLen = MemEnd - (unsigned char *)0;
+	if ((Mem = (unsigned char *)BurnMalloc(nLen)) == NULL) {
+		return 1;
+	}
+	memset(Mem, 0, nLen);										// blank all memory
+	MemIndex();													// Index the allocated memory
+
 	EEPROMInit(1024, 16);										// EEPROM has 1024 bits, uses 16-bit words
 
 	// Load the roms into memory

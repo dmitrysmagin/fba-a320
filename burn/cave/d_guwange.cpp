@@ -1,10 +1,8 @@
 // Guwange
 #include "cave.h"
 #include "ymz280b.h"
-#include "cache.h"
 
 #define CAVE_VBLANK_LINES 12
-#include "cache.h"
 
 static unsigned char DrvJoy1[16] = {0, };
 static unsigned char DrvJoy2[16] = {0, };
@@ -268,11 +266,8 @@ static int DrvExit()
 	SekExit();				// Deallocate 68000s
 
 	// Deallocate all used memory
-	free(Mem);
+	BurnFree(Mem);
 	Mem = NULL;
-
-	CachedFree(CaveTileROM[0]);
-	CaveTileROM[0] = NULL;
 
 	return 0;
 }
@@ -435,11 +430,8 @@ static int MemIndex()
 {
 	unsigned char* Next; Next = Mem;
 	Rom01			= Next; Next += 0x100000;		// 68K program
-	if ( bBurnUseRomCache == 0 )
-	{
-		CaveSpriteROM	= Next; Next += 0x2000000;
-	}
-//	CaveTileROM[0]	= Next; Next += 0x800000;		// Tile layer 0
+	CaveSpriteROM	= Next; Next += 0x2000000;
+	CaveTileROM[0]	= Next; Next += 0x800000;		// Tile layer 0
 	CaveTileROM[1]	= Next; Next += 0x400000;		// Tile layer 1
 	CaveTileROM[2]	= Next; Next += 0x400000;		// Tile layer 2
 	YMZ280BROM		= Next; Next += 0x400000;
@@ -453,8 +445,6 @@ static int MemIndex()
 	RamEnd			= Next;
 	MemEnd			= Next;
 
-	if (CaveTileROM[0] == NULL)
-		CaveTileROM[0] = (unsigned char*)CachedMalloc(0x800000);
 	return 0;
 }
 
@@ -487,15 +477,6 @@ static void NibbleSwap4(unsigned char* pData, int nLen)
 
 static int LoadRoms()
 {
-	if ( bBurnUseRomCache ) {
-		BurnCacheRead(Rom01, 0);
-		CaveSpriteROM = (unsigned char *)BurnCacheMap(1);
-		BurnCacheRead(CaveTileROM[0], 2);
-		BurnCacheRead(CaveTileROM[1], 3);
-		BurnCacheRead(CaveTileROM[2], 4);
-		BurnCacheRead(YMZ280BROM, 5);
-		return 0;
-	}
 	// Load 68000 ROM
 	BurnLoadRom(Rom01 + 0, 1, 2);
 	BurnLoadRom(Rom01 + 1, 0, 2);
@@ -583,7 +564,7 @@ static int DrvInit()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) {
+	if ((Mem = (unsigned char *)BurnMalloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);										// blank all memory

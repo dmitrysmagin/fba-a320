@@ -3,7 +3,6 @@
 #include "msm6295.h"
 #include "burn_ym2203.h"
 #include "bitswap.h"
-#include "cache.h"
 
 #define CAVE_VBLANK_LINES 12
 
@@ -404,12 +403,9 @@ static int DrvExit()
 	DrvOkiBank2[0] = DrvOkiBank2[1] = DrvOkiBank2[2] = DrvOkiBank2[3] = 0;
 
 	// Deallocate all used memory
-	free(Mem);
+	BurnFree(Mem);
 	Mem = NULL;
 
-	CachedFree(MSM6295ROM);
-	MSM6295ROM = NULL;
-	
 	return 0;
 }
 
@@ -615,14 +611,12 @@ static int MemIndex()
 	unsigned char* Next; Next = Mem;
 	Rom01			= Next; Next += 0x300000;		// 68K program
 	RomZ80			= Next; Next += 0x040000;
-	if ( bBurnUseRomCache == 0 )
-	{
-		CaveSpriteROM	= Next; Next += 0x2000000;
-	}
+	CaveSpriteROM	= Next; Next += 0x1000000 * 2;
 	CaveTileROM[0]	= Next; Next += 0x400000;		// Tile layer 0
 	CaveTileROM[1]	= Next; Next += 0x400000;		// Tile layer 1
 	CaveTileROM[2]	= Next; Next += 0x400000;		// Tile layer 2
 	CaveTileROM[3]	= Next; Next += 0x200000;		// Tile layer 3
+	MSM6295ROM		= Next; Next += 0x800000;
 	RamStart		= Next;
 	Ram01			= Next; Next += 0x028000;		// CPU #0 work RAM
 	RamZ80			= Next; Next += 0x002000;
@@ -634,9 +628,6 @@ static int MemIndex()
 	CavePalSrc		= Next; Next += 0x005000;		// palette
 	RamEnd			= Next;
 	MemEnd			= Next;
-
-	if (MSM6295ROM == NULL)
-		MSM6295ROM = (unsigned char *) CachedMalloc(0x800000);
 
 	return 0;
 }
@@ -669,119 +660,91 @@ static void NibbleSwap2(unsigned char* pData, int nLen)
 
 static int LoadRoms()
 {
-	if ( bBurnUseRomCache ) {
-		BurnCacheRead(Rom01, 0);
-		BurnCacheRead(RomZ80, 1);
-		CaveSpriteROM = (unsigned char *)BurnCacheMap(2);
-		BurnCacheRead(CaveTileROM[0], 3);
-		BurnCacheRead(CaveTileROM[1], 4);
-		BurnCacheRead(CaveTileROM[2], 5);
-		BurnCacheRead(CaveTileROM[3], 6);
-		BurnCacheRead(MSM6295ROM, 7);
-		return 0;
+	BurnLoadRom(Rom01 + 0x000001, 0, 2);
+	BurnLoadRom(Rom01 + 0x000000, 1, 2);
+	BurnLoadRom(Rom01 + 0x100001, 2, 2);
+	BurnLoadRom(Rom01 + 0x100000, 3, 2);
+	
+	BurnLoadRom(RomZ80, 4, 1);
+
+	unsigned char *pTemp = (unsigned char*)BurnMalloc(0xe00000);
+	BurnLoadRom(pTemp + 0x000000, 5, 1);
+	BurnLoadRom(pTemp + 0x200000, 6, 1);
+	BurnLoadRom(pTemp + 0x400000, 7, 1);
+	BurnLoadRom(pTemp + 0x600000, 8, 1);
+	BurnLoadRom(pTemp + 0x800000, 9, 1);
+	BurnLoadRom(pTemp + 0xa00000, 10, 1);
+	BurnLoadRom(pTemp + 0xc00000, 11, 1);
+	for (int i = 0; i < 0xe00000; i++) {
+		int j = BITSWAP24(i,23,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7, 2,4,6,1,5,3, 0);
+		if (((j & 6) == 0) || ((j & 6) == 6)) j ^= 6;
+		CaveSpriteROM[j ^ 7] = (pTemp[i] >> 4) | (pTemp[i] << 4);
 	}
-	else
-	{
-		BurnLoadRom(Rom01 + 0x000001, 0, 2);
-		BurnLoadRom(Rom01 + 0x000000, 1, 2);
-		BurnLoadRom(Rom01 + 0x100001, 2, 2);
-		BurnLoadRom(Rom01 + 0x100000, 3, 2);
-		
-		BurnLoadRom(RomZ80, 4, 1);
-	
-		unsigned char *pTemp = (unsigned char*)malloc(0xe00000);
-		BurnLoadRom(pTemp + 0x000000, 5, 1);
-		BurnLoadRom(pTemp + 0x200000, 6, 1);
-		BurnLoadRom(pTemp + 0x400000, 7, 1);
-		BurnLoadRom(pTemp + 0x600000, 8, 1);
-		BurnLoadRom(pTemp + 0x800000, 9, 1);
-		BurnLoadRom(pTemp + 0xa00000, 10, 1);
-		BurnLoadRom(pTemp + 0xc00000, 11, 1);
-		for (int i = 0; i < 0xe00000; i++) {
-			int j = BITSWAP24(i,23,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7, 2,4,6,1,5,3, 0);
-			if (((j & 6) == 0) || ((j & 6) == 6)) j ^= 6;
-			CaveSpriteROM[j ^ 7] = (pTemp[i] >> 4) | (pTemp[i] << 4);
-		}
-		free(pTemp);
-		NibbleSwap1(CaveSpriteROM, 0xe00000);
-	
-		BurnLoadRom(CaveTileROM[0], 12, 1);
-		NibbleSwap2(CaveTileROM[0], 0x200000);
-		BurnLoadRom(CaveTileROM[1], 13, 1);
-		NibbleSwap2(CaveTileROM[1], 0x100000);
-		BurnLoadRom(CaveTileROM[2], 14, 1);
-		NibbleSwap2(CaveTileROM[2], 0x100000);
-		BurnLoadRom(CaveTileROM[3], 15, 1);
-		NibbleSwap2(CaveTileROM[3], 0x080000);
-	
-		// Load MSM6295 ADPCM data
-		BurnLoadRom(MSM6295ROM + 0x000000, 16, 1);
-		BurnLoadRom(MSM6295ROM + 0x200000, 17, 1);
-		BurnLoadRom(MSM6295ROM + 0x400000, 18, 1);
-		BurnLoadRom(MSM6295ROM + 0x600000, 19, 1);
-	
-		return 0;
-	}
+	BurnFree(pTemp);
+	NibbleSwap1(CaveSpriteROM, 0xe00000);
+
+	BurnLoadRom(CaveTileROM[0], 12, 1);
+	NibbleSwap2(CaveTileROM[0], 0x200000);
+	BurnLoadRom(CaveTileROM[1], 13, 1);
+	NibbleSwap2(CaveTileROM[1], 0x100000);
+	BurnLoadRom(CaveTileROM[2], 14, 1);
+	NibbleSwap2(CaveTileROM[2], 0x100000);
+	BurnLoadRom(CaveTileROM[3], 15, 1);
+	NibbleSwap2(CaveTileROM[3], 0x080000);
+
+	// Load MSM6295 ADPCM data
+	BurnLoadRom(MSM6295ROM + 0x000000, 16, 1);
+	BurnLoadRom(MSM6295ROM + 0x200000, 17, 1);
+	BurnLoadRom(MSM6295ROM + 0x400000, 18, 1);
+	BurnLoadRom(MSM6295ROM + 0x600000, 19, 1);
+
+	return 0;
 }
 
 static int PlegendsLoadRoms()
 {
-	if ( bBurnUseRomCache ) {
-		BurnCacheRead(Rom01, 0);
-		BurnCacheRead(RomZ80, 1);
-		CaveSpriteROM = (unsigned char *)BurnCacheMap(2);
-		BurnCacheRead(CaveTileROM[0], 3);
-		BurnCacheRead(CaveTileROM[1], 4);
-		BurnCacheRead(CaveTileROM[2], 5);
-		BurnCacheRead(CaveTileROM[3], 6);
-		BurnCacheRead(MSM6295ROM, 7);
-		return 0;
+	BurnLoadRom(Rom01 + 0x000001, 0, 2);
+	BurnLoadRom(Rom01 + 0x000000, 1, 2);
+	BurnLoadRom(Rom01 + 0x100001, 2, 2);
+	BurnLoadRom(Rom01 + 0x100000, 3, 2);
+	BurnLoadRom(Rom01 + 0x200001, 4, 2);
+	BurnLoadRom(Rom01 + 0x200000, 5, 2);
+	
+	BurnLoadRom(RomZ80, 6, 1);
+
+	unsigned char *pTemp = (unsigned char*)BurnMalloc(0x1000000);
+	BurnLoadRom(pTemp + 0x000000, 7, 1);
+	BurnLoadRom(pTemp + 0x200000, 8, 1);
+	BurnLoadRom(pTemp + 0x400000, 9, 1);
+	BurnLoadRom(pTemp + 0x600000, 10, 1);
+	BurnLoadRom(pTemp + 0x800000, 11, 1);
+	BurnLoadRom(pTemp + 0xa00000, 12, 1);
+	BurnLoadRom(pTemp + 0xc00000, 13, 1);
+	BurnLoadRom(pTemp + 0xe00000, 14, 1);
+	for (int i = 0; i < 0x1000000; i++) {
+		int j = BITSWAP24(i,23,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7, 2,4,6,1,5,3, 0);
+		if (((j & 6) == 0) || ((j & 6) == 6)) j ^= 6;
+		CaveSpriteROM[j ^ 7] = (pTemp[i] >> 4) | (pTemp[i] << 4);
 	}
-	else
-	{
-		BurnLoadRom(Rom01 + 0x000001, 0, 2);
-		BurnLoadRom(Rom01 + 0x000000, 1, 2);
-		BurnLoadRom(Rom01 + 0x100001, 2, 2);
-		BurnLoadRom(Rom01 + 0x100000, 3, 2);
-		BurnLoadRom(Rom01 + 0x200001, 4, 2);
-		BurnLoadRom(Rom01 + 0x200000, 5, 2);
-		
-		BurnLoadRom(RomZ80, 6, 1);
-	
-		unsigned char *pTemp = (unsigned char*)malloc(0x1000000);
-		BurnLoadRom(pTemp + 0x000000, 7, 1);
-		BurnLoadRom(pTemp + 0x200000, 8, 1);
-		BurnLoadRom(pTemp + 0x400000, 9, 1);
-		BurnLoadRom(pTemp + 0x600000, 10, 1);
-		BurnLoadRom(pTemp + 0x800000, 11, 1);
-		BurnLoadRom(pTemp + 0xa00000, 12, 1);
-		BurnLoadRom(pTemp + 0xc00000, 13, 1);
-		BurnLoadRom(pTemp + 0xe00000, 14, 1);
-		for (int i = 0; i < 0x1000000; i++) {
-			int j = BITSWAP24(i,23,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7, 2,4,6,1,5,3, 0);
-			if (((j & 6) == 0) || ((j & 6) == 6)) j ^= 6;
-			CaveSpriteROM[j ^ 7] = (pTemp[i] >> 4) | (pTemp[i] << 4);
-		}
-		free(pTemp);
-		NibbleSwap1(CaveSpriteROM, 0x1000000);
-	
-		BurnLoadRom(CaveTileROM[0], 15, 1);
-		NibbleSwap2(CaveTileROM[0], 0x200000);
-		BurnLoadRom(CaveTileROM[1], 16, 1);
-		NibbleSwap2(CaveTileROM[1], 0x200000);
-		BurnLoadRom(CaveTileROM[2], 17, 1);
-		NibbleSwap2(CaveTileROM[2], 0x200000);
-		BurnLoadRom(CaveTileROM[3], 18, 1);
-		NibbleSwap2(CaveTileROM[3], 0x080000);
-	
-		// Load MSM6295 ADPCM data
-		BurnLoadRom(MSM6295ROM + 0x000000, 19, 1);
-		BurnLoadRom(MSM6295ROM + 0x200000, 20, 1);
-		BurnLoadRom(MSM6295ROM + 0x400000, 21, 1);
-		BurnLoadRom(MSM6295ROM + 0x600000, 22, 1);
-	
-		return 0;
-	}
+	BurnFree(pTemp);
+	NibbleSwap1(CaveSpriteROM, 0x1000000);
+
+	BurnLoadRom(CaveTileROM[0], 15, 1);
+	NibbleSwap2(CaveTileROM[0], 0x200000);
+	BurnLoadRom(CaveTileROM[1], 16, 1);
+	NibbleSwap2(CaveTileROM[1], 0x200000);
+	BurnLoadRom(CaveTileROM[2], 17, 1);
+	NibbleSwap2(CaveTileROM[2], 0x200000);
+	BurnLoadRom(CaveTileROM[3], 18, 1);
+	NibbleSwap2(CaveTileROM[3], 0x080000);
+
+	// Load MSM6295 ADPCM data
+	BurnLoadRom(MSM6295ROM + 0x000000, 19, 1);
+	BurnLoadRom(MSM6295ROM + 0x200000, 20, 1);
+	BurnLoadRom(MSM6295ROM + 0x400000, 21, 1);
+	BurnLoadRom(MSM6295ROM + 0x600000, 22, 1);
+
+	return 0;
 }
 
 // Scan ram
@@ -897,7 +860,7 @@ static int DrvInit()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) {
+	if ((Mem = (unsigned char *)BurnMalloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);										// blank all memory
@@ -977,7 +940,7 @@ static int PlegendsInit()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) {
+	if ((Mem = (unsigned char *)BurnMalloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);										// blank all memory
