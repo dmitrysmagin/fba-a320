@@ -218,6 +218,7 @@ void DestroyMemPool()
 // Allocates memory
 void *CachedMalloc(size_t size)
 {
+	if(size < BLOCKSIZE) size = BLOCKSIZE;
 	int i = 0; printf("CachedMalloc: %x\n", size);
 ReDo:
 	for(; TakenSize[i]; i += TakenSize[i]);
