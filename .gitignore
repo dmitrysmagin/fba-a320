@@ -6,3 +6,8 @@ ezxfba
 *.dge
 *.zip
 *.sh
+*~.c
+*~.cpp
+*~.h
+burn/*.txt
+burn/cave/*.txt
