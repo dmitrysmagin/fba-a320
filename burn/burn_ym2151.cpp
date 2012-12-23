@@ -91,8 +91,15 @@ static void YM2151RenderNormal(short* pSoundBuf, int nSegmentLength)
 	} else {
 #endif
 		for (int n = 0; n < nSegmentLength; n++) {
-			pSoundBuf[(n << 1) + 0] = (pYM2151Buffer[0][n]  * nYM2151Volume) >> 12; // This code is broken in original FBA SDL
-			pSoundBuf[(n << 1) + 1] = (pYM2151Buffer[1][n]  * nYM2151Volume) >> 12; // that's why nYM2151Volume is altered to hackfix it
+			for (int i = 0; i < 2; i++) {
+				int nSample = pYM2151Buffer[i][n] * (nYM2151Volume >> 10);
+				nSample >>= 8;
+				
+				if (nSample < -32768) nSample = -32768;
+				if (nSample > 32767) nSample = 32767;
+			
+				pSoundBuf[(n << 1) + i] = nSample;
+			}
 		}
 #ifndef OOPSWARE_FIX
 	}
@@ -135,8 +142,6 @@ int BurnYM2151Init(int nClockFrequency, float nVolume)
 
 		nYM2151Volume = (int)((double)65536.0 * 100.0 / nVolume);
 	} 
-
-	nYM2151Volume = (int)((float)(60.0 * nVolume)); // hackfix overclip, non-mmx mixing code is broken in original FBASDL
 
 	YM2151Init(1, nClockFrequency, nBurnYM2151SoundRate);
 
