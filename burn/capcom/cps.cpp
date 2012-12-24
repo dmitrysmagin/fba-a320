@@ -562,7 +562,7 @@ int CpsInit()
 		nMemLen += nCpsZRomLen * 2;
 	}
 
-	if (nMemLen > 0x1400000)
+	/*if (nMemLen > 0x1400000)
 	{
 		if (nCpsGfxLen <= 0x1600000)
 		{
@@ -610,7 +610,7 @@ int CpsInit()
 			UpperReserved = 2;
 		}
 	}
-	else
+	else*/
 	{
 		// Allocate Gfx, Rom and Z80 Roms
 		CpsGfx = (unsigned char*)BurnMalloc(nMemLen);
