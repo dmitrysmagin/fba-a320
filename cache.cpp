@@ -1,9 +1,10 @@
-#include "burnint.h"
-#include "cache.h"
-
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdlib.h>
+
+#include "burnint.h"
+#include "cache.h"
+#include "config.h"
 
 #ifndef WIN32
 #include <sys/mman.h>
@@ -177,6 +178,8 @@ char SwapPath[512] = "./";
 
 void InitMemPool()
 {
+	if(!config_options.option_useswap) return;
+
 #ifdef WIN32
 	CachedMem = (void *)malloc(MEMSIZE);
 #else
@@ -199,13 +202,15 @@ void InitMemPool()
 	lseek(fd, MEMSIZE, SEEK_SET);
 	write(fd, " ", 1);
 
-	CachedMem = mmap(0, MEMSIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+	CachedMem = mmap(0, MEMSIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0)
 #endif
 	memset(TakenSize, 0, sizeof(TakenSize));
 }
 
 void DestroyMemPool()
 {
+	if(!config_options.option_useswap) return;
+
 #ifdef WIN32
 	free(CachedMem);
 #else
@@ -218,6 +223,8 @@ void DestroyMemPool()
 // Allocates memory
 void *CachedMalloc(size_t size)
 {
+	if(!config_options.option_useswap) return malloc(size);
+
 	if(size < BLOCKSIZE) size = BLOCKSIZE;
 	int i = 0; printf("CachedMalloc: %x\n", size);
 ReDo:
@@ -244,6 +251,8 @@ ReDo:
 // Releases CachedMalloc'ed memory
 void CachedFree(void* mem)
 {
+	if(!config_options.option_useswap) { free(mem); return; }
+
 	int i = (((int)mem) - ((int)CachedMem));
 	if (i < 0 || i >= MEMSIZE) {
 		printf("CachedFree of not CachedMalloced mem: %p\n", mem);
@@ -257,6 +266,8 @@ void CachedFree(void* mem)
 // Returns the size of a CachedMalloced block.
 int GetCachedSize(void* mem)
 {
+	if(!config_options.option_useswap) return 0;
+
 	int i = (((int)mem) - ((int)CachedMem));
 	if (i < 0 || i >= MEMSIZE) {
 		printf("GetCachedSize of not CachedMalloced mem: %p\n", mem);

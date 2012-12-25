@@ -1,6 +1,5 @@
 /*
- * NES for MOTO EZX Modile Phone
- * Copyright (C) 2006 OopsWare. CHINA.
+ * FinalBurn Alpha for Dingux/OpenDingux
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,11 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- * SPECIAL THANKS:
- *   Sam Revitch  	http://lsb.blogdns.net/ezx-devkit
- *
- * $Id: main.cpp,v 0.10 2006/06/07 $
  *
  */
 
@@ -88,7 +82,7 @@ void parse_cmd(int argc, char *argv[], char *path)
 		{"create-lists", 0, &config_options.option_create_lists, 1},
 		{"force-m68k", 0, &config_options.option_forcem68k, 1},
 		{"force-c68k", 0, &config_options.option_forcec68k, 1},
-		{"filter", required_argument, 0, 's'},
+		{"use-swap", 0, &config_options.option_useswap, 1},
 		{"z80core", required_argument, 0, 'z'},
 		{"frontend", required_argument, 0, 'f'}
 	};
@@ -201,6 +195,7 @@ int main(int argc, char **argv )
 	config_options.option_forcec68k=0;
 	config_options.option_z80core=0; // 0 - cz80, 1 - mame_z80
 	config_options.option_sense=100;
+	config_options.option_useswap=0; // use internal swap for legacy dingux
 	strcpy(config_options.option_startspeed,"NULL");
 	strcpy(config_options.option_selectspeed,"NULL");
 	#ifdef WIN32
