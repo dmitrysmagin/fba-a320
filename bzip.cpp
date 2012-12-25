@@ -230,6 +230,7 @@ static int CheckRoms()
 // ----------------------------------------------------------------------------
 
 void show_rom_loading_text(char * szText, int nSize, int nTotalSize);
+void show_rom_error_text(char * szText);
 
 static int __cdecl BzipBurnLoadRom(unsigned char* Dest, int* pnWrote, int i)
 {
@@ -270,12 +271,13 @@ static int __cdecl BzipBurnLoadRom(unsigned char* Dest, int* pnWrote, int i)
 	}
 
 	show_rom_loading_text(szText, ri.nLen, nTotalSize);
-	
+
 	//ProgressUpdateBurner(ri.nLen ? 1.0 / ((double)nTotalSize / ri.nLen) : 0, szText, 0);
 
 	if (RomFind[i].nState == 0) {							// Rom not found in zip at all
 		printf("%s (not found)\n", szText);
-		return 1;
+		show_rom_error_text(szText);
+		exit(0);
 	}
 
 	nWantZip = RomFind[i].nZip;								// Which zip file it is in
