@@ -202,7 +202,7 @@ void InitMemPool()
 	lseek(fd, MEMSIZE, SEEK_SET);
 	write(fd, " ", 1);
 
-	CachedMem = mmap(0, MEMSIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0)
+	CachedMem = mmap(0, MEMSIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 #endif
 	memset(TakenSize, 0, sizeof(TakenSize));
 }
