@@ -10,6 +10,10 @@
  #define __fastcall
 #endif
 
+#if defined BUILD_A68K
+ #define EMU_A68K								// Use A68K Assembler 68000 emulator
+#endif
+
 #ifdef BUILD_C68K
  #define EMU_C68K
  #include "c68k.h"
@@ -71,9 +75,8 @@
 
  void __fastcall AsekChangePc(unsigned int pc);
 #endif
-
-#ifdef EMU_M68K
  extern "C" int m68k_ICount;
+#ifdef EMU_M68K
  extern "C" int nSekM68KContextSize[SEK_MAX];
  extern "C" char* SekM68KContext[SEK_MAX];
 #endif

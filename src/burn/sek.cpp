@@ -541,7 +541,7 @@ extern "C" {
  unsigned char* OP_RAM = NULL;
 
 #ifndef EMU_M68K
- int m68k_ICount = 0; 
+ int m68k_ICount = 0;
 #endif
 
  unsigned int mem_amask = 0xFFFFFF;			// 24-bit bus

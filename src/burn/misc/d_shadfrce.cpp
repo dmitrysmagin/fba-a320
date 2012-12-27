@@ -1532,7 +1532,7 @@ struct BurnDriver BurnDrvShadfrce = {
 	"shadfrce", NULL, NULL, "1993",
 	"Shadow Force (US Version 2)\0", NULL, "Technos Japan", "misc",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_16BIT_ONLY, 2, HARDWARE_MISC_POST90S,
+	BDF_GAME_WORKING | BDF_16BIT_ONLY, 2, HARDWARE_MISC_MISC,
 	NULL, shadfrceRomInfo, shadfrceRomName, shadfrceInputInfo, shadfrceDIPInfo,
 	shadfrceInit, shadfrceExit, shadfrceFrame, NULL, shadfrceScan, &bRecalcPalette, 
 	320, 256, 4, 3
@@ -1542,7 +1542,7 @@ struct BurnDriver BurnDrvShadfrcj = {
 	"shadfrcj", "shadfrce", NULL, "1993",
 	"Shadow Force (Japan Version 2)\0", NULL, "Technos Japan", "misc",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_16BIT_ONLY | BDF_CLONE, 2, HARDWARE_MISC_POST90S,
+	BDF_GAME_WORKING | BDF_16BIT_ONLY | BDF_CLONE, 2, HARDWARE_MISC_MISC,
 	NULL, shadfrcjRomInfo, shadfrcjRomName, shadfrceInputInfo, shadfrceDIPInfo,
 	shadfrceInit, shadfrceExit, shadfrceFrame, NULL, shadfrceScan, &bRecalcPalette, 
 	320, 256, 4, 3

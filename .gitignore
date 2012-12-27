@@ -1,5 +1,4 @@
-.obj/*
-ezxfba
+obj
 *.o
 *.exe
 *.bat
@@ -9,5 +8,7 @@ ezxfba
 *~.c
 *~.cpp
 *~.h
-burn/*.txt
-burn/cave/*.txt
+src/burn/*.txt
+src/burn/cave/*.txt
+src/generated/*
+gamelist.txt
