@@ -8,7 +8,6 @@ obj
 *~.c
 *~.cpp
 *~.h
-src/burn/*.txt
-src/burn/cave/*.txt
+*~.txt
 src/generated/*
 gamelist.txt

@@ -134,11 +134,11 @@ drvobj	=	d_neogeo.o \
 			d_ohmygod.o d_parent.o d_powerins.o d_shadfrce.o \
 			d_tigerheli.o d_tumbleb.o d_unico.o d_wc90.o d_wwfwfest.o \
 			\
-			d_robocop.o d_baddudes.o \
-			\
-			d_mia.o d_tmnt.o \
-			\
 			d_pgm.o \
+			\
+			#d_mia.o d_tmnt.o \
+			#\
+			#d_robocop.o d_baddudes.o \
 			\
 			#d_hangon.o d_outrun.o d_sys16a.o d_sys16b.o d_xbrd.o d_ybrd.o \
 			#\
@@ -171,12 +171,12 @@ depobj	=	\
 			\
 			tiles_generic.o \
 			\
-			tmnt_inp.o tmnt_pal.o tmnt_run.o tmnt_til.o \
-			\
-			dec_misc.o dec_vid.o \
-			\
 			pgm_crypt.o pgm_draw.o pgm_prot.o pgm_run.o pgm_snd.o \
 			\
+			#tmnt_inp.o tmnt_pal.o tmnt_run.o tmnt_til.o \
+			#\
+			#dec_misc.o dec_vid.o \
+			#\
 			#fd1089.o fd1094.o mc8123.o sys16_fd1094.o sys16_gfx.o sys16_pcm.o sys16_ppi.o sys16_run.o \
 			#\
 			#psikyo_palette.o psikyo_sprite.o psikyo_tile.o \
