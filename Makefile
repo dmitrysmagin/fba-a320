@@ -131,7 +131,7 @@ drvobj	=	d_neogeo.o \
 			\
 			d_1945kiii.o d_aerofgt.o d_biomtoy.o d_bombjack.o d_esd16.o d_fstarfrc.o \
 			d_gaiden.o d_galpanic.o d_hyperpac.o d_kaneko16.o d_m92.o d_madgear.o d_news.o \
-			d_ohmygod.o d_parent.o d_powerins.o d_shadfrce.o \
+			d_ohmygod.o d_parent.o d_powerins.o d_prehisle.o d_shadfrce.o d_solomon.o \
 			d_tigerheli.o d_tumbleb.o d_unico.o d_wc90.o d_wwfwfest.o \
 			\
 			d_pgm.o \

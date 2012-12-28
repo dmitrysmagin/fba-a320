@@ -221,51 +221,6 @@ static struct BurnRomInfo GensitouRomDesc[] = {
 STD_ROM_PICK(Gensitou);
 STD_ROM_FN(Gensitou);
 
-// Tile Decode Functions
-void PrehisleDecode8x8Tiles(unsigned char *pTile, int Num)
-{
-	int c, y;
-
-	for (c= 0; c < Num; c++) {
-		for (y = 0; y < 8; y++) {
-			pTile[(c * 64) + (y * 8) + 0] = PrehisleTempGfx[0x00000 + (y * 4) + (c * 32)] >> 4;
-			pTile[(c * 64) + (y * 8) + 1] = PrehisleTempGfx[0x00000 + (y * 4) + (c * 32)] & 0x0f;
-			pTile[(c * 64) + (y * 8) + 2] = PrehisleTempGfx[0x00001 + (y * 4) + (c * 32)] >> 4;
-			pTile[(c * 64) + (y * 8) + 3] = PrehisleTempGfx[0x00001 + (y * 4) + (c * 32)] & 0x0f;
-			pTile[(c * 64) + (y * 8) + 4] = PrehisleTempGfx[0x00002 + (y * 4) + (c * 32)] >> 4;
-			pTile[(c * 64) + (y * 8) + 5] = PrehisleTempGfx[0x00002 + (y * 4) + (c * 32)] & 0x0f;
-			pTile[(c * 64) + (y * 8) + 6] = PrehisleTempGfx[0x00003 + (y * 4) + (c * 32)] >> 4;
-			pTile[(c * 64) + (y * 8) + 7] = PrehisleTempGfx[0x00003 + (y * 4) + (c * 32)] & 0x0f;
-		}
-	}
-}
-
-void PrehisleDecode16x16Tiles(unsigned char *pTile, int Num)
-{
-	int c, y;
-
-	for (c = 0; c < Num; c++) {
-		for (y = 0; y < 16; y++) {
-			pTile[(c * 256) + (y * 16) +  0] = PrehisleTempGfx[0x00000 + (y * 4) + (c * 128)] >> 4;
-			pTile[(c * 256) + (y * 16) +  1] = PrehisleTempGfx[0x00000 + (y * 4) + (c * 128)] & 0x0f;
-			pTile[(c * 256) + (y * 16) +  2] = PrehisleTempGfx[0x00001 + (y * 4) + (c * 128)] >> 4;
-			pTile[(c * 256) + (y * 16) +  3] = PrehisleTempGfx[0x00001 + (y * 4) + (c * 128)] & 0x0f;
-			pTile[(c * 256) + (y * 16) +  4] = PrehisleTempGfx[0x00002 + (y * 4) + (c * 128)] >> 4;
-			pTile[(c * 256) + (y * 16) +  5] = PrehisleTempGfx[0x00002 + (y * 4) + (c * 128)] & 0x0f;
-			pTile[(c * 256) + (y * 16) +  6] = PrehisleTempGfx[0x00003 + (y * 4) + (c * 128)] >> 4;
-			pTile[(c * 256) + (y * 16) +  7] = PrehisleTempGfx[0x00003 + (y * 4) + (c * 128)] & 0x0f;
-			pTile[(c * 256) + (y * 16) +  8] = PrehisleTempGfx[0x00040 + (y * 4) + (c * 128)] >> 4;
-			pTile[(c * 256) + (y * 16) +  9] = PrehisleTempGfx[0x00040 + (y * 4) + (c * 128)] & 0x0f;
-			pTile[(c * 256) + (y * 16) + 10] = PrehisleTempGfx[0x00041 + (y * 4) + (c * 128)] >> 4;
-			pTile[(c * 256) + (y * 16) + 11] = PrehisleTempGfx[0x00041 + (y * 4) + (c * 128)] & 0x0f;
-			pTile[(c * 256) + (y * 16) + 12] = PrehisleTempGfx[0x00042 + (y * 4) + (c * 128)] >> 4;
-			pTile[(c * 256) + (y * 16) + 13] = PrehisleTempGfx[0x00042 + (y * 4) + (c * 128)] & 0x0f;
-			pTile[(c * 256) + (y * 16) + 14] = PrehisleTempGfx[0x00043 + (y * 4) + (c * 128)] >> 4;
-			pTile[(c * 256) + (y * 16) + 15] = PrehisleTempGfx[0x00043 + (y * 4) + (c * 128)] & 0x0f;
-		}
-	}
-}
-
 // Misc Driver Functions and Memory Handlers
 int PrehisleDoReset()
 {
@@ -496,6 +451,13 @@ static int MemIndex()
 	return 0;
 }
 
+static int CharPlaneOffsets[4]   = { 0, 1, 2, 3 };
+static int CharXOffsets[8]       = { 0, 4, 8, 12, 16, 20, 24, 28 };
+static int CharYOffsets[8]       = { 0, 32, 64, 96, 128, 160, 192, 224 };
+static int TilePlaneOffsets[4]   = { 0, 1, 2, 3 };
+static int TileXOffsets[16]      = { 0, 4, 8, 12, 16, 20, 24, 28, 512, 516, 520, 524, 528, 532, 536, 540 };
+static int TileYOffsets[16]      = { 0, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352, 384, 416, 448, 480 };
+
 // Driver Init and Exit Functions
 int PrehisleInit()
 {
@@ -518,23 +480,23 @@ int PrehisleInit()
 	// Load and decode Text Tiles rom
 	memset(PrehisleTempGfx, 0, 0xa0000);
 	nRet = BurnLoadRom(PrehisleTempGfx, 2, 1); if (nRet != 0) return 1;
-	PrehisleDecode8x8Tiles(PrehisleTextTiles, 1024);
+	GfxDecode(1024, 4, 8, 8, CharPlaneOffsets, CharXOffsets, CharYOffsets, 0x100, PrehisleTempGfx, PrehisleTextTiles);
 
 	// Load and decode Background2 Tile rom
 	memset(PrehisleTempGfx, 0, 0xa0000);
 	nRet = BurnLoadRom(PrehisleTempGfx, 3, 1); if (nRet != 0) return 1;
-	PrehisleDecode16x16Tiles(PrehisleBack2Tiles, 2048);
+	GfxDecode(2048, 4, 16, 16, TilePlaneOffsets, TileXOffsets, TileYOffsets, 0x400, PrehisleTempGfx, PrehisleBack2Tiles);
 
 	// Load and decode Background1 Tile rom
 	memset(PrehisleTempGfx, 0, 0xa0000);
 	nRet = BurnLoadRom(PrehisleTempGfx, 4, 1); if (nRet != 0) return 1;
-	PrehisleDecode16x16Tiles(PrehisleBack1Tiles, 2048);
+	GfxDecode(2048, 4, 16, 16, TilePlaneOffsets, TileXOffsets, TileYOffsets, 0x400, PrehisleTempGfx, PrehisleBack1Tiles);
 
 	// Load and decode Sprite roms
 	memset(PrehisleTempGfx, 0, 0xa0000);
 	nRet = BurnLoadRom(PrehisleTempGfx + 0x00000, 5, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(PrehisleTempGfx + 0x80000, 6, 1); if (nRet != 0) return 1;
-	PrehisleDecode16x16Tiles(PrehisleSprites, 5120);
+	GfxDecode(5120, 4, 16, 16, TilePlaneOffsets, TileXOffsets, TileYOffsets, 0x400, PrehisleTempGfx, PrehisleSprites);
 
 	free(PrehisleTempGfx);
 
@@ -576,7 +538,7 @@ int PrehisleInit()
 
 	BurnYM3812Init(4000000, &prehisleFMIRQHandler, &prehisleSynchroniseStream);
 	BurnTimerAttachZet(4000000);
-
+	
 	GenericTilesInit();
 
 	// Reset the driver
@@ -621,15 +583,15 @@ void PrehisleRenderBack2TileLayer()
 
 			if (x > 15 && x < 240 && y > 15 && y < 208) {
 				if (!Flipx) {
-					Render16x16Tile(Tile & 0x7ff, x, y, Colour, 4, 768, PrehisleBack2Tiles);
+					Render16x16Tile(pTransDraw, Tile & 0x7ff, x, y, Colour, 4, 768, PrehisleBack2Tiles);
 				} else {
-					Render16x16Tile_FlipX(Tile & 0x7ff, x, y, Colour, 4, 768, PrehisleBack2Tiles);
+					Render16x16Tile_FlipX(pTransDraw, Tile & 0x7ff, x, y, Colour, 4, 768, PrehisleBack2Tiles);
 				}
 			} else {
 				if (!Flipx) {
-					Render16x16Tile_Clip(Tile & 0x7ff, x, y, Colour, 4, 768, PrehisleBack2Tiles);
+					Render16x16Tile_Clip(pTransDraw, Tile & 0x7ff, x, y, Colour, 4, 768, PrehisleBack2Tiles);
 				} else {
-					Render16x16Tile_FlipX_Clip(Tile & 0x7ff, x, y, Colour, 4, 768, PrehisleBack2Tiles);
+					Render16x16Tile_FlipX_Clip(pTransDraw, Tile & 0x7ff, x, y, Colour, 4, 768, PrehisleBack2Tiles);
 				}
 			}
 
@@ -659,15 +621,15 @@ void PrehisleRenderBack1TileLayer()
 
 			if (x > 15 && x < 240 && y > 15 && y < 208) {
 				if (!Flipy) {
-					Render16x16Tile_Mask(Tile & 0x7ff, x, y, Colour, 4, 0x0f, 512, PrehisleBack1Tiles);
+					Render16x16Tile_Mask(pTransDraw, Tile & 0x7ff, x, y, Colour, 4, 0x0f, 512, PrehisleBack1Tiles);
 				} else {
-					Render16x16Tile_Mask_FlipY(Tile & 0x7ff, x, y, Colour, 4, 0x0f, 512, PrehisleBack1Tiles);
+					Render16x16Tile_Mask_FlipY(pTransDraw, Tile & 0x7ff, x, y, Colour, 4, 0x0f, 512, PrehisleBack1Tiles);
 				}
 			} else {
 				if (!Flipy) {
-					Render16x16Tile_Mask_Clip(Tile & 0x7ff, x, y, Colour, 4, 0x0f, 512, PrehisleBack1Tiles);
+					Render16x16Tile_Mask_Clip(pTransDraw, Tile & 0x7ff, x, y, Colour, 4, 0x0f, 512, PrehisleBack1Tiles);
 				} else {
-					Render16x16Tile_Mask_FlipY_Clip(Tile & 0x7ff, x, y, Colour, 4, 0x0f, 512, PrehisleBack1Tiles);
+					Render16x16Tile_Mask_FlipY_Clip(pTransDraw, Tile & 0x7ff, x, y, Colour, 4, 0x0f, 512, PrehisleBack1Tiles);
 				}
 			}
 
@@ -701,29 +663,29 @@ void PrehisleRenderSpriteLayer()
 		if (x > 15 && x < 240 && y > 15 && y < 208) {
 			if (!Flipy) {
 				if (!Flipx) {
-					Render16x16Tile_Mask(Sprite, x, y, Colour, 4, 0x0f, 256, PrehisleSprites);
+					Render16x16Tile_Mask(pTransDraw, Sprite, x, y, Colour, 4, 0x0f, 256, PrehisleSprites);
 				} else {
-					Render16x16Tile_Mask_FlipX(Sprite, x, y, Colour, 4, 0x0f, 256, PrehisleSprites);
+					Render16x16Tile_Mask_FlipX(pTransDraw, Sprite, x, y, Colour, 4, 0x0f, 256, PrehisleSprites);
 				}
 			} else {
 				if (!Flipx) {
-					Render16x16Tile_Mask_FlipY(Sprite, x, y, Colour, 4, 0x0f, 256, PrehisleSprites);
+					Render16x16Tile_Mask_FlipY(pTransDraw, Sprite, x, y, Colour, 4, 0x0f, 256, PrehisleSprites);
 				} else {
-					Render16x16Tile_Mask_FlipXY(Sprite, x, y, Colour, 4, 0x0f, 256, PrehisleSprites);
+					Render16x16Tile_Mask_FlipXY(pTransDraw, Sprite, x, y, Colour, 4, 0x0f, 256, PrehisleSprites);
 				}
 			}
 		} else {
 			if (!Flipy) {
 				if (!Flipx) {
-					Render16x16Tile_Mask_Clip(Sprite, x, y, Colour, 4, 0x0f, 256, PrehisleSprites);
+					Render16x16Tile_Mask_Clip(pTransDraw, Sprite, x, y, Colour, 4, 0x0f, 256, PrehisleSprites);
 				} else {
-					Render16x16Tile_Mask_FlipX_Clip(Sprite, x, y, Colour, 4, 0x0f, 256, PrehisleSprites);
+					Render16x16Tile_Mask_FlipX_Clip(pTransDraw, Sprite, x, y, Colour, 4, 0x0f, 256, PrehisleSprites);
 				}
 			} else {
 				if (!Flipx) {
-					Render16x16Tile_Mask_FlipY_Clip(Sprite, x, y, Colour, 4, 0x0f, 256, PrehisleSprites);
+					Render16x16Tile_Mask_FlipY_Clip(pTransDraw, Sprite, x, y, Colour, 4, 0x0f, 256, PrehisleSprites);
 				} else {
-					Render16x16Tile_Mask_FlipXY_Clip(Sprite, x, y, Colour, 4, 0x0f, 256, PrehisleSprites);
+					Render16x16Tile_Mask_FlipXY_Clip(pTransDraw, Sprite, x, y, Colour, 4, 0x0f, 256, PrehisleSprites);
 				}
 			}
 		}
@@ -749,9 +711,9 @@ void PrehisleRenderTextLayer()
 		y -= 16;
 
 		if (x > 7 && x < 248 && y > 7 && y < 216) {
-			Render8x8Tile_Mask(Tile & 0xfff, x, y, Colour, 4, 0x0f, 0, PrehisleTextTiles);
+			Render8x8Tile_Mask(pTransDraw, Tile & 0xfff, x, y, Colour, 4, 0x0f, 0, PrehisleTextTiles);
 		} else {
-			Render8x8Tile_Mask_Clip(Tile & 0xfff, x, y, Colour, 4, 0x0f, 0, PrehisleTextTiles);
+			Render8x8Tile_Mask_Clip(pTransDraw, Tile & 0xfff, x, y, Colour, 4, 0x0f, 0, PrehisleTextTiles);
 		}
 	}
 }
@@ -819,7 +781,7 @@ int PrehisleFrame()
 	nCycles68KSync = SekTotalCycles();
 	BurnTimerEndFrame(nCyclesTotal[1]);
 	BurnYM3812Update(nBurnSoundLen);
-
+	
 	nCyclesDone[0] = SekTotalCycles() - nCyclesTotal[0];
 	nCyclesDone[1] = ZetTotalCycles() - nCyclesTotal[1];
 

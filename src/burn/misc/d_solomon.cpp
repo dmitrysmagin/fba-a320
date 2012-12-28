@@ -1,6 +1,5 @@
 #include "tiles_generic.h"
 
-
 #include "driver.h"
 extern "C" {
  #include "ay8910.h"
@@ -204,50 +203,6 @@ static struct BurnRomInfo SolomonjRomDesc[] = {
 STD_ROM_PICK(Solomonj);
 STD_ROM_FN(Solomonj);
 
-void SolomonDecode8x8Tiles(unsigned char *pTile, int Num)
-{
-	int c, y;
-
-	for (c= 0; c < Num; c++) {
-		for (y = 0; y < 8; y++) {
-			pTile[(c * 64) + (y * 8) + 0] = SolomonTempRom[0x00000 + (y * 4) + (c * 32)] >> 4;
-			pTile[(c * 64) + (y * 8) + 1] = SolomonTempRom[0x00000 + (y * 4) + (c * 32)] & 0x0f;
-			pTile[(c * 64) + (y * 8) + 2] = SolomonTempRom[0x00001 + (y * 4) + (c * 32)] >> 4;
-			pTile[(c * 64) + (y * 8) + 3] = SolomonTempRom[0x00001 + (y * 4) + (c * 32)] & 0x0f;
-			pTile[(c * 64) + (y * 8) + 4] = SolomonTempRom[0x00002 + (y * 4) + (c * 32)] >> 4;
-			pTile[(c * 64) + (y * 8) + 5] = SolomonTempRom[0x00002 + (y * 4) + (c * 32)] & 0x0f;
-			pTile[(c * 64) + (y * 8) + 6] = SolomonTempRom[0x00003 + (y * 4) + (c * 32)] >> 4;
-			pTile[(c * 64) + (y * 8) + 7] = SolomonTempRom[0x00003 + (y * 4) + (c * 32)] & 0x0f;
-		}
-	}
-}
-
-void SolomonDecodeSprites(unsigned char *pTile, int Num, int Off1, int Off2, int Off3, int Off4)
-{
-	int c, y, x, Dat1, Dat2, Dat3, Dat4, Col;
-
-	for (c = 0; c < Num; c++) {
-		for (y = 0; y < 8; y++) {
-			Dat1 = SolomonTempRom[Off1 + (c * 8) + y];
-			Dat2 = SolomonTempRom[Off2 + (c * 8) + y];
-			Dat3 = SolomonTempRom[Off3 + (c * 8) + y];
-			Dat4 = SolomonTempRom[Off4 + (c * 8) + y];
-			for (x = 0; x < 8; x++) {
-				Col = 0;
-				if (Dat1 & 1) { Col |= 8;}
-				if (Dat2 & 1) { Col |= 4;}
-				if (Dat3 & 1) { Col |= 2;}
-				if (Dat4 & 1) { Col |= 1;}
-				pTile[(c * 64) + (y * 8) + (7 - x)] = Col;
-				Dat1 >>= 1;
-				Dat2 >>= 1;
-				Dat3 >>= 1;
-				Dat4 >>= 1;
-			}
-		}
-	}
-}
-
 int SolomonDoReset()
 {
 	SolomonIrqFire = 0;
@@ -398,6 +353,13 @@ static int SolomonMemIndex()
 	return 0;
 }
 
+static int TilePlaneOffsets[4]   = { 0, 1, 2, 3 };
+static int TileXOffsets[8]       = { 0, 4, 8, 12, 16, 20, 24, 28 };
+static int TileYOffsets[8]       = { 0, 32, 64, 96, 128, 160, 192, 224 };
+static int SpritePlaneOffsets[4] = { 0, 131072, 262144, 393216 };
+static int SpriteXOffsets[16]    = { 0, 1, 2, 3, 4, 5, 6, 7, 64, 65, 66, 67, 68, 69, 70, 71 };
+static int SpriteYOffsets[16]    = { 0, 8, 16, 24, 32, 40, 48, 56, 128, 136, 144, 152, 160, 168, 176, 184 };
+
 int SolomonInit()
 {
 	int nRet = 0, nLen;
@@ -420,8 +382,7 @@ int SolomonInit()
 	memset(SolomonTempRom, 0, 0x10000);
 	nRet = BurnLoadRom(SolomonTempRom, 2, 1); if (nRet != 0) return 1;
 	memcpy(SolomonZ80Rom1 + 0xf000, SolomonTempRom, 0x1000);
-	//nRet = BurnLoadRom(SolomonZ80Rom1 + 0x0f000, 2, 1); if (nRet != 0) return 1;
-
+	
 	// Load Z80 #2 Program Rom
 	nRet = BurnLoadRom(SolomonZ80Rom2, 3, 1); if (nRet != 0) return 1;
 
@@ -429,13 +390,13 @@ int SolomonInit()
 	memset(SolomonTempRom, 0, 0x10000);
 	nRet = BurnLoadRom(SolomonTempRom + 0x0000, 6, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(SolomonTempRom + 0x8000, 7, 1); if (nRet != 0) return 1;
-	SolomonDecode8x8Tiles(SolomonBgTiles, 2048);
+	GfxDecode(2048, 4, 8, 8, TilePlaneOffsets, TileXOffsets, TileYOffsets, 0x100, SolomonTempRom, SolomonBgTiles);
 
 	// Load and decode Fg Tiles
 	memset(SolomonTempRom, 0, 0x10000);
 	nRet = BurnLoadRom(SolomonTempRom + 0x0000, 4, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(SolomonTempRom + 0x8000, 5, 1); if (nRet != 0) return 1;
-	SolomonDecode8x8Tiles(SolomonFgTiles, 2048);
+	GfxDecode(2048, 4, 8, 8, TilePlaneOffsets, TileXOffsets, TileYOffsets, 0x100, SolomonTempRom, SolomonFgTiles);
 
 	// Load and decode Sprite Tiles
 	memset(SolomonTempRom, 0, 0x10000);
@@ -443,7 +404,8 @@ int SolomonInit()
 	nRet = BurnLoadRom(SolomonTempRom + 0x4000,  9, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(SolomonTempRom + 0x8000, 10, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(SolomonTempRom + 0xc000, 11, 1); if (nRet != 0) return 1;
-	SolomonDecodeSprites(SolomonSprites, 2048, 0x0000, 0x4000, 0x8000, 0xc000);
+//	SolomonDecodeSprites(SolomonSprites, 2048, 0x0000, 0x4000, 0x8000, 0xc000);
+	GfxDecode(512, 4, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x100, SolomonTempRom, SolomonSprites);
 
 	// Setup the Z80 emulation
 	ZetInit(2);
@@ -556,29 +518,29 @@ void SolomonRenderBgLayer()
 		if (sx >= 0 && sx < 247 && sy >= 0 && sy < 215) {
 			if (!FlipY) {
 				if (!FlipX) {
-					Render8x8Tile_Mask(Code, sx, sy, Colour, 4, 0, 128, SolomonBgTiles);
+					Render8x8Tile_Mask(pTransDraw, Code, sx, sy, Colour, 4, 0, 128, SolomonBgTiles);
 				} else {
-					Render8x8Tile_Mask_FlipX(Code, sx, sy, Colour, 4, 0, 128, SolomonBgTiles);
+					Render8x8Tile_Mask_FlipX(pTransDraw, Code, sx, sy, Colour, 4, 0, 128, SolomonBgTiles);
 				}
 			} else {
 				if (!FlipX) {
-					Render8x8Tile_Mask_FlipY(Code, sx, sy, Colour, 4, 0, 128, SolomonBgTiles);
+					Render8x8Tile_Mask_FlipY(pTransDraw, Code, sx, sy, Colour, 4, 0, 128, SolomonBgTiles);
 				} else {
-					Render8x8Tile_Mask_FlipXY(Code, sx, sy, Colour, 4, 0, 128, SolomonBgTiles);
+					Render8x8Tile_Mask_FlipXY(pTransDraw, Code, sx, sy, Colour, 4, 0, 128, SolomonBgTiles);
 				}
 			}
 		} else {
 			if (!FlipY) {
 				if (!FlipX) {
-					Render8x8Tile_Mask_Clip(Code, sx, sy, Colour, 4, 0, 128, SolomonBgTiles);
+					Render8x8Tile_Mask_Clip(pTransDraw, Code, sx, sy, Colour, 4, 0, 128, SolomonBgTiles);
 				} else {
-					Render8x8Tile_Mask_FlipX_Clip(Code, sx, sy, Colour, 4, 0, 128, SolomonBgTiles);
+					Render8x8Tile_Mask_FlipX_Clip(pTransDraw, Code, sx, sy, Colour, 4, 0, 128, SolomonBgTiles);
 				}
 			} else {
 				if (!FlipX) {
-					Render8x8Tile_Mask_FlipY_Clip(Code, sx, sy, Colour, 4, 0, 128, SolomonBgTiles);
+					Render8x8Tile_Mask_FlipY_Clip(pTransDraw, Code, sx, sy, Colour, 4, 0, 128, SolomonBgTiles);
 				} else {
-					Render8x8Tile_Mask_FlipXY_Clip(Code, sx, sy, Colour, 4, 0, 128, SolomonBgTiles);
+					Render8x8Tile_Mask_FlipXY_Clip(pTransDraw, Code, sx, sy, Colour, 4, 0, 128, SolomonBgTiles);
 				}
 			}
 		}
@@ -606,15 +568,15 @@ void SolomonRenderFgLayer()
 
 		if (sx >= 0 && sx < 247 && sy >= 0 && sy < 215) {
 			if (!SolomonFlipScreen) {
-				Render8x8Tile_Mask(Code, sx, sy, Colour, 4, 0, 0, SolomonFgTiles);
+				Render8x8Tile_Mask(pTransDraw, Code, sx, sy, Colour, 4, 0, 0, SolomonFgTiles);
 			} else {
-				Render8x8Tile_Mask_FlipXY(Code, sx, sy, Colour, 4, 0, 0, SolomonFgTiles);
+				Render8x8Tile_Mask_FlipXY(pTransDraw, Code, sx, sy, Colour, 4, 0, 0, SolomonFgTiles);
 			}
 		} else {
 			if (!SolomonFlipScreen) {
-				Render8x8Tile_Mask_Clip(Code, sx, sy, Colour, 4, 0, 0, SolomonFgTiles);
+				Render8x8Tile_Mask_Clip(pTransDraw, Code, sx, sy, Colour, 4, 0, 0, SolomonFgTiles);
 			} else {
-				Render8x8Tile_Mask_FlipXY_Clip(Code, sx, sy, Colour, 4, 0, 0, SolomonFgTiles);
+				Render8x8Tile_Mask_FlipXY_Clip(pTransDraw, Code, sx, sy, Colour, 4, 0, 0, SolomonFgTiles);
 			}
 		}
 	}
@@ -641,58 +603,33 @@ void SolomonRenderSpriteLayer()
 		}
 
 		sy -= 16;
-		Code <<= 2;
 
 		if (sx >= 0 && sx < 239 && sy >= 0 && sy < 207) {
 			if (!FlipY) {
 				if (!FlipX) {
-					Render8x8Tile_Mask(Code + 2, sx + 0, sy + 8, Colour, 4, 0, 0, SolomonSprites);
-					Render8x8Tile_Mask(Code + 0, sx + 0, sy + 0, Colour, 4, 0, 0, SolomonSprites);
-					Render8x8Tile_Mask(Code + 3, sx + 8, sy + 8, Colour, 4, 0, 0, SolomonSprites);
-					Render8x8Tile_Mask(Code + 1, sx + 8, sy + 0, Colour, 4, 0, 0, SolomonSprites);
+					Render16x16Tile_Mask(pTransDraw, Code, sx, sy, Colour, 4, 0, 0, SolomonSprites);
 				} else {
-					Render8x8Tile_Mask_FlipX(Code + 2, sx + 8, sy + 8, Colour, 4, 0, 0, SolomonSprites);
-					Render8x8Tile_Mask_FlipX(Code + 0, sx + 8, sy + 0, Colour, 4, 0, 0, SolomonSprites);
-					Render8x8Tile_Mask_FlipX(Code + 3, sx + 0, sy + 8, Colour, 4, 0, 0, SolomonSprites);
-					Render8x8Tile_Mask_FlipX(Code + 1, sx + 0, sy + 0, Colour, 4, 0, 0, SolomonSprites);
+					Render16x16Tile_Mask_FlipX(pTransDraw, Code, sx, sy, Colour, 4, 0, 0, SolomonSprites);
 				}
 			} else {
 				if (!FlipX) {
-					Render8x8Tile_Mask_FlipY(Code + 2, sx + 0, sy + 0, Colour, 4, 0, 0, SolomonSprites);
-					Render8x8Tile_Mask_FlipY(Code + 0, sx + 0, sy + 8, Colour, 4, 0, 0, SolomonSprites);
-					Render8x8Tile_Mask_FlipY(Code + 3, sx + 8, sy + 0, Colour, 4, 0, 0, SolomonSprites);
-					Render8x8Tile_Mask_FlipY(Code + 1, sx + 8, sy + 8, Colour, 4, 0, 0, SolomonSprites);
+					Render16x16Tile_Mask_FlipY(pTransDraw, Code, sx, sy, Colour, 4, 0, 0, SolomonSprites);
 				} else {
-					Render8x8Tile_Mask_FlipXY(Code + 2, sx + 8, sy + 0, Colour, 4, 0, 0, SolomonSprites);
-					Render8x8Tile_Mask_FlipXY(Code + 0, sx + 8, sy + 8, Colour, 4, 0, 0, SolomonSprites);
-					Render8x8Tile_Mask_FlipXY(Code + 3, sx + 0, sy + 0, Colour, 4, 0, 0, SolomonSprites);
-					Render8x8Tile_Mask_FlipXY(Code + 1, sx + 0, sy + 8, Colour, 4, 0, 0, SolomonSprites);
+					Render16x16Tile_Mask_FlipXY(pTransDraw, Code, sx, sy, Colour, 4, 0, 0, SolomonSprites);
 				}
 			}
 		} else {
 			if (!FlipY) {
 				if (!FlipX) {
-					Render8x8Tile_Mask_Clip(Code + 2, sx + 0, sy + 8, Colour, 4, 0, 0, SolomonSprites);
-					Render8x8Tile_Mask_Clip(Code + 0, sx + 0, sy + 0, Colour, 4, 0, 0, SolomonSprites);
-					Render8x8Tile_Mask_Clip(Code + 3, sx + 8, sy + 8, Colour, 4, 0, 0, SolomonSprites);
-					Render8x8Tile_Mask_Clip(Code + 1, sx + 8, sy + 0, Colour, 4, 0, 0, SolomonSprites);
+					Render16x16Tile_Mask_Clip(pTransDraw, Code, sx, sy, Colour, 4, 0, 0, SolomonSprites);
 				} else {
-					Render8x8Tile_Mask_FlipX_Clip(Code + 2, sx + 8, sy + 8, Colour, 4, 0, 0, SolomonSprites);
-					Render8x8Tile_Mask_FlipX_Clip(Code + 0, sx + 8, sy + 0, Colour, 4, 0, 0, SolomonSprites);
-					Render8x8Tile_Mask_FlipX_Clip(Code + 3, sx + 0, sy + 8, Colour, 4, 0, 0, SolomonSprites);
-					Render8x8Tile_Mask_FlipX_Clip(Code + 1, sx + 0, sy + 0, Colour, 4, 0, 0, SolomonSprites);
+					Render16x16Tile_Mask_FlipX_Clip(pTransDraw, Code, sx, sy, Colour, 4, 0, 0, SolomonSprites);
 				}
 			} else {
 				if (!FlipX) {
-					Render8x8Tile_Mask_FlipY_Clip(Code + 2, sx + 0, sy + 0, Colour, 4, 0, 0, SolomonSprites);
-					Render8x8Tile_Mask_FlipY_Clip(Code + 0, sx + 0, sy + 8, Colour, 4, 0, 0, SolomonSprites);
-					Render8x8Tile_Mask_FlipY_Clip(Code + 3, sx + 8, sy + 0, Colour, 4, 0, 0, SolomonSprites);
-					Render8x8Tile_Mask_FlipY_Clip(Code + 1, sx + 8, sy + 8, Colour, 4, 0, 0, SolomonSprites);
+					Render16x16Tile_Mask_FlipY_Clip(pTransDraw, Code, sx, sy, Colour, 4, 0, 0, SolomonSprites);
 				} else {
-					Render8x8Tile_Mask_FlipXY_Clip(Code + 2, sx + 8, sy + 0, Colour, 4, 0, 0, SolomonSprites);
-					Render8x8Tile_Mask_FlipXY_Clip(Code + 0, sx + 8, sy + 8, Colour, 4, 0, 0, SolomonSprites);
-					Render8x8Tile_Mask_FlipXY_Clip(Code + 3, sx + 0, sy + 0, Colour, 4, 0, 0, SolomonSprites);
-					Render8x8Tile_Mask_FlipXY_Clip(Code + 1, sx + 0, sy + 8, Colour, 4, 0, 0, SolomonSprites);
+					Render16x16Tile_Mask_FlipXY_Clip(pTransDraw, Code, sx, sy, Colour, 4, 0, 0, SolomonSprites);
 				}
 			}
 		}
