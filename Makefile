@@ -136,11 +136,11 @@ drvobj	=	d_neogeo.o \
 			\
 			d_pgm.o \
 			\
+			#d_hangon.o d_outrun.o d_sys16a.o d_sys16b.o d_xbrd.o d_ybrd.o \
+			#\
 			#d_mia.o d_tmnt.o \
 			#\
 			#d_robocop.o d_baddudes.o \
-			\
-			#d_hangon.o d_outrun.o d_sys16a.o d_sys16b.o d_xbrd.o d_ybrd.o \
 			#\
 			#d_psikyo.o
 
@@ -173,11 +173,11 @@ depobj	=	\
 			\
 			pgm_crypt.o pgm_draw.o pgm_prot.o pgm_run.o pgm_snd.o \
 			\
+			#fd1089.o fd1094.o mc8123.o sys16_fd1094.o sys16_gfx.o sys16_pcm.o sys16_ppi.o sys16_run.o \
+			#\
 			#tmnt_inp.o tmnt_pal.o tmnt_run.o tmnt_til.o \
 			#\
 			#dec_misc.o dec_vid.o \
-			#\
-			#fd1089.o fd1094.o mc8123.o sys16_fd1094.o sys16_gfx.o sys16_pcm.o sys16_ppi.o sys16_run.o \
 			#\
 			#psikyo_palette.o psikyo_sprite.o psikyo_tile.o \
 
@@ -497,7 +497,7 @@ ctv.d ctv.o:	$(ctv.h)
 
 $(ctv.h):	ctv_make.cpp
 	@echo Generating $(srcdir)generated/$(@F)...
-	@$(CC) -mconsole $(CXXFLAGS) $(LDFLAGS) $< \
+	@$(HOSTCC) -mconsole $(HOSTCFLAGS) $(LDFLAGS) $< \
 		-o $(subst $(srcdir),$(objdir),$(<D))/$(<F:.cpp=.exe)
 	@$(subst $(srcdir),$(objdir),$(<D))/$(<F:.cpp=.exe) >$@
 
