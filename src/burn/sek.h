@@ -71,9 +71,6 @@
 
  extern "C" unsigned char* OP_ROM;
  extern "C" unsigned char* OP_RAM;
-
-
- void __fastcall AsekChangePc(unsigned int pc);
 #endif
  extern "C" int m68k_ICount;
 #ifdef EMU_M68K
