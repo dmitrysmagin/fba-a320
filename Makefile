@@ -242,9 +242,14 @@ AS	= nasm
 #       DEF     = -Dsinf=\(float\)sin -Dcosf=\(float\)cos -Dasinf=\(float\)asin -Dacosf=\(float\)acos -Dsqrtf=\(float\)sqrt
 
 CFLAGS   = -O2 -fomit-frame-pointer -Wno-write-strings \
-		-DLSB_FIRST -D__cdecl="" -D__fastcall=""
+		-DLSB_FIRST
 CXXFLAGS = -O2 -fomit-frame-pointer -Wno-write-strings \
-		-DLSB_FIRST -D__cdecl="" -D__fastcall=""
+		-DLSB_FIRST
+
+ifneq ($(OS),Windows_NT)
+CFLAGS += -D__cdecl="" -D__fastcall=""
+CXXFLAGS += -D__cdecl="" -D__fastcall=""
+endif
 
 DEF = -DCPUTYPE=$(CPUTYPE) -DBUILD_SDL -DUSE_SPEEDHACKS -DOOPSWARE_FIX
 
