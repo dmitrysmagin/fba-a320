@@ -136,7 +136,7 @@ drvobj	=	d_neogeo.o \
 			\
 			d_pgm.o \
 			\
-			#d_hangon.o d_outrun.o d_sys16a.o d_sys16b.o d_xbrd.o d_ybrd.o \
+			d_hangon.o d_outrun.o d_sys16a.o d_sys16b.o d_xbrd.o d_ybrd.o \
 			#\
 			#d_mia.o d_tmnt.o \
 			#\
@@ -173,7 +173,7 @@ depobj	=	\
 			\
 			pgm_crypt.o pgm_draw.o pgm_prot.o pgm_run.o pgm_snd.o \
 			\
-			#fd1089.o fd1094.o mc8123.o sys16_fd1094.o sys16_gfx.o sys16_pcm.o sys16_ppi.o sys16_run.o \
+			fd1089.o fd1094.o mc8123.o sys16_fd1094.o sys16_gfx.o sys16_pcm.o sys16_ppi.o sys16_run.o \
 			#\
 			#tmnt_inp.o tmnt_pal.o tmnt_run.o tmnt_til.o \
 			#\
@@ -438,9 +438,9 @@ endif
 ifdef	BUILD_A68K
 $(a68k.o):	fba_make68k.c
 	@echo Compiling A68K MC68000 core...
-	@$(HOSTCC) -mconsole $(HOSTCFLAGS) $(LDFLAGS) -DWIN32 -Wno-unused -Wno-conversion -Wno-missing-prototypes \
-		-s $< -o $(subst $(srcdir),$(objdir),$(<D))/$(<F:.c=.exe)
-	@$(subst $(srcdir),$(objdir),$(<D))/$(<F:.c=.exe) $(@:.o=.asm) \
+	@$(HOSTCC) $(HOSTCFLAGS) $(LDFLAGS) -DWIN32 -Wno-unused -Wno-conversion -Wno-missing-prototypes \
+		-s $< -o $(objdir)generated/fba_make68k
+	@$(objdir)generated/fba_make68k $(@:.o=.asm) \
 		$(@D)/a68k_tab.asm 00 $(ppro)
 	@echo Assembling A68K MC68000 core...
 	@$(AS) $(ASFLAGS) $(@:.o=.asm) -o $@
@@ -453,28 +453,28 @@ $(objdir)cpu/m68k/m68kcpu.o: $(srcdir)cpu/m68k/m68kcpu.c $(objdir)generated/m68k
 	@echo Compiling Musashi MC680x0 core \(m68kcpu.c\)...
 	@$(CC) $(CFLAGS) -c $(srcdir)cpu/m68k/m68kcpu.c -o $(objdir)cpu/m68k/m68kcpu.o
 
-$(objdir)cpu/m68k/m68kops.o: $(objdir)cpu/m68k/m68kmake.exe $(objdir)generated/m68kops.h $(objdir)generated/m68kops.c $(srcdir)cpu/m68k/m68k.h $(srcdir)cpu/m68k/m68kconf.h
+$(objdir)cpu/m68k/m68kops.o: $(objdir)cpu/m68k/m68kmake $(objdir)generated/m68kops.h $(objdir)generated/m68kops.c $(srcdir)cpu/m68k/m68k.h $(srcdir)cpu/m68k/m68kconf.h
 	@echo Compiling Musashi MC680x0 core \(m68kops.c\)...
 	@$(CC) $(CFLAGS) -c $(objdir)generated/m68kops.c -o $(objdir)cpu/m68k/m68kops.o
 
-$(objdir)cpu/m68k/m68kopac.o: $(objdir)cpu/m68k/m68kmake.exe $(objdir)generated/m68kops.h $(objdir)generated/m68kopac.c $(srcdir)cpu/m68k/m68k.h $(srcdir)cpu/m68k/m68kconf.h
+$(objdir)cpu/m68k/m68kopac.o: $(objdir)cpu/m68k/m68kmake $(objdir)generated/m68kops.h $(objdir)generated/m68kopac.c $(srcdir)cpu/m68k/m68k.h $(srcdir)cpu/m68k/m68kconf.h
 	@echo Compiling Musashi MC680x0 core \(m68kopac.c\)...
 	@$(CC) $(CFLAGS) -c $(objdir)generated/m68kopac.c -o $(objdir)cpu/m68k/m68kopac.o
 
-$(objdir)cpu/m68k/m68kopdm.o: $(objdir)cpu/m68k/m68kmake.exe $(objdir)generated/m68kops.h $(objdir)generated/m68kopdm.c $(srcdir)cpu/m68k/m68k.h $(srcdir)cpu/m68k/m68kconf.h
+$(objdir)cpu/m68k/m68kopdm.o: $(objdir)cpu/m68k/m68kmake $(objdir)generated/m68kops.h $(objdir)generated/m68kopdm.c $(srcdir)cpu/m68k/m68k.h $(srcdir)cpu/m68k/m68kconf.h
 	@echo Compiling Musashi MC680x0 core \(m68kopdm.c\)...
 	@$(CC) $(CFLAGS) -c $(objdir)generated/m68kopdm.c -o $(objdir)cpu/m68k/m68kopdm.o
 
-$(objdir)cpu/m68k/m68kopnz.o: $(objdir)cpu/m68k/m68kmake.exe $(objdir)generated/m68kops.h $(objdir)generated/m68kopnz.c $(srcdir)cpu/m68k/m68k.h $(srcdir)cpu/m68k/m68kconf.h
+$(objdir)cpu/m68k/m68kopnz.o: $(objdir)cpu/m68k/m68kmake $(objdir)generated/m68kops.h $(objdir)generated/m68kopnz.c $(srcdir)cpu/m68k/m68k.h $(srcdir)cpu/m68k/m68kconf.h
 	@echo Compiling Musashi MC680x0 core \(m68kopnz.c\)...
 	@$(CC) $(CFLAGS) -c $(objdir)generated/m68kopnz.c -o $(objdir)cpu/m68k/m68kopnz.o
 
-$(objdir)generated/m68kops.h: $(objdir)cpu/m68k/m68kmake.exe $(srcdir)cpu/m68k/m68k_in.c
+$(objdir)generated/m68kops.h: $(objdir)cpu/m68k/m68kmake $(srcdir)cpu/m68k/m68k_in.c
 	$(objdir)/cpu/m68k/m68kmake $(objdir)generated/ $(srcdir)cpu/m68k/m68k_in.c
 
-$(objdir)cpu/m68k/m68kmake.exe: $(srcdir)cpu/m68k/m68kmake.c
+$(objdir)cpu/m68k/m68kmake: $(srcdir)cpu/m68k/m68kmake.c
 	@echo Compiling Musashi MC680x0 core \(m68kmake.c\)...
-	@$(HOSTCC) $(HOSTCFLAGS) $(srcdir)cpu/m68k/m68kmake.c -o $(objdir)cpu/m68k/m68kmake.exe
+	@$(HOSTCC) $(HOSTCFLAGS) $(srcdir)cpu/m68k/m68kmake.c -o $(objdir)cpu/m68k/m68kmake
 endif
 
 #
@@ -497,9 +497,8 @@ ctv.d ctv.o:	$(ctv.h)
 
 $(ctv.h):	ctv_make.cpp
 	@echo Generating $(srcdir)generated/$(@F)...
-	@$(HOSTCC) -mconsole $(HOSTCFLAGS) $(LDFLAGS) $< \
-		-o $(subst $(srcdir),$(objdir),$(<D))/$(<F:.cpp=.exe)
-	@$(subst $(srcdir),$(objdir),$(<D))/$(<F:.cpp=.exe) >$@
+	@$(HOSTCC) $(HOSTCFLAGS) $(LDFLAGS) $< -o $(objdir)generated/ctv_make
+	@$(objdir)generated/ctv_make >$@
 
 #
 #	Extra rules for generated header file toa_gp9001_func.h, needed by toa_gp9001.cpp
