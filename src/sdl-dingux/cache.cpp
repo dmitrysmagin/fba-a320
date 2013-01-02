@@ -180,7 +180,7 @@ void InitMemPool()
 {
 	if(!config_options.option_useswap) return;
 
-#ifdef WIN32
+#ifndef USE_SWAP
 	CachedMem = (void *)malloc(MEMSIZE);
 #else
 	char *home = getenv("HOME");
@@ -211,7 +211,7 @@ void DestroyMemPool()
 {
 	if(!config_options.option_useswap) return;
 
-#ifdef WIN32
+#ifndef USE_SWAP
 	free(CachedMem);
 #else
 	munmap (CachedMem, MEMSIZE);
@@ -243,7 +243,7 @@ ReDo:
 	}
   
 	TakenSize[i] = BSize;
-	void *mem = ((char*)CachedMem) + i * BLOCKSIZE; printf("%x, %x, %i\n", CachedMem, mem, i);
+	void *mem = ((char*)CachedMem) + i * BLOCKSIZE; //printf("%x, %x, %i\n", CachedMem, mem, i);
 	memset(mem, 0, size);
 	return mem;
 }

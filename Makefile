@@ -9,27 +9,13 @@
 #
 
 # Specify the name of the executable file, without ".exe"
-NAME		= fbasdl
-EXE		= $(NAME)
-INSTALLDIR	= /usr/local/games/fba/
-ROMDIR		= /usr/local/share/roms/
-BINDIR		= /usr/local/bin/
-FILES		= fbasdl.ini gamelist.txt fb.png
-
-# Inluclude Unicode support
-#UNICODE = 1
+NAME = fbasdl
 
 # Check for changes in header files
 DEPEND = 1
 
 # Include features for debugging drivers
 #DEBUG = 1
-
-# Force recompilation of files that need it (i.e. use __TIME__, __DATE__, SPECIALBUILD).
-FORCE_UPDATE = 1
-
-# Use the __fastcall calling convention when interfacing with A68K/Musashi/Doze
-#FASTCALL = 1
 
 # Perl is available
 PERL = 1
@@ -104,7 +90,11 @@ alldir	=	burn \
 
 incdir	= $(foreach dir,$(alldir),-I$(srcdir)$(dir)) -I$(objdir)generated -I$(srcdir) -I/local/include -I/local/include/SDL
 
-lib = -static -lstdc++ -lpng -lmingw32 -Wl,-Bdynamic -lmingw32 -lSDL -lz
+ifeq ($(OS),Windows_NT)
+lib = -static -lstdc++ -lpng -lmingw32 -Wl,-Bdynamic -lSDL -lz
+else
+lib = -lstdc++ -lpng -lSDL -lz
+endif
 
 drvobj	=	d_neogeo.o \
 			\
@@ -251,20 +241,15 @@ AS	= nasm
 #       D3DUtils & D3DMath need these
 #       DEF     = -Dsinf=\(float\)sin -Dcosf=\(float\)cos -Dasinf=\(float\)asin -Dacosf=\(float\)acos -Dsqrtf=\(float\)sqrt
 
-HOSTCFLAGS = $(incdir)
 CFLAGS   = -O2 -fomit-frame-pointer -Wno-write-strings \
-		-DLSB_FIRST
+		-DLSB_FIRST -D__cdecl="" -D__fastcall=""
 CXXFLAGS = -O2 -fomit-frame-pointer -Wno-write-strings \
-		-DLSB_FIRST
+		-DLSB_FIRST -D__cdecl="" -D__fastcall=""
 
 DEF = -DCPUTYPE=$(CPUTYPE) -DBUILD_SDL -DUSE_SPEEDHACKS -DOOPSWARE_FIX
 
 ifdef SPECIALBUILD
 	DEF += -DSPECIALBUILD=$(SPECIALBUILD)
-endif
-
-ifdef FASTCALL
-	DEF += -DFASTCALL
 endif
 
 ifdef	DEBUG
@@ -344,7 +329,7 @@ vpath %.d 	$(foreach dir,$(alldir),$(objdir)$(dir)/ )
 #
 #
 
-.PHONY:	all init cleandep touch clean
+.PHONY: all init cleandep clean
 
 ifeq ($(MAKELEVEL),0)
 ifdef DEPEND
@@ -438,7 +423,7 @@ endif
 ifdef	BUILD_A68K
 $(a68k.o):	fba_make68k.c
 	@echo Compiling A68K MC68000 core...
-	@$(HOSTCC) $(HOSTCFLAGS) $(LDFLAGS) -DWIN32 -Wno-unused -Wno-conversion -Wno-missing-prototypes \
+	@$(HOSTCC) $(LDFLAGS) -DWIN32 -Wno-unused -Wno-conversion -Wno-missing-prototypes \
 		-s $< -o $(objdir)generated/fba_make68k
 	@$(objdir)generated/fba_make68k $(@:.o=.asm) \
 		$(@D)/a68k_tab.asm 00 $(ppro)
@@ -474,7 +459,7 @@ $(objdir)generated/m68kops.h: $(objdir)cpu/m68k/m68kmake $(srcdir)cpu/m68k/m68k_
 
 $(objdir)cpu/m68k/m68kmake: $(srcdir)cpu/m68k/m68kmake.c
 	@echo Compiling Musashi MC680x0 core \(m68kmake.c\)...
-	@$(HOSTCC) $(HOSTCFLAGS) $(srcdir)cpu/m68k/m68kmake.c -o $(objdir)cpu/m68k/m68kmake
+	@$(HOSTCC) $(srcdir)cpu/m68k/m68kmake.c -o $(objdir)cpu/m68k/m68kmake
 endif
 
 #
@@ -497,7 +482,7 @@ ctv.d ctv.o:	$(ctv.h)
 
 $(ctv.h):	ctv_make.cpp
 	@echo Generating $(srcdir)generated/$(@F)...
-	@$(HOSTCC) $(HOSTCFLAGS) $(LDFLAGS) $< -o $(objdir)generated/ctv_make
+	@$(HOSTCC) $(LDFLAGS) $< -o $(objdir)generated/ctv_make
 	@$(objdir)generated/ctv_make >$@
 
 #
@@ -566,23 +551,10 @@ endif
 endif
 
 #
-#	Generic rule for resource files
-#
-
-%.o:	%.rc
-	@echo Compiling resource file $(<F)...
-	@windres $(DEF) $< -o $(subst $(srcdir),$(objdir),$(<D))/$(@F) $(foreach dir,$(alldir),--include-dir $(srcdir)$(dir))
-
-#
 #	Generic rules for C/C++ files
 #
 
 ifeq ($(MAKELEVEL),0)
-
-ifdef FORCE_UPDATE
-resource.o: FORCE
-about.o: FORCE
-endif
 
 %.o:	%.cpp
 	@echo Compiling $<...
@@ -651,18 +623,6 @@ cleandep:
 	@echo Removing depend files from $(objdir)...
 	@for dir in $(alldir); do rm -f $(objdir)$$dir/*.d; done
 
-touch:
-	@echo Marking all targets for $(NAME) as uptodate...
-	@for dir in $(alldir); do touch -c $(objdir)$$dir/*; done
-	@do touch -c $(srcdir)/generated/*
-	@touch $(NAME).exe
-install:
-	mkdir -p $(INSTALLDIR)
-	mkdir -p $(ROMDIR)
-	cp $(EXE) $(INSTALLDIR)
-	cp $(FILES) $(INSTALLDIR)
-	ln -fs $(INSTALLDIR)$(EXE) $(BINDIR)$(EXE)
-
 clean:
 	@echo Removing all files from $(objdir)...
 	@rm -f -r $(objdir)
@@ -673,7 +633,7 @@ ifdef	PERL
 	@rm -f -r $(app_windres.rc) $(driverlist)
 endif
 	@echo Removing executable file...
-	@rm -f $(EXE)
+	@rm -f $(NAME)
 
 #
 #	Rule to force recompilation of any target that depends on it
