@@ -233,6 +233,7 @@ alldep	= $(foreach file,$(autobj:.o=.c), \
 #
 
 HOSTCC = gcc
+HOSTCXX = g++
 CC	= gcc
 CXX	= g++
 LD	= $(CXX)
@@ -307,7 +308,6 @@ LDFLAGS +=
 ASFLAGS = -O1
 
 ifeq ($(OS),Windows_NT)
-CFLAGS_CONSOLE = -mno-cygwin -mconsole -pipe -Wall -W $(DEF) $(incdir)
 ASFLAGS += -f coff
 else
 ASFLAGS += -f elf
@@ -468,18 +468,6 @@ $(objdir)cpu/m68k/m68kmake: $(srcdir)cpu/m68k/m68kmake.c
 endif
 
 #
-#	Compile Z80 core
-#
-
-#$(dozea.o):	dam.cpp dama.cpp damc.cpp dame.cpp damf.cpp damj.cpp damm.cpp damo.cpp damt.cpp dam.h
-#	@echo Compiling Doze Z80 core sourcefiles...
-#	@$(CXX) $(CFLAGS_CONSOLE) $(CXXFLAGS) -s $(filter %.cpp,$^) \
-#		-o $(subst $(srcdir),$(objdir),$(<D))/$(<F:.cpp=.exe)
-#	@$(subst $(srcdir),$(objdir),$(<D))/$(<F:.cpp=.exe) $(@:.o=.asm)
-#	@echo Assembling Z80 core...
-#	@$(AS) $(ASFLAGS) $(@:.o=.asm) -o $@
-
-#
 #	Extra rules for generated header file cvt.h, needed by ctv.cpp
 #
 
@@ -487,7 +475,7 @@ ctv.d ctv.o:	$(ctv.h)
 
 $(ctv.h):	ctv_make.cpp
 	@echo Generating $(srcdir)generated/$(@F)...
-	@$(HOSTCC) $(LDFLAGS) $< -o $(objdir)generated/ctv_make
+	@$(HOSTCXX) $(LDFLAGS) $< -o $(objdir)generated/ctv_make
 	@$(objdir)generated/ctv_make >$@
 
 #
