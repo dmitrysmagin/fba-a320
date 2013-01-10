@@ -80,9 +80,8 @@ void parse_cmd(int argc, char *argv[], char *path)
 		{"showfps", 0, &config_options.option_showfps, 1},
 		{"no-showfps", 0, &config_options.option_showfps, 0},
 		{"create-lists", 0, &config_options.option_create_lists, 1},
-		{"force-m68k", 0, &config_options.option_forcem68k, 1},
-		{"force-c68k", 0, &config_options.option_forcec68k, 1},
 		{"use-swap", 0, &config_options.option_useswap, 1},
+		{"68kcore", required_argument, 0, 's'},
 		{"z80core", required_argument, 0, 'z'},
 		{"frontend", required_argument, 0, 'f'}
 	};
@@ -109,11 +108,18 @@ void parse_cmd(int argc, char *argv[], char *path)
 					config_options.option_frameskip = z2;
 				}
 				break;
-			case 'z':
+			case 's':
 				if(!optarg) continue;
 				z2=0;
 				sscanf(optarg,"%d",&z2);
 				if ((z2>2) || (z2<0)) z2=0;
+				config_options.option_68kcore = z2;
+				break;
+			case 'z':
+				if(!optarg) continue;
+				z2=0;
+				sscanf(optarg,"%d",&z2);
+				if ((z2>1) || (z2<0)) z2=0;
 				config_options.option_z80core = z2;
 				break;
 			case 'a':
@@ -191,8 +197,7 @@ int main(int argc, char **argv )
 	config_options.option_showfps = 0;
 	config_options.option_frameskip = -1; // auto frameskip by default
 	config_options.option_create_lists=0;
-	config_options.option_forcem68k=0;
-	config_options.option_forcec68k=0;
+	config_options.option_68kcore=0; // 0 - c68k, 1 - m68k, 2 - a68k
 	config_options.option_z80core=0; // 0 - cz80, 1 - mame_z80
 	config_options.option_sense=100;
 	config_options.option_useswap=0; // use internal swap for legacy dingux
@@ -224,6 +229,9 @@ int main(int argc, char **argv )
 
 	extern int nZetCpuCore; // 0 - CZ80, 1 - MAME_Z80
 	nZetCpuCore = config_options.option_z80core;
+
+	extern int nSekCpuCore; // 0 - c68k, 1 - m68k, 2 - a68k
+	nSekCpuCore = config_options.option_68kcore;
 
 	// Run emu loop
 	run_fba_emulator (path);

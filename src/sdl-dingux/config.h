@@ -13,8 +13,7 @@ typedef struct
 	int option_samplerate;
 	int option_showfps;
 	int option_frameskip;
-	int option_forcem68k;
-	int option_forcec68k;
+	int option_68kcore;
 	int option_z80core;
 	int option_sense;
 	int option_useswap;
