@@ -1,4 +1,4 @@
-# Makefile for FBA, for use with GNU make (Cygwin/MinGW)
+# Makefile for FBA, for use with GNU make
 #
 # The first pass makes sure all intermediary targets are present. The second pass updates
 # any targets, if necessary. (Intermediary) targets which have their own unique rules
@@ -25,6 +25,7 @@ PERL = 1
 BUILD_C68K = 1
 #BUILD_M68K = 1
 
+
 #
 #	Declare variables
 #
@@ -32,15 +33,8 @@ BUILD_C68K = 1
 # Make a special build, pass the quoted text as comment (use FORCE_UPDATE declaration below to force recompilation of resources)
 # SPECIALBUILD = "This text will appear in the property sheet of the .exe file"
 
-
 ifndef	CPUTYPE
 	CPUTYPE	= i686
-endif
-
-ifdef BUILD_X86_ASM
-	MMX	= 1
-else
-	MMX = 0
 endif
 
 ifdef	DEBUG
@@ -51,7 +45,6 @@ endif
 
 ifeq	($(CPUTYPE),i686)
 	ppro = ppro
-
 endif
 
 ifneq	($(CPUTYPE),i686)
@@ -171,7 +164,6 @@ depobj	=	\
 			#\
 			#psikyo_palette.o psikyo_sprite.o psikyo_tile.o \
 
-
 autobj += $(depobj)
 
 ifdef	BUILD_A68K
@@ -207,10 +199,7 @@ allobj += \
 		$(firstword $(subst .cpp,.o,$(wildcard $(srcdir)$(dir)/$(file))))))) \
 	  $(foreach file,$(autobj:.o=.asm), \
 		$(foreach dir,$(alldir),$(subst $(srcdir),$(objdir), \
-		$(firstword $(subst .asm,.o,$(wildcard $(srcdir)$(dir)/$(file))))))) \
-	  $(foreach file,$(autobj:.o=.rc), \
-		$(foreach dir,$(alldir),$(subst $(srcdir),$(objdir), \
-		$(firstword $(subst .rc,.o,$(wildcard $(srcdir)$(dir)/$(file)))))))
+		$(firstword $(subst .asm,.o,$(wildcard $(srcdir)$(dir)/$(file)))))))
 
 ifdef BUILD_A68K
 allobj += $(a68k.o)
@@ -221,10 +210,7 @@ alldep	= $(foreach file,$(autobj:.o=.c), \
 		$(firstword $(subst .c,.d,$(wildcard $(srcdir)$(dir)/$(file))))))) \
 	  $(foreach file,$(autobj:.o=.cpp), \
 		$(foreach dir,$(alldir),$(subst $(srcdir),$(objdir), \
-		$(firstword $(subst .cpp,.d,$(wildcard $(srcdir)$(dir)/$(file))))))) \
-	  $(foreach file,$(autobj:.o=.rc), \
-		$(foreach dir,$(alldir),$(subst $(srcdir),$(objdir), \
-		$(firstword $(subst .rc,.d,$(wildcard $(srcdir)$(dir)/$(file)))))))
+		$(firstword $(subst .cpp,.d,$(wildcard $(srcdir)$(dir)/$(file)))))))
 
 #
 #
@@ -239,9 +225,7 @@ CXX	= g++
 LD	= $(CXX)
 AS	= nasm
 
-#       D3DUtils & D3DMath need these
-#       DEF     = -Dsinf=\(float\)sin -Dcosf=\(float\)cos -Dasinf=\(float\)asin -Dacosf=\(float\)acos -Dsqrtf=\(float\)sqrt
-
+HOSTCFLAGS = $(incdir)
 CFLAGS   = -O2 -fomit-frame-pointer -Wno-write-strings \
 		-DLSB_FIRST
 CXXFLAGS = -O2 -fomit-frame-pointer -Wno-write-strings \
@@ -274,14 +258,6 @@ ifdef BUILD_M68K
 	DEF += -DBUILD_M68K
 endif
 
-ifdef BUILD_X86_ASM
-	DEF += -DBUILD_X86_ASM
-endif
-
-ifdef	MMX
-	DEF	+= -DMMX
-endif
-
 DEF += -DFILENAME=$(NAME)
 
 ifdef PROFILE
@@ -295,11 +271,6 @@ ifdef DEBUG
 	CXXFLAGS	+= -g
 else
 	LDFLAGS		+= -s
-endif
-
-ifdef BUILD_X86_ASM
-	CFLAGS	 += -mmmx
-	CXXFLAGS += -mmmx
 endif
 
 CFLAGS += $(DEF) $(incdir)
@@ -323,7 +294,6 @@ vpath %.asm	$(foreach dir,$(alldir),$(srcdir)$(dir)/ )
 vpath %.cpp	$(foreach dir,$(alldir),$(srcdir)$(dir)/ )
 vpath %.c	$(foreach dir,$(alldir),$(srcdir)$(dir)/ )
 vpath %.h	$(foreach dir,$(alldir),$(srcdir)$(dir)/ )
-vpath %.rc	$(foreach dir,$(alldir),$(srcdir)$(dir)/ )
 
 vpath %.o 	$(foreach dir,$(alldir),$(objdir)$(dir)/ )
 vpath %.d 	$(foreach dir,$(alldir),$(objdir)$(dir)/ )
@@ -387,39 +357,6 @@ endif
 endif
 
 #
-#	Fix the .rc file
-#
-
-resource.o resource.d:	$(app_windres.rc) version.rc version.h
-
-$(license.rc): $(srcdir)license.txt $(srcdir)scripts/license2rtf.pl $(srcdir)scripts/license2rc.pl
-
-ifdef	PERL
-	@perl $(srcdir)scripts/license2rtf.pl $< -o $(srcdir)generated/$(@F:.rc=.rtf)
-	@perl $(srcdir)scripts/license2rc.pl $(srcdir)generated/$(@F:.rc=.rtf) -o $@
-else
-ifeq ($(MAKELEVEL),1)
-	@echo
-	@echo Warning: Perl is not available on this system.
-	@echo $@ cannot be updated or created!
-	@echo
-endif
-endif
-
-$(app_windres.rc): app.rc $(license.rc) $(srcdir)scripts/fixrc.pl $(srcdir)burner/resource/fba.ico $(srcdir)burner/resource/about.bmp $(srcdir)burner/resource/preview.bmp $(srcdir)burner/resource/misc.bmp
-
-ifdef	PERL
-	@perl $(srcdir)scripts/fixrc.pl $< -o $@
-else
-ifeq ($(MAKELEVEL),1)
-	@echo
-	@echo Warning: Perl is not available on this system.
-	@echo $@ cannot be updated or created!
-	@echo
-endif
-endif
-
-#
 #	Compile 68000 cores
 #
 
@@ -464,7 +401,7 @@ $(objdir)generated/m68kops.h: $(objdir)cpu/m68k/m68kmake $(srcdir)cpu/m68k/m68k_
 
 $(objdir)cpu/m68k/m68kmake: $(srcdir)cpu/m68k/m68kmake.c
 	@echo Compiling Musashi MC680x0 core \(m68kmake.c\)...
-	@$(HOSTCC) $(srcdir)cpu/m68k/m68kmake.c -o $(objdir)cpu/m68k/m68kmake
+	@$(HOSTCC) $(HOSTCFLAGS) $(srcdir)cpu/m68k/m68kmake.c -o $(objdir)cpu/m68k/m68kmake
 endif
 
 #
@@ -531,9 +468,8 @@ $(psikyo_tile_func.h):	$(srcdir)scripts/psikyo_tile_func.pl
 
 #$(pgm_sprite.h):	pgm_sprite_create.cpp
 #	@echo Generating $(srcdir)generated/$(@F)...
-#	@$(CC) -mconsole $(CXXFLAGS) $(LDFLAGS) $< \
-#		-o $(subst $(srcdir),$(objdir),$(<D))/$(<F:.cpp=.exe)
-#	@$(subst $(srcdir),$(objdir),$(<D))/$(<F:.cpp=.exe) >$@
+#	@$(HOSTCXX) $(LDFLAGS) $< -o $(objdir)dep/generated/pgm_sprite_create
+#	@$(objdir)dep/generated/pgm_sprite_create >$@
 
 ifeq ($(MAKELEVEL),1)
 ifdef DEPEND
@@ -591,10 +527,6 @@ ifdef DEPEND
 	@echo Generating depend file for $<...
 	@$(CXX) -MM -MT "$(subst $(srcdir),$(objdir),$(<D))/$(*F).o $(subst $(srcdir),$(objdir),$(<D))/$(@F)" -x c++ $(CXXFLAGS) $< >$(subst $(srcdir),$(objdir),$(<D))/$(@F)
 
-%.d:	%.rc
-	@echo Generating depend file for $<...
-	@$(CC) -MM -MT "$(subst $(srcdir),$(objdir),$(<D))/$(*F).o $(subst $(srcdir),$(objdir),$(<D))/$(@F)" -x c++ $(CFLAGS) $< >$(subst $(srcdir),$(objdir),$(<D))/$(@F)
-
 endif
 
 #
@@ -623,7 +555,7 @@ clean:
 
 ifdef	PERL
 	@echo Removing all files generated with perl scripts...
-	@rm -f -r $(app_windres.rc) $(driverlist)
+	@rm -f -r $(driverlist)
 endif
 	@echo Removing executable file...
 	@rm -f $(NAME)
