@@ -32,11 +32,6 @@
 CFG_OPTIONS config_options;
 CFG_KEYMAP config_keymap;
 
-extern char szAppBurnVer[16];
-
-int nAppVirtualFps = 6000; // App fps * 100
-bool bRunPause=0;
-
 int FindDrvByFileName(const char * fn)
 {
 	char sfn[60] = {0, };
@@ -201,8 +196,6 @@ int main(int argc, char **argv )
 	config_options.option_z80core=0; // 0 - cz80, 1 - mame_z80
 	config_options.option_sense=100;
 	config_options.option_useswap=0; // use internal swap for legacy dingux
-	strcpy(config_options.option_startspeed,"NULL");
-	strcpy(config_options.option_selectspeed,"NULL");
 	#ifdef WIN32
 	strcpy(config_options.option_frontend, "./fbacapex.exe");
 	#else
@@ -226,6 +219,8 @@ int main(int argc, char **argv )
 	config_keymap.start1=SDLK_RETURN;	// START
 	config_keymap.pause=SDLK_p;
 	config_keymap.quit=SDLK_q;
+	config_keymap.qsave=SDLK_s;			// quick save
+	config_keymap.qload=SDLK_l;			// quick load
 
 	extern int nZetCpuCore; // 0 - CZ80, 1 - MAME_Z80
 	nZetCpuCore = config_options.option_z80core;

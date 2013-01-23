@@ -259,13 +259,6 @@ unsigned int GetTicks (void)
 void run_fba_emulator(const char *fn)
 {
 	atexit(shutdown);
-	int pwidth=fwidth;
-	int doffset=20;
-	if (config_options.option_rescale>=3)
-	{
-		pwidth=240;
-		doffset=0;
-	}
 
 	printf("about to burnlibinit()\n");
 	InitMemPool();
@@ -451,9 +444,3 @@ finish:
 	printf("---- Shutdown Finalburn Alpha plus ----\n\n");
 	ConfigAppSave();
 }
-
-int BurnStateLoad(const char * szName, int bAll, int (*pLoadGame)());
-int BurnStateSave(const char * szName, int bAll);
-
-
-

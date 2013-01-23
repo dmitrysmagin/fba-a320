@@ -18,6 +18,9 @@
 #define	MAX_PATH 256
 #endif
 
+// drv.cpp
+int DrvInitCallback(); // needed for StatedLoad/StatedSave
+
 // state.cpp
 int BurnStateLoadEmbed(FILE* fp, int nOffset, int bAll, int (*pLoadGame)());
 int BurnStateLoad(const char * szName, int bAll, int (*pLoadGame)());
@@ -27,6 +30,12 @@ int BurnStateSave(const char * szName, int bAll);
 // statec.cpp
 int BurnStateCompress(unsigned char** pDef, int* pnDefLen, int bAll);
 int BurnStateDecompress(unsigned char* Def, int nDefLen, int bAll);
+
+// stated.cpp
+extern int nSavestateSlot;
+int StatedAuto(int bSave);
+int StatedLoad(int nSlot);
+int StatedSave(int nSlot);
 
 // zipfn.cpp
 struct ZipEntry { char* szName;	unsigned int nLen; unsigned int nCrc; };

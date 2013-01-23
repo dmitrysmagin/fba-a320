@@ -60,8 +60,8 @@ int DrvInit(int nDrvNum, bool bRestore)
 	DrvExit();						// Make sure exitted
 //	AudSoundInit();						// Init Sound (not critical if it fails)
 
-	nBurnSoundRate = 0;					// Assume no sound
-	pBurnSoundOut = NULL;
+//	nBurnSoundRate = 0;					// Assume no sound
+//	pBurnSoundOut = NULL;
 //	if (bAudOkay) {
 //		nBurnSoundRate = nAudSampleRate;
 //		nBurnSoundLen = nAudSegLen;
@@ -76,7 +76,7 @@ int DrvInit(int nDrvNum, bool bRestore)
 //	InputMake(true);
 
 //	GameInpDefault();
-	SndInit();
+//	SndInit(); // restore it later (maybe put AFTER DoLibInit)
 
 	if (DoLibInit()) {				// Init the Burn library's driver
 		char szTemp[512];
@@ -104,7 +104,7 @@ int DrvInitCallback()
 	return DrvInit(nBurnDrvSelect, false);
 }
 
-int DrvExit()
+int DrvExit() // add SndExit() here
 {
 	if (bDrvOkay) {
 //		VidExit();
