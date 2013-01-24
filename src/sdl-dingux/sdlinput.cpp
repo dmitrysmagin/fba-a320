@@ -137,13 +137,13 @@ void do_keypad()
 	if ((joy & BUTTON_SL) && (joy & BUTTON_SR)) { // potential bug if keys are redefined!
 		if (joy & BUTTON_Y) { 
 			ChangeFrameskip();
-			pckeydata &= ~(BUTTON_Y | BUTTON_SL | BUTTON_SR);
+			pckeydata &= ~BUTTON_Y;
 		} else if (joy & BUTTON_B && !bPauseOn) {
 			StatedSave(nSavestateSlot);
-			pckeydata &= ~(BUTTON_B | BUTTON_SL | BUTTON_SR);
+			pckeydata &= ~BUTTON_B;
 		} else if (joy & BUTTON_A && !bPauseOn) {
 			StatedLoad(nSavestateSlot);
-			pckeydata &= ~(BUTTON_A | BUTTON_SL | BUTTON_SR);
+			pckeydata &= ~BUTTON_A;
 			bPauseOn = 0;
 		} else if (joy & BUTTON_START) GameLooping = false;  // put enter GUI here later
 		else if (joy & BUTTON_SELECT) ServiceRequest = 1;
