@@ -58,14 +58,6 @@ int RunReset();
 int DrvInit(int nDrvNum, bool bRestore)
 {
 	DrvExit();						// Make sure exitted
-//	AudSoundInit();						// Init Sound (not critical if it fails)
-
-//	nBurnSoundRate = 0;					// Assume no sound
-//	pBurnSoundOut = NULL;
-//	if (bAudOkay) {
-//		nBurnSoundRate = nAudSampleRate;
-//		nBurnSoundLen = nAudSegLen;
-//	}
 	nBurnDrvSelect = nDrvNum;		// Set the driver number
 
 	// Define nMaxPlayers early; GameInpInit() needs it (normally defined in DoLibInit()).
@@ -76,7 +68,6 @@ int DrvInit(int nDrvNum, bool bRestore)
 //	InputMake(true);
 
 //	GameInpDefault();
-//	SndInit(); // restore it later (maybe put AFTER DoLibInit)
 
 	if (DoLibInit()) {				// Init the Burn library's driver
 		char szTemp[512];
@@ -86,6 +77,9 @@ int DrvInit(int nDrvNum, bool bRestore)
 		_stprintf (szTemp, _T("There was an error starting '%s'.\n"), BurnDrvGetText(DRV_FULLNAME));
 		return 1;
 	}
+
+	SndInit();
+	SndOpen();
 
 	BurnExtLoadRom = DrvLoadRom;
 
@@ -104,7 +98,7 @@ int DrvInitCallback()
 	return DrvInit(nBurnDrvSelect, false);
 }
 
-int DrvExit() // add SndExit() here
+int DrvExit()
 {
 	if (bDrvOkay) {
 //		VidExit();
@@ -130,6 +124,7 @@ int DrvExit() // add SndExit() here
 //		// Write silence into the sound buffer on exit, and for drivers which don't use pBurnSoundOut
 //		memset(nAudNextSound, 0, nAudSegLen << 2);
 //	}
+	SndExit();
 
 	nBurnDrvSelect = ~0U;			// no driver selected
 

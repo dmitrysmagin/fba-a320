@@ -169,9 +169,6 @@ void shutdown()
 	BurnLibExit();
 	DestroyMemPool();
 
-	if (config_options.option_sound_enable)
-		SndExit();
-
 	SDL_FreeSurface(load_screen);
 	VideoExit();
 	InpExit();
@@ -357,8 +354,6 @@ void run_fba_emulator(const char *fn)
 	printf ("Let's go!\n");
 
 	VideoClear();
-
-	if(SndOpen()) config_options.option_sound_enable = 0; // disable sound if error
 
 #if 0
 	{
