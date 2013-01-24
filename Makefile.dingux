@@ -55,7 +55,7 @@ endif
 #	Specify paths/files
 #
 
-objdir	= obj/dingux/$(NAME)/
+objdir	= obj/dingux/
 srcdir	= src/
 
 alldir	=	burn \

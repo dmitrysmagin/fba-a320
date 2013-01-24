@@ -55,7 +55,7 @@ endif
 #	Specify paths/files
 #
 
-objdir	= obj/mingw/$(NAME)/
+objdir	= obj/mingw/
 srcdir	= src/
 
 alldir	=	burn \
