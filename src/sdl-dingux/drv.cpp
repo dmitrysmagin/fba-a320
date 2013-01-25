@@ -68,6 +68,8 @@ int DrvInit(int nDrvNum, bool bRestore)
 //	InputMake(true);
 
 //	GameInpDefault();
+	SndInit();
+	//SndOpen();
 
 	if (DoLibInit()) {				// Init the Burn library's driver
 		char szTemp[512];
@@ -78,7 +80,7 @@ int DrvInit(int nDrvNum, bool bRestore)
 		return 1;
 	}
 
-	SndInit();
+	//SndInit();
 	SndOpen();
 
 	BurnExtLoadRom = DrvLoadRom;
@@ -120,10 +122,6 @@ int DrvExit()
 
 	bDrvOkay = 0;					// Stop using the BurnDrv functions
 
-//	if (bAudOkay) {
-//		// Write silence into the sound buffer on exit, and for drivers which don't use pBurnSoundOut
-//		memset(nAudNextSound, 0, nAudSegLen << 2);
-//	}
 	SndExit();
 
 	nBurnDrvSelect = ~0U;			// no driver selected
