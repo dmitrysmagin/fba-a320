@@ -235,7 +235,7 @@ unsigned int Cz80_Get_HL(cz80_struc*);
 
 unsigned int Cz80_Get_PC(cz80_struc*);
 
-
+void Cz80_Set_PC(cz80_struc *CPU, UINT32 val);
 
 #ifdef __cplusplus
 };

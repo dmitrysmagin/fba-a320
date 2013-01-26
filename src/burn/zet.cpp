@@ -902,14 +902,30 @@ int ZetScan(int nAction)
 		}
 	}
 #endif
-#ifdef EMU_CZ80
+
+#ifdef EMU_MAME_Z80
 	if(nZetCpuCore == 1) {
 		char szText[] = "Z80 #0";
 
 		for (int i = 0; i < nCPUCount; i++) {
 			szText[5] = '1' + i;
 
+			ScanVar(&ZetCPUContextZ80[i], sizeof(Z80_Regs), szText);
+		}
+	}
+#endif
+
+#ifdef EMU_CZ80
+	if(nZetCpuCore == 0) {
+		char szText[] = "Z80 #0";
+
+		for (int i = 0; i < nCPUCount; i++) {
+			szText[5] = '1' + i;
+
+			ZetCPUContext[i].PC -= ZetCPUContext[i].BasePC;
+			ZetCPUContext[i].BasePC = 0;
 			ScanVar(&ZetCPUContext[i], (unsigned int)&(ZetCPUContext[i].Fetch)-(unsigned int)&ZetCPUContext[i], szText);
+			Cz80_Set_PC(&ZetCPUContext[i], ZetCPUContext[i].PC);
 		}
 	}
 #endif
