@@ -485,10 +485,12 @@ void killbld_prot_w(unsigned int offset, unsigned short data)
 
 					if (mode == 1 || mode == 2 || mode == 3)
 					{
+#if 0
 FILE *fz;
 fz = fopen("ram.0", "wb");
 fwrite (USER0, 1, 0x2000, fz);
 fclose (fz);
+#endif
 						// for now, cheat -- the scramble isn't understood, it might be state based
 						int x;
 						for (x=0;x<size;x++)
@@ -501,9 +503,11 @@ fclose (fz);
 							dat = RAMDUMP[dst+x];
 							killbld_sharedprotram[dst+x] = dat;
 						}
+#if 0
 fz = fopen("ram.1", "wb");
 fwrite (USER0, 1, 0x2000, fz);
 fclose (fz);
+#endif
 					}
 					else if (mode == 5)
 					{
