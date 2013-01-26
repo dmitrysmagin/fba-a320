@@ -129,7 +129,7 @@ drvobj	=	d_neogeo.o \
 
 depobj	=	\
 			unzip.o bzip.o cache.o config.o drv.o fba_player.o font.o input.o main.o \
-			run.o sdlinput.o sdlvideo.o snd.o state.o statec.o stated.o zipfn.o \
+			run.o sdlinput.o sdlvideo.o snd.o state.o stated.o zipfn.o \
 			\
 			$(drvobj) \
 			\
