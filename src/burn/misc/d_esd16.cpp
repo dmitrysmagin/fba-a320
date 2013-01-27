@@ -1180,7 +1180,7 @@ static int DrvScan(int nAction,int *pnMin)
 	struct BurnArea ba;
 
 	if (pnMin) {
-		*pnMin = 0x029692;
+		*pnMin = 0x029671;
 	}
 
 	if (nAction & ACB_VOLATILE) {	

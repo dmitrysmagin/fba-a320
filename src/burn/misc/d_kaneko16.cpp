@@ -4853,7 +4853,7 @@ static int Kaneko16Scan(int nAction,int *pnMin)
 	struct BurnArea ba;
 
 	if (pnMin != NULL) {
-		*pnMin = 0x029672;
+		*pnMin = 0x029671;
 	}
 	
 	if (Kaneko16Eeprom) EEPROMScan(nAction, pnMin);

@@ -1781,7 +1781,7 @@ static int DrvScan(int nAction, int *pnMin)
 	struct BurnArea ba;
 	
 	if (pnMin != NULL) {			// Return minimum compatible version
-		*pnMin = 0x029691;
+		*pnMin = 0x029671;
 	}
 
 	if (nAction & ACB_MEMORY_RAM) {
