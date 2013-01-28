@@ -1,6 +1,9 @@
 // FB Alpha - Emulator for MC68000/Z80 based arcade games
 //            Refer to the "license.txt" file for more info
 
+#ifndef _BURNER_H_
+#define _BURNER_H_
+
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,6 +22,7 @@
 #endif
 
 // drv.cpp
+extern char szAppRomPaths[DIRS_MAX][MAX_PATH];
 int DrvInitCallback(); // needed for StatedLoad/StatedSave
 
 // state.cpp
@@ -57,6 +61,6 @@ int BzipInit();
 int BzipExit();
 int BzipStatus();
 
-
+#endif // _BURNER_H_
 
 

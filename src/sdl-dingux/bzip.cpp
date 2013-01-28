@@ -1,8 +1,6 @@
 // Burner Zip module
 #include "burner.h"
 
-extern char szAppRomPaths[20] [20]; // path to rom is changeable
-
 int nBzipError = 0;												// non-zero if there is a problem with the opened romset
 
 static TCHAR* szBzipName[BZIP_MAX] = { NULL, };					// Zip files to search through

@@ -2,7 +2,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-#include "burnint.h"
+#include "burner.h"
 #include "cache.h"
 #include "config.h"
 
@@ -53,7 +53,6 @@ static struct BurnCacheHeader {
 static void * BurnCacheBase = 0;
 static int BurnCacheSize = 0;
 
-extern char szAppRomPaths[20][20];
 void show_rom_loading_text(char * szText, int nSize, int nTotalSize);	// fba_player.cpp
 
 void DisableReadAhead()
