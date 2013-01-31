@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <ctype.h>
 
 #include "tchar.h"
 
@@ -34,8 +35,18 @@
 #include "burn.h"
 
 #ifndef MAX_PATH
-#define	MAX_PATH 256
+#define MAX_PATH 512
 #endif
+
+// dat.cpp
+#define APP_TITLE "FB Alpha"
+#define APP_DESCRIPTION "Emulator for MC68000/Z80 based arcade games"
+char* DecorateGameName(unsigned int nBurnDrv);
+int write_datfile(int nDatType, FILE* fDat);
+int create_datfile(TCHAR* szFilename, int nDatType);
+
+// fba_player.cpp
+extern char szAppBurnVer[16];
 
 // drv.cpp
 extern char szAppRomPaths[DIRS_MAX][MAX_PATH];

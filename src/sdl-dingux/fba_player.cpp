@@ -42,8 +42,6 @@
 #define _a(A) _s(A)
 #define VERSION _a(VER_MAJOR.VER_MINOR.VER_BETA.VER_ALPHA)
 
-//extern INT32 create_datfile(TCHAR* szFilename, INT32 bType);
-
 char szAppBurnVer[16] = VERSION;
 
 extern int nAnalogSpeed;
@@ -153,11 +151,11 @@ void CreateCapexLists()
 	}
 	fclose(zipf);
 	fclose(romf);
-	/*char temp[24];
+	char temp[24];
 	strcpy(temp,"FBA ");
 	strcat(temp,szAppBurnVer);
 	strcat(temp,".dat");
-	create_datfile(temp, 0);*/
+	create_datfile(temp, 0);
 }
 
 void shutdown()
