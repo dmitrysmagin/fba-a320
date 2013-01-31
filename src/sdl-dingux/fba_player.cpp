@@ -256,6 +256,8 @@ void run_fba_emulator(const char *fn)
 {
 	atexit(shutdown);
 
+	BurnPathsInit();
+
 	printf("about to burnlibinit()\n");
 	InitMemPool();
 	BurnLibInit();

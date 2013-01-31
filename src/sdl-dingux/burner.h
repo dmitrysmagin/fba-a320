@@ -1,5 +1,21 @@
-// FB Alpha - Emulator for MC68000/Z80 based arcade games
-//            Refer to the "license.txt" file for more info
+/*
+ * FinalBurn Alpha for Dingux/OpenDingux
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ */
 
 #ifndef _BURNER_H_
 #define _BURNER_H_
@@ -25,19 +41,19 @@
 extern char szAppRomPaths[DIRS_MAX][MAX_PATH];
 int DrvInitCallback(); // needed for StatedLoad/StatedSave
 
+// paths.cpp
+extern char szAppHomePath[MAX_PATH];
+extern char szAppSavePath[MAX_PATH];
+void BurnPathsInit();
+
 // state.cpp
 int BurnStateLoadEmbed(FILE* fp, int nOffset, int bAll, int (*pLoadGame)());
 int BurnStateLoad(const char * szName, int bAll, int (*pLoadGame)());
 int BurnStateSaveEmbed(FILE* fp, int nOffset, int bAll);
 int BurnStateSave(const char * szName, int bAll);
 
-// statec.cpp
-int BurnStateCompress(unsigned char** pDef, int* pnDefLen, int bAll);
-int BurnStateDecompress(unsigned char* Def, int nDefLen, int bAll);
-
 // stated.cpp
 extern int nSavestateSlot;
-int StatedAuto(int bSave);
 int StatedLoad(int nSlot);
 int StatedSave(int nSlot);
 
@@ -50,7 +66,6 @@ int ZipGetList(struct ZipEntry** pList, int* pnListCount);
 int ZipLoadFile(unsigned char* Dest, int nLen, int* pnWrote, int nEntry);
 
 // bzip.cpp
-
 #define BZIP_STATUS_OK		(0)
 #define BZIP_STATUS_BADDATA	(1)
 #define BZIP_STATUS_ERROR	(2)
