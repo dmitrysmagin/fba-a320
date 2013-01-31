@@ -21,9 +21,9 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <getopt.h>
+#include <SDL/SDL.h>
 
 #include "burner.h"
-#include "main.h"
 #include "fba_player.h"
 #include "snd.h"
 #include "config.h"
