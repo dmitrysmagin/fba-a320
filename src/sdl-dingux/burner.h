@@ -62,8 +62,6 @@ int BurnStateLoadEmbed(FILE* fp, int nOffset, int bAll, int (*pLoadGame)());
 int BurnStateLoad(const char * szName, int bAll, int (*pLoadGame)());
 int BurnStateSaveEmbed(FILE* fp, int nOffset, int bAll);
 int BurnStateSave(const char * szName, int bAll);
-
-// stated.cpp
 extern int nSavestateSlot;
 int StatedLoad(int nSlot);
 int StatedSave(int nSlot);
