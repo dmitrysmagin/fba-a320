@@ -157,26 +157,26 @@ void do_keypad()
 	sdl_input_read();
 
 	// process redefinable keypresses
-	if (keypad & BUTTON_UP) FBA_KEYPAD[0] |= bVert ? KEYPAD_LEFT : KEYPAD_UP;
-	if (keypad & BUTTON_DOWN) FBA_KEYPAD[0] |= bVert ? KEYPAD_RIGHT : KEYPAD_DOWN;
-	if (keypad & BUTTON_LEFT) FBA_KEYPAD[0] |= bVert ? KEYPAD_DOWN : KEYPAD_LEFT;
-	if (keypad & BUTTON_RIGHT) FBA_KEYPAD[0] |= bVert ? KEYPAD_UP : KEYPAD_RIGHT;
+	if (keypad & KEYPAD_UP) FBA_KEYPAD[0] |= bVert ? KEYPAD_LEFT : KEYPAD_UP;
+	if (keypad & KEYPAD_DOWN) FBA_KEYPAD[0] |= bVert ? KEYPAD_RIGHT : KEYPAD_DOWN;
+	if (keypad & KEYPAD_LEFT) FBA_KEYPAD[0] |= bVert ? KEYPAD_DOWN : KEYPAD_LEFT;
+	if (keypad & KEYPAD_RIGHT) FBA_KEYPAD[0] |= bVert ? KEYPAD_UP : KEYPAD_RIGHT;
 
-	if (keypad & BUTTON_SELECT) FBA_KEYPAD[0] |= KEYPAD_COIN;
-	if (keypad & BUTTON_START) FBA_KEYPAD[0] |= KEYPAD_START;
+	if (keypad & KEYPAD_COIN) FBA_KEYPAD[0] |= KEYPAD_COIN;
+	if (keypad & KEYPAD_START) FBA_KEYPAD[0] |= KEYPAD_START;
 
-	if (keypad & BUTTON_A) FBA_KEYPAD[0] |= KEYPAD_FIRE1;		// A
-	if (keypad & BUTTON_B) FBA_KEYPAD[0] |= KEYPAD_FIRE2;		// B
-	if (keypad & BUTTON_X) FBA_KEYPAD[0] |= KEYPAD_FIRE3;		// C
-	if (keypad & BUTTON_Y) FBA_KEYPAD[0] |= KEYPAD_FIRE4;		// D
-	if (keypad & BUTTON_SL) FBA_KEYPAD[0] |= KEYPAD_FIRE5;		// E
-	if (keypad & BUTTON_SR) FBA_KEYPAD[0] |= KEYPAD_FIRE6;		// F
+	if (keypad & KEYPAD_FIRE1) FBA_KEYPAD[0] |= KEYPAD_FIRE1;		// A
+	if (keypad & KEYPAD_FIRE2) FBA_KEYPAD[0] |= KEYPAD_FIRE2;		// B
+	if (keypad & KEYPAD_FIRE3) FBA_KEYPAD[0] |= KEYPAD_FIRE3;		// X
+	if (keypad & KEYPAD_FIRE4) FBA_KEYPAD[0] |= KEYPAD_FIRE4;		// Y
+	if (keypad & KEYPAD_FIRE5) FBA_KEYPAD[0] |= KEYPAD_FIRE5;		// L
+	if (keypad & KEYPAD_FIRE6) FBA_KEYPAD[0] |= KEYPAD_FIRE6;		// R
 
 	// process non-redefinable keypresses
 	if (keypc & BUTTON_QT) GameLooping=false;
 
 	if (keypc & BUTTON_MENU) {
-		keypc &= ~BUTTON_MENU;
+		keypc = keypad = 0;
 		SndPause(1);
 		gui_Run();
 		SndPause(0);
