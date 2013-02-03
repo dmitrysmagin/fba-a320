@@ -31,6 +31,7 @@
 #include "burner.h"
 #include "config.h"
 #include "cache.h"
+#include "sdlgui.h"
 #include "sdlvideo.h"
 #include "sdlinput.h"
 
@@ -166,6 +167,8 @@ void shutdown()
 	BurnLibExit();
 	DestroyMemPool();
 
+	gui_Exit();
+
 	SDL_FreeSurface(load_screen);
 	VideoExit();
 	InpExit();
@@ -255,6 +258,7 @@ void run_fba_emulator(const char *fn)
 	atexit(shutdown);
 
 	BurnPathsInit();
+	gui_Init();
 
 	printf("about to burnlibinit()\n");
 	InitMemPool();
