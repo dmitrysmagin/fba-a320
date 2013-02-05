@@ -4,7 +4,6 @@
 
 #include "burner.h"
 #include "cache.h"
-#include "config.h"
 
 #ifndef WIN32
 #include <sys/mman.h>
