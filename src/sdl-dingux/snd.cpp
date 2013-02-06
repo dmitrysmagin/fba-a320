@@ -13,8 +13,6 @@
 #include "burner.h"
 #include "snd.h"
 
-extern bool bPauseOn;
-
 #ifdef USE_LIBAO
 ao_device *ao_dev;
 ao_sample_format ao;
@@ -22,8 +20,6 @@ ao_sample_format ao;
 
 SDL_mutex *sound_mutex;
 SDL_cond *sound_cv;
-
-extern int nBurnFPS;
 
 int dspfd = -1;
 

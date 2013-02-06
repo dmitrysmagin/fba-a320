@@ -97,13 +97,27 @@ int ConfigGameSave();
 
 // drv.cpp
 extern char szAppRomPaths[DIRS_MAX][MAX_PATH];
+int DrvInit(int nDrvNum, bool bRestore);
+int DrvExit();
 int DrvInitCallback(); // needed for StatedLoad/StatedSave
+
+// input.cpp
+int InpInit();
+int InpExit();
+void InpDIP();
 
 // paths.cpp
 extern char szAppHomePath[MAX_PATH];
 extern char szAppSavePath[MAX_PATH];
 extern char szAppConfigPath[MAX_PATH];
 void BurnPathsInit();
+
+// run.cpp
+extern unsigned int nFramesRendered;
+extern bool bShowFPS;
+extern bool bPauseOn;
+int RunReset();
+int RunOneFrame(bool bDraw, int fps);
 
 // state.cpp
 int BurnStateLoadEmbed(FILE* fp, int nOffset, int bAll, int (*pLoadGame)());

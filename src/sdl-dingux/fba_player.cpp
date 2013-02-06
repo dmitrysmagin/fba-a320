@@ -48,30 +48,8 @@ extern int nAnalogSpeed;
 
 SDL_Surface *load_screen;
 int fwidth = 320, fheight = 240; // text surface
-
-extern unsigned int nFramesRendered;
 static int frame_count = 0;
-extern bool bShowFPS;
-void ChangeFrameskip();
-
-extern bool bPauseOn;
-
 bool GameLooping;
-
-int DrvInit(int nDrvNum, bool bRestore);
-int DrvExit();
-
-int RunReset();
-int RunOneFrame(bool bDraw, int fps);
-
-int VideoInit();
-void VideoExit();
-
-int InpInit();
-int InpExit();
-void InpDIP();
-
-extern int nBurnFPS;
 int fps=0;
 
 void blit_loading_screen()
