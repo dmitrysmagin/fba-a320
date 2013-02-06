@@ -92,7 +92,8 @@ extern CFG_KEYMAP config_keymap;
 
 int ConfigAppLoad();
 int ConfigAppSave();
-
+int ConfigGameLoad();
+int ConfigGameSave();
 
 // drv.cpp
 extern char szAppRomPaths[DIRS_MAX][MAX_PATH];
@@ -101,6 +102,7 @@ int DrvInitCallback(); // needed for StatedLoad/StatedSave
 // paths.cpp
 extern char szAppHomePath[MAX_PATH];
 extern char szAppSavePath[MAX_PATH];
+extern char szAppConfigPath[MAX_PATH];
 void BurnPathsInit();
 
 // state.cpp
