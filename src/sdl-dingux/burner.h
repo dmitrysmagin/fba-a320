@@ -102,6 +102,7 @@ int DrvExit();
 int DrvInitCallback(); // needed for StatedLoad/StatedSave
 
 // input.cpp
+extern int nAnalogSpeed;
 int InpInit();
 int InpExit();
 void InpDIP();

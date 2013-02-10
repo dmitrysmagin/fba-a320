@@ -43,9 +43,6 @@
 #define VERSION _a(VER_MAJOR.VER_MINOR.VER_BETA.VER_ALPHA)
 
 char szAppBurnVer[16] = VERSION;
-
-extern int nAnalogSpeed;
-
 SDL_Surface *load_screen;
 int fwidth = 320, fheight = 240; // text surface
 static int frame_count = 0;
