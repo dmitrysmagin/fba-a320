@@ -165,7 +165,7 @@ int main(int argc, char **argv )
 	{
 		int c;
 		printf ("Usage: %s <path to rom><shortname>.zip\n   ie: %s ./uopoko.zip\n Note: Path and .zip extension are mandatory.\n\n",argv[0], argv[0]);
-		printf ("Supported (but not necessarily working via fba-gp2x) roms:\n\n");
+		printf ("Supported (but not necessarily working) roms:\n\n");
 
 		BurnLibInit();
 		for (nBurnDrvSelect=0; nBurnDrvSelect<nBurnDrvCount; nBurnDrvSelect++)
