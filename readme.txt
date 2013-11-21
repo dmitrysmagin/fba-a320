@@ -139,3 +139,14 @@ exmortis [at] yandex [dot] ru
 
 FB Alpha is written by FB Alpha Team
 http://www.barryharris.me.uk/
+
+Acknowledgements
+----------------
+
+Thanks to: Dave, ElSemi, Gangta, OG, Razoola, Logiqx, TRAC, CrashTest,
+           Andrea Mazzoleni, Derek Liauw Kie Fa, Dirk Stevens, Maxim Stepin,
+           the MAME team, Shawn and Craig at XGaming.
+
+Thanks also to everyone who has made suggestions, submitted code, or helped
+in any other way.
+
