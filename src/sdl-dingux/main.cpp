@@ -187,7 +187,7 @@ int main(int argc, char **argv )
 	config_options.option_sound_enable = 2;
 	config_options.option_rescale = 0; // no scaling by default
 	config_options.option_rotate = 0;
-	config_options.option_samplerate = 0;
+	config_options.option_samplerate = 1; // 0 - 11025, 1 - 22050, 2 - 44100
 	config_options.option_showfps = 0;
 	config_options.option_frameskip = -1; // auto frameskip by default
 	config_options.option_create_lists=0;
@@ -226,6 +226,8 @@ int main(int argc, char **argv )
 
 	extern int nSekCpuCore; // 0 - c68k, 1 - m68k, 2 - a68k
 	nSekCpuCore = config_options.option_68kcore;
+
+	bForce60Hz = true;
 
 	// Run emu loop
 	run_fba_emulator (path);
