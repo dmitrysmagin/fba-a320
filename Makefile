@@ -21,7 +21,7 @@ DEPEND = 1
 PERL = 1
 
 # Choose emulation cores
-#BUILD_A68K = 1
+BUILD_A68K = 1
 BUILD_C68K = 1
 #BUILD_M68K = 1
 USE_LIBAO = 1
@@ -378,7 +378,7 @@ endif
 ifdef	BUILD_A68K
 $(a68k.o):	fba_make68k.c
 	@echo Compiling A68K MC68000 core...
-	@$(HOSTCC) $(LDFLAGS) -DWIN32 -Wno-unused -Wno-conversion -Wno-missing-prototypes \
+	@$(HOSTCC) $(HOSTCFLAGS) $(LDFLAGS) -DWIN32 -Wno-unused -Wno-conversion -Wno-missing-prototypes \
 		-s $< -o $(objdir)generated/fba_make68k
 	@$(objdir)generated/fba_make68k $(@:.o=.asm) \
 		$(@D)/a68k_tab.asm 00 $(ppro)
