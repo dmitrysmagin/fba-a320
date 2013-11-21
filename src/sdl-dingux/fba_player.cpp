@@ -295,7 +295,7 @@ void run_fba_emulator(const char *fn)
 		while (GameLooping)
 		{
 			RunOneFrame(draw_this_frame, fps);
-			SndFrameRendered();
+			SndPlay();
 
 			now = get_ticks_us();
 			draw_this_frame = true;
@@ -350,12 +350,12 @@ void run_fba_emulator(const char *fn)
 			for (i=0; i<ticks-1; i++)
 			{
 				RunOneFrame(false,fps);
-				SndFrameRendered();
+				SndPlay();
 			}
 			if(ticks>=1)
 			{
 				RunOneFrame(true,fps);
-				SndFrameRendered();
+				SndPlay();
 			}
 
 			done = now;

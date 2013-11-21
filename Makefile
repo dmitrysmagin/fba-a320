@@ -24,7 +24,7 @@ PERL = 1
 #BUILD_A68K = 1
 BUILD_C68K = 1
 #BUILD_M68K = 1
-
+USE_LIBAO = 1
 
 #
 #	Declare variables
@@ -89,6 +89,10 @@ else
 lib = -lstdc++ -lpng -lSDL -lz
 endif
 
+ifdef USE_LIBAO
+	lib += -lao
+endif
+
 drvobj	=	d_neogeo.o \
 			\
 			dc_3wonders.o dc_1941.o dc_1944.o dc_19xx.o dc_armwar.o dc_avsp.o dc_batcir.o \
@@ -127,9 +131,13 @@ drvobj	=	d_neogeo.o \
 			#\
 			#d_psikyo.o
 
-depobj	=	\
+ifdef USE_LIBAO
+	depobj = aoaudio.o 
+endif
+
+depobj	+=	\
 			unzip.o bzip.o cache.o config.o dat.o drv.o fba_player.o font.o input.o main.o \
-			paths.o run.o sdlgui.o sdlinput.o sdlvideo.o snd.o state.o zipfn.o \
+			paths.o run.o sdlaudio.o sdlgui.o sdlinput.o sdlvideo.o snd.o state.o zipfn.o \
 			\
 			$(drvobj) \
 			\
@@ -234,6 +242,11 @@ CXXFLAGS = -O2 -fomit-frame-pointer -Wno-write-strings \
 ifneq ($(OS),Windows_NT)
 CFLAGS += -D__cdecl="" -D__fastcall=""
 CXXFLAGS += -D__cdecl="" -D__fastcall=""
+endif
+
+ifdef USE_LIBAO
+	CFLAGS += -DUSE_LIBAO
+	CXXFLAGS += -DUSE_LIBAO
 endif
 
 DEF = -DCPUTYPE=$(CPUTYPE) -DBUILD_SDL -DUSE_SPEEDHACKS -DOOPSWARE_FIX

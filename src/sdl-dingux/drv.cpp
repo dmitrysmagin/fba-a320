@@ -20,6 +20,8 @@ static int DoLibInit()					// Do Init of Burn library driver
 
 	BzipClose();
 
+	//ProgressDestroy();
+
 	if (nRet) {
 		return 1;
 	} else {
@@ -52,12 +54,18 @@ static int DrvLoadRom(unsigned char* Dest, int* pnWrote, int i)
 	return nRet;
 }
 
-int DrvExit();
-int RunReset();
-
 int DrvInit(int nDrvNum, bool bRestore)
 {
-	DrvExit();						// Make sure exitted
+	DrvExit();			// Make sure exitted
+	SndInit(); //AudSoundInit();	// Init Sound (not critical if it fails)
+
+	/*nBurnSoundRate = 0;		// Assume no sound
+	pBurnSoundOut = NULL;
+	if (bAudOkay) {
+		nBurnSoundRate = nAudSampleRate[0];
+		nBurnSoundLen = nAudSegLen;
+	}*/
+
 	nBurnDrvSelect = nDrvNum;		// Set the driver number
 
 	// Define nMaxPlayers early; GameInpInit() needs it (normally defined in DoLibInit()).
@@ -68,8 +76,6 @@ int DrvInit(int nDrvNum, bool bRestore)
 //	InputMake(true);
 
 //	GameInpDefault();
-	SndInit();
-	//SndOpen();
 
 	if (DoLibInit()) {				// Init the Burn library's driver
 		char szTemp[512];
@@ -79,9 +85,6 @@ int DrvInit(int nDrvNum, bool bRestore)
 		_stprintf (szTemp, _T("There was an error starting '%s'.\n"), BurnDrvGetText(DRV_FULLNAME));
 		return 1;
 	}
-
-	//SndInit();
-	SndOpen();
 
 	BurnExtLoadRom = DrvLoadRom;
 
@@ -103,11 +106,14 @@ int DrvInitCallback()
 int DrvExit()
 {
 	if (bDrvOkay) {
+//		StopReplay();
 //		VidExit();
 
 		if (nBurnDrvSelect < nBurnDrvCount) {
-			if (bSaveRAM) {
+			//MemCardEject();				// Eject memory card if present
 
+			if (bSaveRAM) {
+				//StatedAuto(1);			// Save NV (or full) RAM
 				bSaveRAM = false;
 			}
 
@@ -122,6 +128,12 @@ int DrvExit()
 
 	bDrvOkay = 0;					// Stop using the BurnDrv functions
 
+	//bRunPause = 0;					// Don't pause when exitted
+
+//	if (bAudOkay) {
+//		// Write silence into the sound buffer on exit, and for drivers which don't use pBurnSoundOut
+//		memset(nAudNextSound, 0, nAudSegLen << 2);
+//	}
 	SndExit();
 
 	nBurnDrvSelect = ~0U;			// no driver selected
