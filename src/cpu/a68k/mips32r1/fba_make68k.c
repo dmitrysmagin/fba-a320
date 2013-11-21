@@ -6822,7 +6822,7 @@ char macroinc[] =
 "    sra   \\dest,\\dest,16\n"
 ".endm\n"
 "\n"
-#if 0
+#if 1
 ".macro m_ror dest,src,shift\n"
 "    sw    $t0,-4($sp)\n"
 "    srl   $t0,\\dest,\\shift\n"
