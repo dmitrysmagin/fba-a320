@@ -17,12 +17,16 @@
  *
  */
 
+#include <stdio.h>
+#include <string.h>
 #include <sys/time.h>
 #include <SDL/SDL.h>
 
 #include "version.h"
 #include "burner.h"
-#include "sdlvideo.h"
+#include "snd.h"
+#include "sdl_run.h"
+#include "sdl_video.h"
 
 #define _s(A) #A
 #define _a(A) _s(A)
@@ -60,21 +64,24 @@ typedef struct {
 static void gui_Stub() { }
 static void gui_LoadState() { extern int done; if(!StatedLoad(nSavestateSlot)) done = 1; }
 static void gui_Savestate() { StatedSave(nSavestateSlot); }
-static void call_exit() { extern bool GameLooping; extern int done; GameLooping = false; done = 1; }
+static void call_exit() { extern int done; GameLooping = false; done = 1; }
 static void call_continue() { extern int done; done = 1; }
 static void gui_KeyMenuRun();
+static void gui_reset();
 
 /* data definitions */
 char *gui_KeyNames[] = {"A", "B", "X", "Y", "L", "R"};
 int gui_KeyData[] = {0, 1, 2, 3, 4, 5};
 int gui_KeyValue[] = {SDLK_LCTRL, SDLK_LALT, SDLK_SPACE, SDLK_LSHIFT, SDLK_TAB, SDLK_BACKSPACE};
+char *gui_SoundDrvNames[] = {"No sound", "LIBAO", "SDL mutex", "SDL"};
+char *gui_SoundSampleRates[] = {"11025", "16000", "22050", "32000", "44100"};
 
 MENUITEM gui_MainMenuItems[] = {
 	{(char *)"Continue", NULL, 0, NULL, &call_continue},
 	{(char *)"Key config", NULL, 0, NULL, &gui_KeyMenuRun},
 	{(char *)"Load state: ", &nSavestateSlot, 9, NULL, &gui_LoadState},
 	{(char *)"Save state: ", &nSavestateSlot, 9, NULL, &gui_Savestate},
-	{(char *)"Reset", NULL, 0, NULL, &gui_Stub},
+	{(char *)"Reset", NULL, 0, NULL, &gui_reset},
 	{(char *)"Exit", NULL, 0, NULL, &call_exit},
 	{NULL, NULL, 0, NULL, NULL}
 };
@@ -226,16 +233,22 @@ void gui_MenuRun(MENU *menu)
 static void gui_KeyMenuRun()
 {
 	// key decode
-	int *key = &config_keymap.fire1;
+	int *key = &keymap.fire1;
 	for(int i = 0; i < 6; key++, i++)
 		for(int j = 0; j < 6; j++) if(gui_KeyValue[j] == *key) gui_KeyData[i] = j;
 
 	gui_MenuRun(&gui_KeyMenu);
 
 	// key encode
-	key = &config_keymap.fire1;
+	key = &keymap.fire1;
 	for(int i = 0; i < 6; key++, i++)
 		*key = gui_KeyValue[gui_KeyData[i]];
+}
+
+static void gui_reset()
+{
+	DrvInitCallback();
+	done = 1;
 }
 
 /* exported functions */ 
@@ -254,6 +267,7 @@ void gui_Run()
 
 	VideoClear();
 	SDL_EnableKeyRepeat(/*SDL_DEFAULT_REPEAT_DELAY*/ 150, /*SDL_DEFAULT_REPEAT_INTERVAL*/30);
+	gui_MainMenu.itemCur = 0;
 	gui_MenuRun(&gui_MainMenu);
 	SDL_EnableKeyRepeat(0, 0);
 	ConfigGameSave();

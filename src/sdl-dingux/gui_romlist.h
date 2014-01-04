@@ -16,12 +16,29 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+#ifndef _GUI_ROMLIST_H_
+#define _GUI_ROMLIST_H_
 
-#ifndef _FBA_PLAYER_
-#define _FBA_PLAYER_
+#define NB_FILTERS	4
+#define NB_MAX_GAMES	6000
 
+typedef struct
+{
+	unsigned int nb_rom;
+	unsigned int nb_list[NB_FILTERS];
+	char *name[NB_MAX_GAMES];
+	char *zip[NB_MAX_GAMES];
+	char *year[NB_MAX_GAMES];
+	char *manufacturer[NB_MAX_GAMES];
+	char *parent[NB_MAX_GAMES];
+	unsigned char etat[NB_MAX_GAMES];
+	unsigned int longueur[NB_MAX_GAMES];
+	unsigned int long_max;
+} ROMLIST;
 
-void CreateCapexLists();
-void run_fba_emulator(const char *);
+extern ROMLIST romlist;
+extern unsigned int romsort[NB_FILTERS][NB_MAX_GAMES];
 
-#endif	// _FBA_PLAYER_
+void gui_sort_romlist();
+
+#endif // _GUI_ROMLIST_H_

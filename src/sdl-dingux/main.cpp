@@ -17,36 +17,108 @@
  *
  */
 
+#include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <getopt.h>
 #include <SDL/SDL.h>
 
 #include "burner.h"
-#include "fba_player.h"
 #include "snd.h"
-#include "sdlvideo.h"
+#include "sdl_run.h"
+#include "sdl_video.h"
+#include "gui_main.h"
 
-CFG_OPTIONS config_options;
-CFG_KEYMAP config_keymap;
+char szAppBurnVer[16] = VERSION;
 
-int FindDrvByFileName(const char * fn)
+void CreateCapexLists()
 {
-	char sfn[60] = {0, };
-	for (int i=strlen(fn)-1; i>=0; i-- ) {
-		if (fn[i] == '/' || fn[i] == '\\' ) {
-			strcpy( sfn, fn + i + 1 );
-			break;
+	printf("Create rom lists (%d)\n",nBurnDrvCount);
+	FILE *zipf;
+	FILE *romf;
+	zipf = fopen("zipname.fba","w");
+	romf = fopen("rominfo.fba","w");
+	char *fullname;
+	int j;
+	for(int i = 0; i < nBurnDrvCount; i++) {
+		nBurnDrvSelect = i;
+		fullname = (char*)malloc(strlen(BurnDrvGetTextA(DRV_FULLNAME)) + 1);
+		strcpy(fullname, BurnDrvGetTextA(DRV_FULLNAME));
+		for(j = 0; j < strlen(fullname); j++) {
+			if(fullname[j] == ',') fullname[j] = ' ';
 		}
-	}
-	if (sfn[0] == 0 ) strcpy( sfn, fn );
-	char * p = strrchr( sfn, '.' );
-	if (p) *p = 0;
 
-	for (nBurnDrvSelect=0; nBurnDrvSelect<nBurnDrvCount; nBurnDrvSelect++)
-		if ( strcasecmp(sfn, BurnDrvGetText(DRV_NAME)) == 0 )
+		if(BurnDrvGetTextA(DRV_PARENT))
+			fprintf(romf,
+				"FILENAME( %s %s %s \"%s\" )\n",
+				BurnDrvGetTextA(DRV_NAME),
+				BurnDrvGetTextA(DRV_PARENT),
+				BurnDrvGetTextA(DRV_DATE),
+				BurnDrvGetTextA(DRV_MANUFACTURER));
+		else
+			fprintf(romf,
+				"FILENAME( %s fba %s \"%s\" )\n",
+				BurnDrvGetTextA(DRV_NAME),
+				BurnDrvGetTextA(DRV_DATE),
+				BurnDrvGetTextA(DRV_MANUFACTURER));
+
+		fprintf(zipf,
+			"%s,%s,%s %s\n",
+			BurnDrvGetTextA(DRV_NAME),
+			fullname,
+			BurnDrvGetTextA(DRV_DATE),
+			BurnDrvGetTextA(DRV_MANUFACTURER));
+		free(fullname);
+	}
+	fclose(zipf);
+	fclose(romf);
+	char temp[24];
+	strcpy(temp,"FBA ");
+	strcat(temp,szAppBurnVer);
+	strcat(temp,".dat");
+	create_datfile(temp, 0);
+}
+
+int FindDrvByFileName(const char *fn)
+{
+	char romname[MAX_PATH];
+	char *p;
+
+	// FIXME: use p = strrchr(fn, '/');
+	// and add given path to szAppRomPaths list
+	strcpy(szAppRomPaths[0], fn);
+	p = strrchr(szAppRomPaths[0], '/');
+	if(p) {
+		p++;
+		strcpy(romname, p);
+
+		*p = 0;
+		p = strrchr(romname, '.');
+		if(p) *p = 0;
+		else {
+			// error
+			return -1;
+		}
+	} else {
+		// error
+		return -1;
+	}
+
+	// find rom by name
+	for(nBurnDrvSelect = 0; nBurnDrvSelect < nBurnDrvCount; nBurnDrvSelect++) {
+		if(strcasecmp(romname, BurnDrvGetText(DRV_NAME)) == 0)
 			return nBurnDrvSelect;
+	}
+
+	if(nBurnDrvSelect >= nBurnDrvCount) {
+		// unsupport rom ...
+		nBurnDrvSelect = ~0U;
+		printf("Rom %s not supported!\n", romname);
+		return -1;
+	}
+
 	nBurnDrvSelect = 0;
 	return -1;
 }
@@ -63,19 +135,20 @@ void parse_cmd(int argc, char *argv[], char *path)
 	}
 
 	static struct option long_opts[] = {
-		{"sound-sdl-old", 0, &config_options.option_sound_enable, 3},
-		{"sound-sdl", 0, &config_options.option_sound_enable, 2},
-		{"sound-ao", 0, &config_options.option_sound_enable, 1},
-		{"no-sound", 0, &config_options.option_sound_enable, 0},
+		{"sound-sdl-old", 0, &options.sound, 3},
+		{"sound-sdl", 0, &options.sound, 2},
+		{"sound-ao", 0, &options.sound, 1},
+		{"no-sound", 0, &options.sound, 0},
 		{"samplerate", required_argument, 0, 'r'},
 		{"frameskip", required_argument, 0, 'c'},
+		{"vsync", 0, &options.vsync, 1},
 		{"scaling", required_argument, 0, 'a'},
 		{"rotate", required_argument, 0, 'o'},
 		{"sense", required_argument, 0, 'd'},
-		{"showfps", 0, &config_options.option_showfps, 1},
-		{"no-showfps", 0, &config_options.option_showfps, 0},
-		{"create-lists", 0, &config_options.option_create_lists, 1},
-		{"use-swap", 0, &config_options.option_useswap, 1},
+		{"showfps", 0, &options.showfps, 1},
+		{"no-showfps", 0, &options.showfps, 0},
+		{"create-lists", 0, &options.create_lists, 1},
+		{"use-swap", 0, &options.useswap, 1},
 		{"68kcore", required_argument, 0, 's'},
 		{"z80core", required_argument, 0, 'z'},
 		{"frontend", required_argument, 0, 'f'}
@@ -89,20 +162,20 @@ void parse_cmd(int argc, char *argv[], char *path)
 		switch(c) {
 			case 'r':
 				if(!optarg) continue;
-				if(strcmp(optarg, "11025") == 0) config_options.option_samplerate = 0;
-				if(strcmp(optarg, "16000") == 0) config_options.option_samplerate = 1;
-				if(strcmp(optarg, "22050") == 0) config_options.option_samplerate = 2;
-				if(strcmp(optarg, "32000") == 0) config_options.option_samplerate = 3;
-				if(strcmp(optarg, "44100") == 0) config_options.option_samplerate = 4;
+				if(strcmp(optarg, "11025") == 0) options.samplerate = 0;
+				if(strcmp(optarg, "16000") == 0) options.samplerate = 1;
+				if(strcmp(optarg, "22050") == 0) options.samplerate = 2;
+				if(strcmp(optarg, "32000") == 0) options.samplerate = 3;
+				if(strcmp(optarg, "44100") == 0) options.samplerate = 4;
 				break;
 			case 'c':
 				if(!optarg) continue;
-				if(strcmp(optarg, "auto") == 0) config_options.option_frameskip = -1;
+				if(strcmp(optarg, "auto") == 0) options.frameskip = -1;
 				else {
 					z2=0;
 					sscanf(optarg,"%d",&z2);
-					if ((z2>59) || (z2<0)) z2=0;
-					config_options.option_frameskip = z2;
+					if ((z2>60) || (z2<0)) z2=0;
+					options.frameskip = z2;
 				}
 				break;
 			case 's':
@@ -110,43 +183,43 @@ void parse_cmd(int argc, char *argv[], char *path)
 				z2=0;
 				sscanf(optarg,"%d",&z2);
 				if ((z2>2) || (z2<0)) z2=0;
-				config_options.option_68kcore = z2;
+				options.m68kcore = z2;
 				break;
 			case 'z':
 				if(!optarg) continue;
 				z2=0;
 				sscanf(optarg,"%d",&z2);
-				if ((z2>1) || (z2<0)) z2=0;
-				config_options.option_z80core = z2;
+				if ((z2>2) || (z2<0)) z2=0;
+				options.z80core = z2;
 				break;
 			case 'a':
 				if(!optarg) continue;
 				z2=0;
 				sscanf(optarg,"%d",&z2);
 				if ((z2>3) || (z2<0)) z2=0;
-				config_options.option_rescale = z2;
+				options.rescale = z2;
 				break;
 			case 'o':
 				if(!optarg) continue;
 				z2=0;
 				sscanf(optarg,"%d",&z2);
 				if ((z2>2) || (z2<0)) z2=0;
-				config_options.option_rotate = z2;
+				options.rotate = z2;
 				break;
 			case 'd':
 				if(!optarg) continue;
 				z2=0;
 				sscanf(optarg,"%d",&z2);
 				if ((z2>100) || (z2<10)) z2=100;
-				config_options.option_sense = z2;
+				options.sense = z2;
 				break;
 			case 'f':
 				if(!optarg) continue;
 				p = strrchr(optarg, '/');
 				if(p == NULL)
-					sprintf(config_options.option_frontend, "%s%s", "./", optarg);
+					sprintf(options.frontend, "%s%s", "./", optarg);
 				else
-					strcpy(config_options.option_frontend, optarg);
+					strcpy(options.frontend, optarg);
 				break;
 		}
 	}
@@ -164,6 +237,9 @@ int main(int argc, char **argv )
 {
 	char path[MAX_PATH];
 
+	BurnLibInit();		// init Burn core
+	BurnPathsInit();	// init paths or create them if needed
+/*
 	if (argc < 2)
 	{
 		int c;
@@ -185,104 +261,34 @@ int main(int argc, char **argv )
 		CreateCapexLists(); // generate rominfo.fba and zipname.fba
 		return 0;
 	}
+*/
 
-	//Initialize configuration options
-	config_options.option_sound_enable = 2;
-	config_options.option_rescale = 0; // no scaling by default
-	config_options.option_rotate = 0;
-	config_options.option_samplerate = 3; // 0 - 11025, 1 - 16000, 2 - 22050, 3 - 32000
-	config_options.option_showfps = 0;
-	config_options.option_frameskip = -1; // auto frameskip by default
-	config_options.option_create_lists=0;
-	config_options.option_68kcore=0; // 0 - c68k, 1 - m68k, 2 - a68k
-	config_options.option_z80core=0; // 0 - cz80, 1 - mame_z80
-	config_options.option_sense=100;
-	config_options.option_useswap=0; // use internal swap for legacy dingux
-	#ifdef WIN32
-	strcpy(config_options.option_frontend, "./fbacapex.exe");
-	#else
-	strcpy(config_options.option_frontend, "./fbacapex.dge");
-	#endif
-	printf("about to parse cmd\n");
-	parse_cmd(argc, argv,path);
-	printf("finished parsing\n");
+	ConfigGameDefault();
 
-	config_keymap.up=SDLK_UP;
-	config_keymap.down=SDLK_DOWN;
-	config_keymap.left=SDLK_LEFT;
-	config_keymap.right=SDLK_RIGHT;
-	config_keymap.fire1=SDLK_LCTRL;		// A
-	config_keymap.fire2=SDLK_LALT;		// B
-	config_keymap.fire3=SDLK_SPACE;		// X
-	config_keymap.fire4=SDLK_LSHIFT;	// Y
-	config_keymap.fire5=SDLK_TAB;		// L
-	config_keymap.fire6=SDLK_BACKSPACE;	// R
-	config_keymap.coin1=SDLK_ESCAPE;	// SELECT
-	config_keymap.start1=SDLK_RETURN;	// START
-	config_keymap.pause=SDLK_p;
-	config_keymap.quit=SDLK_q;
-	config_keymap.qsave=SDLK_s;			// quick save
-	config_keymap.qload=SDLK_l;			// quick load
+	// alter cfg if any param is given
+	if (argc >= 2)
+		parse_cmd(argc, argv, path);
 
-	extern int nZetCpuCore; // 0 - CZ80, 1 - MAME_Z80
-	nZetCpuCore = config_options.option_z80core;
+	ConfigAppLoad();
 
-	extern int nSekCpuCore; // 0 - c68k, 1 - m68k, 2 - a68k
-	nSekCpuCore = config_options.option_68kcore;
+	if((SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE)) < 0) {
+		printf("Sdl failed to init\n");
+		exit(0);
+	}
 
-	bForce60Hz = true;
+	if (argc < 2)
+		GuiRun();
+	else {
+		int drv;
 
-	// Run emu loop
-	run_fba_emulator (path);
+		if((drv = FindDrvByFileName(path)) >= 0)
+			RunEmulator(drv);
+	}
+
+	BurnLibExit();
+
+	ConfigAppSave();
+	SDL_Quit();
 
 	return 0;
-}
-
-
-TCHAR* ANSIToTCHAR(const char* pszInString, TCHAR* pszOutString, int nOutSize)
-{
-#if defined (UNICODE)
-	static TCHAR szStringBuffer[1024];
-
-	TCHAR* pszBuffer = pszOutString ? pszOutString : szStringBuffer;
-	int nBufferSize  = pszOutString ? nOutSize * 2 : sizeof(szStringBuffer);
-
-	if (MultiByteToWideChar(CP_ACP, 0, pszInString, -1, pszBuffer, nBufferSize)) {
-		return pszBuffer;
-	}
-
-	return NULL;
-#else
-	if (pszOutString) {
-		_tcscpy(pszOutString, pszInString);
-		return pszOutString;
-	}
-
-	return (TCHAR*)pszInString;
-#endif
-}
-
-
-char* TCHARToANSI(const TCHAR* pszInString, char* pszOutString, int nOutSize)
-{
-#if defined (UNICODE)
-	static char szStringBuffer[1024];
-	memset(szStringBuffer, 0, sizeof(szStringBuffer));
-
-	char* pszBuffer = pszOutString ? pszOutString : szStringBuffer;
-	int nBufferSize = pszOutString ? nOutSize * 2 : sizeof(szStringBuffer);
-
-	if (WideCharToMultiByte(CP_ACP, 0, pszInString, -1, pszBuffer, nBufferSize, NULL, NULL)) {
-		return pszBuffer;
-	}
-
-	return NULL;
-#else
-	if (pszOutString) {
-		strcpy(pszOutString, pszInString);
-		return pszOutString;
-	}
-
-	return (char*)pszInString;
-#endif
 }

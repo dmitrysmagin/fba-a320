@@ -1,5 +1,6 @@
 // Burner Zip module
 #include "burner.h"
+#include "sdl_progress.h"
 
 int nBzipError = 0;												// non-zero if there is a problem with the opened romset
 
@@ -112,31 +113,6 @@ static int FindRom(int i)
 
 static int RomDescribe(struct BurnRomInfo* /*pri*/)
 {
-#if 0
-	if (nBzipError == 0) {
-		nBzipError |= 0x8000;
-
-		FBAPopupAddText(PUF_TEXT_DEFAULT, MAKEINTRESOURCE(IDS_ERR_LOAD_INVALID));
-	}
-
-	FBAPopupAddText(PUF_TEXT_DEFAULT, _T(" ") _T(SEPERATOR_1));
-	if (pri->nType & BRF_ESS) {
-		FBAPopupAddText(PUF_TEXT_DEFAULT, MAKEINTRESOURCE(IDS_ERR_LOAD_DET_ESS));
-	}
-	if (pri->nType & BRF_BIOS) {
-		FBAPopupAddText(PUF_TEXT_DEFAULT, MAKEINTRESOURCE(IDS_ERR_LOAD_DET_BIOS));
-	}
-	if (pri->nType & BRF_PRG) {
-		FBAPopupAddText(PUF_TEXT_DEFAULT, MAKEINTRESOURCE(IDS_ERR_LOAD_DET_PRG));
-	}
-	if (pri->nType & BRF_GRA) {
-		FBAPopupAddText(PUF_TEXT_DEFAULT, MAKEINTRESOURCE(IDS_ERR_LOAD_DET_GRA));
-	}
-	if (pri->nType & BRF_SND) {
-		FBAPopupAddText(PUF_TEXT_DEFAULT, MAKEINTRESOURCE(IDS_ERR_LOAD_DET_SND));
-	}
-	FBAPopupAddText(PUF_TEXT_DEFAULT, MAKEINTRESOURCE(IDS_ERR_LOAD_DET_ROM));
-#endif
 	return 0;
 }
 
@@ -195,7 +171,6 @@ static int CheckRoms()
 				char* szName = "Unknown";
 				RomDescribe(&ri);
 				BurnDrvGetRomName(&szName, i, 0);
-				//FBAPopupAddText(PUF_TEXT_DEFAULT, MAKEINTRESOURCE(IDS_ERR_LOAD_NOTFOUND), szName);
 			}
 
 			if (nError == 0) {
@@ -228,7 +203,6 @@ static int CheckRoms()
 // ----------------------------------------------------------------------------
 
 void show_rom_loading_text(char * szText, int nSize, int nTotalSize);
-void show_rom_error_text(char * szText);
 
 static int __cdecl BzipBurnLoadRom(unsigned char* Dest, int* pnWrote, int i)
 {
@@ -268,14 +242,16 @@ static int __cdecl BzipBurnLoadRom(unsigned char* Dest, int* pnWrote, int i)
 		}
 	}
 
+	ProgressUpdateBurner(ri.nLen ? 1.0 / ((double)nTotalSize / ri.nLen) : 0, szText, 0);
+	// FIXME: eliminate later in favor of ProgressUpdateBurner
 	show_rom_loading_text(szText, ri.nLen, nTotalSize);
 
-	//ProgressUpdateBurner(ri.nLen ? 1.0 / ((double)nTotalSize / ri.nLen) : 0, szText, 0);
-
 	if (RomFind[i].nState == 0) {							// Rom not found in zip at all
-		printf("%s (not found)\n", szText);
-		show_rom_error_text(szText);
-		exit(0);
+		TCHAR szTemp[128] = _T("");
+		_stprintf(szTemp, "%s (not found)\n",szText);
+		fprintf(stderr,szTemp);
+		ProgressError(szTemp, 1);
+		return 1;
 	}
 
 	nWantZip = RomFind[i].nZip;								// Which zip file it is in
@@ -291,10 +267,6 @@ static int __cdecl BzipBurnLoadRom(unsigned char* Dest, int* pnWrote, int i)
 
 	// Read in file and return how many bytes we read
 	if (ZipLoadFile(Dest, ri.nLen, pnWrote, RomFind[i].nPos)) {
-		
-		// Error loading from the zip file
-		//FBAPopupAddText(PUF_TEXT_DEFAULT, MAKEINTRESOURCE(nRet == 2 ? IDS_ERR_LOAD_DISK_CRC : IDS_ERR_LOAD_DISK), pszRomName, GetFilenameW(szBzipName[nCurrentZip]));
-		//FBAPopupDisplay(PUF_TYPE_WARNING);
 		printf("%s (ERR)\n", szText);
 		return 1;
 	}
@@ -360,10 +332,10 @@ int BzipOpen(bool bootApp)
 			break;
 		}
 
-		//for (int d = 0; d < DIRS_MAX; d++) 
+		for (int d = 0; d < DIRS_MAX; d++) 
 		{
 			char szFullName[MAX_PATH];
-			sprintf(szFullName, "%s%s", szAppRomPaths[0], szName);
+			sprintf(szFullName, "%s%s", szAppRomPaths[d], szName);
 
 			if (ZipOpen(szFullName) == 0) {		// Open the rom zip file
 				ZipClose();
@@ -373,23 +345,12 @@ int BzipOpen(bool bootApp)
 				szBzipName[z] = (TCHAR*)malloc(MAX_PATH * sizeof(TCHAR));
 				strcpy(szBzipName[z], szFullName);
 
-				//if (!bootApp) {
-				//	FBAPopupAddText(PUF_TEXT_DEFAULT, MAKEINTRESOURCE(IDS_ERR_LOAD_FOUND), szName, szBzipName[z]);
-				//}
-
 				z++;
 
 			}
 		}
 
-		//if (!bootApp && !bFound) {
-		//	FBAPopupAddText(PUF_TEXT_DEFAULT, MAKEINTRESOURCE(IDS_ERR_LOAD_NOTFOUND), szName);
-		//}
 	}
-
-	//if (!bootApp) {
-	//	FBAPopupAddText(PUF_TEXT_DEFAULT, _T("\n"));
-	//}
 
 	// Locate the ROM data in the zip files
 	for (int z = 0; z < BZIP_MAX; z++) {

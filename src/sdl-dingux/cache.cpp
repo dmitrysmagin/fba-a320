@@ -176,7 +176,7 @@ char SwapPath[512] = "./";
 
 void InitMemPool()
 {
-	if(!config_options.option_useswap) return;
+	if(!options.useswap) return;
 
 #ifndef USE_SWAP
 	CachedMem = (void *)malloc(MEMSIZE);
@@ -207,7 +207,7 @@ void InitMemPool()
 
 void DestroyMemPool()
 {
-	if(!config_options.option_useswap) return;
+	if(!options.useswap) return;
 
 #ifndef USE_SWAP
 	free(CachedMem);
@@ -221,7 +221,7 @@ void DestroyMemPool()
 // Allocates memory
 void *CachedMalloc(size_t size)
 {
-	if(!config_options.option_useswap) return malloc(size);
+	if(!options.useswap) return malloc(size);
 
 	if(size < BLOCKSIZE) size = BLOCKSIZE;
 	int i = 0; printf("CachedMalloc: %x\n", size);
@@ -249,7 +249,7 @@ ReDo:
 // Releases CachedMalloc'ed memory
 void CachedFree(void* mem)
 {
-	if(!config_options.option_useswap) { free(mem); return; }
+	if(!options.useswap) { free(mem); return; }
 
 	int i = (((int)mem) - ((int)CachedMem));
 	if (i < 0 || i >= MEMSIZE) {
@@ -264,7 +264,7 @@ void CachedFree(void* mem)
 // Returns the size of a CachedMalloced block.
 int GetCachedSize(void* mem)
 {
-	if(!config_options.option_useswap) return 0;
+	if(!options.useswap) return 0;
 
 	int i = (((int)mem) - ((int)CachedMem));
 	if (i < 0 || i >= MEMSIZE) {

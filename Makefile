@@ -24,7 +24,7 @@ PERL = 1
 BUILD_A68K = 1
 BUILD_C68K = 1
 #BUILD_M68K = 1
-USE_LIBAO = 1
+#USE_LIBAO = 1
 
 #
 #	Declare variables
@@ -78,9 +78,9 @@ alldir	=	burn \
 incdir	= $(foreach dir,$(alldir),-I$(srcdir)$(dir)) -I$(objdir)generated -I$(srcdir) -I/local/include -I/local/include/SDL
 
 ifeq ($(OS),Windows_NT)
-lib = -static -lstdc++ -lpng -lmingw32 -Wl,-Bdynamic -lSDL -lz
+lib = -static -lstdc++ -lmingw32 -Wl,-Bdynamic -lSDL -lSDL_image -lz
 else
-lib = -lstdc++ -lpng -lSDL -lz
+lib = -lstdc++ -lSDL -lSDL_image -lz
 endif
 
 ifdef USE_LIBAO
@@ -126,12 +126,21 @@ drvobj	=	d_neogeo.o \
 			#d_psikyo.o
 
 ifdef USE_LIBAO
-	depobj = aoaudio.o 
+	depobj = ao_audio.o 
 endif
 
 depobj	+=	\
-			unzip.o bzip.o cache.o config.o dat.o drv.o fba_player.o font.o input.o main.o \
-			paths.o run.o sdlaudio.o sdlgui.o sdlinput.o sdlvideo.o snd.o state.o zipfn.o \
+			bzip.o config.o drv.o font.o input.o main.o paths.o \
+			run.o tchar.o \
+			\
+			cache.o \
+			\
+			sdl_audio.o sdl_input.o sdl_menu.o sdl_progress.o \
+			sdl_run.o sdl_video.o snd.o \
+			\
+			unzip.o dat.o state.o zipfn.o \
+			\
+			gui_config.o gui_gfx.o gui_main.o gui_romlist.o gui_setpath.o \
 			\
 			$(drvobj) \
 			\
@@ -341,7 +350,10 @@ ifeq ($(MAKELEVEL),1)
 $(NAME):	$(allobj)
 	@echo
 	@echo Linking executable $(NAME)...
-	@$(LD) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(lib)
+	@mkdir -p bin
+	@$(LD) $(CFLAGS) $(LDFLAGS) -o bin/$@ $^ $(lib)
+	@mkdir -p bin/skin
+	@cp src/sdl-dingux/skin/*.png bin/skin/
 endif
 
 #

@@ -21,8 +21,9 @@
 
 #include "burner.h"
 #include "snd.h"
-#include "sdlgui.h"
-#include "sdlinput.h"
+#include "sdl_menu.h"
+#include "sdl_input.h"
+#include "sdl_run.h"
 
 #define KEYPAD_UP       0x0001
 #define KEYPAD_DOWN     0x0002
@@ -64,7 +65,6 @@ unsigned char P1P2Start = 0;
 
 // external variables
 extern bool bPauseOn; // run.cpp
-extern bool GameLooping; // fba_player.cpp
 
 // external functions
 void ChangeFrameskip(); // run.cpp
@@ -79,18 +79,18 @@ void sdl_input_read() // called from do_keypad()
 	while(SDL_PollEvent(&event)) {
 		if (event.type == SDL_KEYUP) {
 			// FBA keypresses
-			if (event.key.keysym.sym == config_keymap.up) keypad &= ~KEYPAD_UP;
-			else if (event.key.keysym.sym == config_keymap.down) keypad &= ~KEYPAD_DOWN;
-			else if (event.key.keysym.sym == config_keymap.left) keypad &= ~KEYPAD_LEFT;
-			else if (event.key.keysym.sym == config_keymap.right) keypad &= ~KEYPAD_RIGHT;
-			else if (event.key.keysym.sym == config_keymap.fire1) keypad &= ~KEYPAD_FIRE1;
-			else if (event.key.keysym.sym == config_keymap.fire2) keypad &= ~KEYPAD_FIRE2;
-			else if (event.key.keysym.sym == config_keymap.fire3) keypad &= ~KEYPAD_FIRE3;
-			else if (event.key.keysym.sym == config_keymap.fire4) keypad &= ~KEYPAD_FIRE4;
-			else if (event.key.keysym.sym == config_keymap.fire5) keypad &= ~KEYPAD_FIRE5;
-			else if (event.key.keysym.sym == config_keymap.fire6) keypad &= ~KEYPAD_FIRE6;
-			else if (event.key.keysym.sym == config_keymap.coin1) keypad &= ~KEYPAD_COIN;
-			else if (event.key.keysym.sym == config_keymap.start1) keypad &= ~KEYPAD_START;
+			if (event.key.keysym.sym == keymap.up) keypad &= ~KEYPAD_UP;
+			else if (event.key.keysym.sym == keymap.down) keypad &= ~KEYPAD_DOWN;
+			else if (event.key.keysym.sym == keymap.left) keypad &= ~KEYPAD_LEFT;
+			else if (event.key.keysym.sym == keymap.right) keypad &= ~KEYPAD_RIGHT;
+			else if (event.key.keysym.sym == keymap.fire1) keypad &= ~KEYPAD_FIRE1;
+			else if (event.key.keysym.sym == keymap.fire2) keypad &= ~KEYPAD_FIRE2;
+			else if (event.key.keysym.sym == keymap.fire3) keypad &= ~KEYPAD_FIRE3;
+			else if (event.key.keysym.sym == keymap.fire4) keypad &= ~KEYPAD_FIRE4;
+			else if (event.key.keysym.sym == keymap.fire5) keypad &= ~KEYPAD_FIRE5;
+			else if (event.key.keysym.sym == keymap.fire6) keypad &= ~KEYPAD_FIRE6;
+			else if (event.key.keysym.sym == keymap.coin1) keypad &= ~KEYPAD_COIN;
+			else if (event.key.keysym.sym == keymap.start1) keypad &= ~KEYPAD_START;
 
 			// handheld keypresses
 			if (event.key.keysym.sym == SDLK_LCTRL) keypc &= ~BUTTON_A;
@@ -108,18 +108,18 @@ void sdl_input_read() // called from do_keypad()
 			else if (event.key.keysym.sym == SDLK_m) keypc &= ~BUTTON_MENU;
 		} else if (event.type == SDL_KEYDOWN) {
 			// FBA keypresses
-			if (event.key.keysym.sym == config_keymap.up) keypad |= KEYPAD_UP;
-			else if (event.key.keysym.sym == config_keymap.down) keypad |= KEYPAD_DOWN;
-			else if (event.key.keysym.sym == config_keymap.left) keypad |= KEYPAD_LEFT;
-			else if (event.key.keysym.sym == config_keymap.right) keypad |= KEYPAD_RIGHT;
-			else if (event.key.keysym.sym == config_keymap.fire1) keypad |= KEYPAD_FIRE1;
-			else if (event.key.keysym.sym == config_keymap.fire2) keypad |= KEYPAD_FIRE2;
-			else if (event.key.keysym.sym == config_keymap.fire3) keypad |= KEYPAD_FIRE3;
-			else if (event.key.keysym.sym == config_keymap.fire4) keypad |= KEYPAD_FIRE4;
-			else if (event.key.keysym.sym == config_keymap.fire5) keypad |= KEYPAD_FIRE5;
-			else if (event.key.keysym.sym == config_keymap.fire6) keypad |= KEYPAD_FIRE6;
-			else if (event.key.keysym.sym == config_keymap.coin1) keypad |= KEYPAD_COIN;
-			else if (event.key.keysym.sym == config_keymap.start1) keypad |= KEYPAD_START;
+			if (event.key.keysym.sym == keymap.up) keypad |= KEYPAD_UP;
+			else if (event.key.keysym.sym == keymap.down) keypad |= KEYPAD_DOWN;
+			else if (event.key.keysym.sym == keymap.left) keypad |= KEYPAD_LEFT;
+			else if (event.key.keysym.sym == keymap.right) keypad |= KEYPAD_RIGHT;
+			else if (event.key.keysym.sym == keymap.fire1) keypad |= KEYPAD_FIRE1;
+			else if (event.key.keysym.sym == keymap.fire2) keypad |= KEYPAD_FIRE2;
+			else if (event.key.keysym.sym == keymap.fire3) keypad |= KEYPAD_FIRE3;
+			else if (event.key.keysym.sym == keymap.fire4) keypad |= KEYPAD_FIRE4;
+			else if (event.key.keysym.sym == keymap.fire5) keypad |= KEYPAD_FIRE5;
+			else if (event.key.keysym.sym == keymap.fire6) keypad |= KEYPAD_FIRE6;
+			else if (event.key.keysym.sym == keymap.coin1) keypad |= KEYPAD_COIN;
+			else if (event.key.keysym.sym == keymap.start1) keypad |= KEYPAD_START;
 
 			// handheld keypresses
 			if (event.key.keysym.sym == SDLK_LCTRL) keypc |= BUTTON_A;
@@ -169,7 +169,10 @@ void do_keypad()
 	if (keypad & KEYPAD_FIRE6) FBA_KEYPAD[0] |= KEYPAD_FIRE6;		// R
 
 	// process non-redefinable keypresses
-	if (keypc & BUTTON_QT) GameLooping=false;
+	if (keypc & BUTTON_QT) {
+		GameLooping = false;
+		keypc = keypad = 0;
+	}
 
 	if (keypc & BUTTON_MENU) {
 		keypc = keypad = 0;
