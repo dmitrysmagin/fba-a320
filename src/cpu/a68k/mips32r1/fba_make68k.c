@@ -1,14 +1,45 @@
 /*---------------------------------------------------------------
  * Motorola 68000 32 Bit emulator
  *
- * Copyright 1998-2001 Mike Coates, 	All rights reserved
- *							Darren Olafson
+ * Make68K for x86
+ *   Copyright (c) 1998-2001 Mike Coates, Darren Olafson
+ *
+ * MIPS Make68K for PSP
+ *   Copyright (c) 2005 Manuel Geran
+ *
+ * MIPS Make68K for OpenDingux
+ *   Copyright (c) 2012-2013 Dmitry Smagin
  *---------------------------------------------------------------
  *
  * Thanks to ...
  *
  * Neil Bradley	 (lots of optimisation help & ideas)
  *
+ *---------------------------------------------------------------
+ * Changelog for OpenDingux
+ *
+ * 2013-11-28 - Fix setting Carry Flag for LSL.L #imm, Dreg. It was being
+                always zeroed for long shift. This fixes ddonpach.zip
+ * 2013-11-27 - Save $gp around calls to memory callbacks. This fixes kov.zip
+ *              In rare occasions $gp is changed inside callbacks and accessing
+ *              variables via $gp becomes invalid. Save 
+ * 2013-11-26 - Fix setting N flag in asl.b #1,reg / bpl #addr combo.
+ *              If reg was 0x80 after shifting N received 2 (should have 0/1)
+ *              and the following bpl failed. Now always discard higher bits for N.
+ *              This fixes aurail.zip
+ * 2013-11-25 - Save real PC reg to M68000_regs.pc before calling memory
+ *              callbacks, because PC could be changed from them.
+ *              This fixes hangon.zip
+ * 2013-11-21 - Fix m_seh/m_seb macros (thanks Nebuleon), now a68k-mips works!
+ *              Use both mips32r2 and r1 opcodes, define USE_MIPS32r1 to use r1.
+ *              Add debugging callbacks, now define FBA_DEBUG to activate.
+ *              $gp is saved inside M68000_RUN and reloaded with .cpload $gp
+ * 2012-11-03 - Replace mips32r2 opcodes seh, seb, ror, rorv with macros to
+ *              make it work on mips32 revision 1 (soc jz4740/jz4750)
+ *              Also replace direct jal and j with macros.
+ *              Fix M68000_regs and a68k_memory_intf structures to correspond
+ *              to their definitions in sek.h (struct A68KContext).
+ *              Now a68k-mips doesn't segfault but the emulation is incorrect.
  *---------------------------------------------------------------
  * History (so we know what bugs have been fixed)
  *
@@ -291,11 +322,7 @@ int		DisOp;
 
 /* 11 registers + space for 10 work registers + A0 - A3 : Stack must be kept on 16 bytes boundaries */
 #define STACKFRAME_SIZE		(7 * (4 * 4))
-#if (MEMBASE == GP)
 #define LOCALVARBASE		(STACKFRAME_SIZE - 0x2C)
-#else
-#define LOCALVARBASE		(STACKFRAME_SIZE - 0x28)
-#endif
 #define MINSTACK_POS		(1 * (4 * 4))
 
 #define FASTCALL_FIRST_REG	A0
@@ -335,7 +362,7 @@ int  PreDecLongMove = 0;
 
 /* External register preservation */
 
-static char SavedRegs[] = "ZA--------------SSSSSSSS----GSFR";
+static char SavedRegs[] = "ZA--------------SSSSSSSS-----SFR";
 
 
 
@@ -620,11 +647,11 @@ void Completed(void)
 #ifdef FBA_DEBUG
 
 	fprintf(fp, "\n# call debug\n\n", PREF);
-	fprintf(fp, "\t\t #test    byte [%smame_debug],byte 0xff\n", PREF);
-	fprintf(fp, "\t\t #jns  4f\n");
+	//fprintf(fp, "\t\t #test    byte [%smame_debug],byte 0xff\n", PREF);
+	//fprintf(fp, "\t\t #jns  4f\n");
 	fprintf(fp, "\t\t m_jal FBADebugActive\n");
 	fprintf(fp, "\t\t nop                    \t # Delay slot\n");
-	fprintf(fp, "\t4:\n");
+	//fprintf(fp, "\t4:\n");
 
 #endif
 
@@ -1052,10 +1079,18 @@ void Memory_Read(char Size, int AReg, char *Flags, int LocalStack)
 	if (AReg != FASTCALL_FIRST_REG)
 		fprintf(fp, "\t\t or    %s,$0,%s\n", regnameslong[FASTCALL_FIRST_REG], regnameslong[AReg]);
 
-	fprintf(fp, "\t\t jalr  %s\n", regnameslong[T9]);
-
 	/* Save PC */
-	fprintf(fp, "\t\t sw    %s,%s    \t # Delay slot\n", regnameslong[PC], REG_PC);
+#if 0
+	fprintf(fp, "\t\t sw    %s,%s\n", regnameslong[PC], REG_PC);
+#else
+	fprintf(fp, "\t\t .set  noat\n");
+	fprintf(fp, "\t\t subu  %s,%s,%s\n", regnameslong[AT], regnameslong[PC], regnameslong[BASEPC]);
+	fprintf(fp, "\t\t sw    %s,%s\n", regnameslong[AT], REG_PC);
+	fprintf(fp, "\t\t .set  at\n");
+#endif
+
+	fprintf(fp, "\t\t jalr  %s\n", regnameslong[T9]);
+	fprintf(fp, "\t\t nop    \t\t\t # Delay slot\n");
 
 	/* Restore registers */
 
@@ -1134,9 +1169,19 @@ void Memory_Write(char Size, int AReg, int DReg, char *Flags, int LocalStack)
 		fprintf(fp, "\t\t or    %s,$0,%s\n", regnameslong[FASTCALL_SECOND_REG], regnameslong[DReg]);
 	if (AReg != FASTCALL_FIRST_REG)
 		fprintf(fp, "\t\t or    %s,$0,%s\n", regnameslong[FASTCALL_FIRST_REG], regnameslong[AReg]);
-	fprintf(fp, "\t\t jalr  %s\n", regnameslong[T9]);
+
 	/* Save PC */
-	fprintf(fp, "\t\t sw    %s,%s    \t # Delay slot\n", regnameslong[PC], REG_PC);
+#if 0
+	fprintf(fp, "\t\t sw    %s,%s\n", regnameslong[PC], REG_PC);
+#else
+	fprintf(fp, "\t\t .set  noat\n");
+	fprintf(fp, "\t\t subu  %s,%s,%s\n", regnameslong[AT], regnameslong[PC], regnameslong[BASEPC]);
+	fprintf(fp, "\t\t sw    %s,%s\n", regnameslong[AT], REG_PC);
+	fprintf(fp, "\t\t .set  at\n");
+#endif
+
+	fprintf(fp, "\t\t jalr  %s\n", regnameslong[T9]);
+	fprintf(fp, "\t\t nop    \t\t\t # Delay slot\n");
 
 	if (PreDecLongMove) {
 		fprintf(fp, "\t\t lw    %s,%s\n", regnameslong[T9], MEMINTF_WRITEWORD);
@@ -4636,11 +4681,24 @@ void reset(void)
 		}
 		assert(LocalStack >= MINSTACK_POS);
 
+		/* Save PC */
+	#if 0
+		fprintf(fp, "\t\t sw    %s,%s\n", regnameslong[PC], REG_PC);
+	#else
+		fprintf(fp, "\t\t .set  noat\n");
+		fprintf(fp, "\t\t subu  %s,%s,%s\n", regnameslong[AT], regnameslong[PC], regnameslong[BASEPC]);
+		fprintf(fp, "\t\t sw    %s,%s\n", regnameslong[AT], REG_PC);
+		fprintf(fp, "\t\t .set  at\n");
+	#endif
+
 		fprintf(fp, "\t\t jalr  %s\n", regnameslong[T9]);
-		fprintf(fp, "\t\t sw    %s,%s    \t # Delay slot\n", regnameslong[PC], REG_PC);
+		fprintf(fp, "\t\t nop   \t\t\t # Delay slot\n");
 
 		fprintf(fp, "\t\t lw    %s,%s\n", regnameslong[ICNT], ICOUNT);
 		fprintf(fp, "\t\t lw    %s,%s\n", regnameslong[PC], REG_PC);
+	#if 1
+		fprintf(fp, "\t\t addu  %s,%s,%s\n", regnameslong[PC], regnameslong[PC], regnameslong[BASEPC]);
+	#endif
 
 		if (SavedRegs[FLAG_X] == '-') {
 			fprintf(fp, "\t\t lbu   %s,0x%2.2X(%s)\n", regnameslong[FLAG_X], LocalStack, regnameslong[SP]);
@@ -5746,7 +5804,7 @@ void lsl_lsr(void)
 							} else {
 								if (Size != 'L')
 									fprintf(fp, "\t\t sll   %s,%s,%d\n", regnameslong[FLAG_C], regnameslong[V0], Size == 'W' ? 16 : 24);
-								fprintf(fp, "\t\t sllv  %s,%s,%s\n", regnameslong[FLAG_C], regnameslong[FLAG_C], regnameslong[T2]);
+								fprintf(fp, "\t\t sllv  %s,%s,%s\n", regnameslong[FLAG_C], regnameslong[V0], regnameslong[T2]);
 								fprintf(fp, "\t\t srl   %s,%s,31       \t # Set Carry\n", regnameslong[FLAG_C], regnameslong[FLAG_C]);
 								// The actual work
 								fprintf(fp, "\t\t sllv  %s,%s,%s\n", regnameslong[V0], regnameslong[V0], regnameslong[OPCODE]);
@@ -6344,6 +6402,7 @@ void asl_asr(void)
 					fprintf(fp, "\t\t andi  %s,%s,0x%2.2X\n", regnameslong[FLAG_Z], regnameslong[V0], Size == 'h' ? 0xffff : 0xff);
 				fprintf(fp, "\t\t sltiu %s,%s,1        \t # Set Zero\n", regnameslong[FLAG_Z], regnameslong[FLAG_Z]);
 				fprintf(fp, "\t\t srl   %s,%s,%d        \t # Set Sign\n", regnameslong[FLAG_N], regnameslong[V0], Size == 'w' ? 31 : (Size == 'h' ? 15 : 7));
+				fprintf(fp, "\t\t andi  %s,%s,1\n", regnameslong[FLAG_N], regnameslong[FLAG_N]); // fix
 				fprintf(fp, "\t\t or    %s,$0,%s       \t # Copy Carry to X\n", regnameslong[FLAG_X], regnameslong[FLAG_C]);
 
 				Completed();
@@ -6917,7 +6976,7 @@ void CodeSegmentBegin(void)
 	fprintf(fp, " # MIPS Make68K - V%s - Copyright 2005, Manuel Geran (bdiamond@free.fr)\n", VERSION);
 	fprintf(fp, " #   based on Make68K - Copyright 1998, Mike Coates (mame@btinternet.com)\n");
 	fprintf(fp, " #                                    & Darren Olafson (deo@mail.island.net)\n");
-	fprintf(fp, " #   fixes for Dingoo A320 and GCW-Zero by D. Smagin and Nebuleon\n\n");
+	fprintf(fp, " #   OpenDingux adaptation - Copyright 2012-2013 Dmitry Smagin\n\n");
 
 /* Needed code to make it work! */
 
@@ -7032,9 +7091,7 @@ void CodeSegmentBegin(void)
 
 	fprintf(fp, "\t\t .frame %s, %d, %s\n", regnameslong[SP], STACKFRAME_SIZE, regnameslong[RA]);
 	fprintf(fp, "\t\t addiu %s,%s,%d\n\n", regnameslong[SP], regnameslong[SP], -STACKFRAME_SIZE);
-#if (MEMBASE == GP)
 	fprintf(fp, "\t\t sw    %s,0x%2.2X(%s)\n", regnameslong[GP], STACKFRAME_SIZE - 0x2C, regnameslong[SP]);
-#endif
 	fprintf(fp, "\t\t sw    %s,0x%2.2X(%s)\n", regnameslong[S0], STACKFRAME_SIZE - 0x28, regnameslong[SP]);
 	fprintf(fp, "\t\t sw    %s,0x%2.2X(%s)\n", regnameslong[S1], STACKFRAME_SIZE - 0x24, regnameslong[SP]);
 	fprintf(fp, "\t\t sw    %s,0x%2.2X(%s)\n", regnameslong[S2], STACKFRAME_SIZE - 0x20, regnameslong[SP]);
@@ -7045,6 +7102,8 @@ void CodeSegmentBegin(void)
 	fprintf(fp, "\t\t sw    %s,0x%2.2X(%s)\n", regnameslong[S7], STACKFRAME_SIZE - 0x0C, regnameslong[SP]);
 	fprintf(fp, "\t\t sw    %s,0x%2.2X(%s)\n", regnameslong[S8], STACKFRAME_SIZE - 0x08, regnameslong[SP]);
 	fprintf(fp, "\t\t sw    %s,0x%2.2X(%s)\n", regnameslong[RA], STACKFRAME_SIZE - 0x04, regnameslong[SP]);
+
+	fprintf(fp, "\t\t .cpload $gp\n");
 
 	//fprintf(fp, "\t\t or    %s,$0,%s\n", regnameslong[MEMBASE], regnameslong[A0]);
 	fprintf(fp, "\t\t la    %s,%sM68000_regs\n", regnameslong[MEMBASE], PREF);
@@ -7072,9 +7131,19 @@ void CodeSegmentBegin(void)
 	/* See if was only called to check for Interrupt */
 
 	fprintf(fp, "\t\t bltz  %s,MainExit\n", regnameslong[ICNT]);
+	fprintf(fp, "\t\t nop  \t\t # Delay slot\n\n", regnameslong[ICNT]);
+
+#ifdef FBA_DEBUG
+	fprintf(fp, "\n# call debug\n\n", PREF);
+	//fprintf(fp, "\t\t #test    byte [%smame_debug],byte 0xff\n", PREF);
+	//fprintf(fp, "\t\t #jns  4f\n");
+	fprintf(fp, "\t\t m_jal FBADebugActive\n");
+	fprintf(fp, "\t\t nop                    \t # Delay slot\n");
+	//fprintf(fp, "\t4:\n");
+#endif
 
 	/* 16 Bit Fetch */
-	fprintf(fp, "\t\t lhu   %s,0x00(%s)\t\t # Delay slot\n\n", regnameslong[OPCODE], regnameslong[PC]);
+	fprintf(fp, "\t\t lhu   %s,0x00(%s)\n", regnameslong[OPCODE], regnameslong[PC]);
 
 	fprintf(fp, "\t\t sll   %s,%s,2\n", regnameslong[TMPREG0], regnameslong[OPCODE]);
 	fprintf(fp, "\t\t addu  %s,%s,%s\n\n", regnameslong[TMPREG0], regnameslong[TMPREG0], regnameslong[OPCODETBL]);
@@ -7112,9 +7181,7 @@ void CodeSegmentBegin(void)
 	fprintf(fp, "MC68Kexit:\n");
 	fprintf(fp, "\t\t sw    %s,%s\n", regnameslong[ICNT], ICOUNT);
 
-#if (MEMBASE == GP)
 	fprintf(fp, "\t\t lw    %s,0x%2.2X(%s)\n", regnameslong[GP], STACKFRAME_SIZE - 0x2C, regnameslong[SP]);
-#endif
 	fprintf(fp, "\t\t lw    %s,0x%2.2X(%s)\n", regnameslong[S0], STACKFRAME_SIZE - 0x28, regnameslong[SP]);
 	fprintf(fp, "\t\t lw    %s,0x%2.2X(%s)\n", regnameslong[S1], STACKFRAME_SIZE - 0x24, regnameslong[SP]);
 	fprintf(fp, "\t\t lw    %s,0x%2.2X(%s)\n", regnameslong[S2], STACKFRAME_SIZE - 0x20, regnameslong[SP]);
@@ -7383,7 +7450,7 @@ void CodeSegmentBegin(void)
 #ifdef FBA_DEBUG
 
 /* space 1 saved register and 7 work registers : Stack must be kept on 16 bytes boundaries */
-#define DBG_STACKFRAME_SIZE		(5 * (4 * 4))
+#define DBG_STACKFRAME_SIZE		(6 * (4 * 4))
 #define DBG_LOCALVARBASE		(DBG_STACKFRAME_SIZE - 0x04)
 
 	fprintf(fp,"\n # Call FBA debugging callback\n\n");
@@ -7394,9 +7461,14 @@ void CodeSegmentBegin(void)
 	fprintf(fp, "\t\t .frame %s, %d, %s\n\n", regnameslong[SP], DBG_STACKFRAME_SIZE, regnameslong[RA]);
 
 	// save regs here
+	fprintf(fp, "\t\t sw    %s, 0x%2.2X(%s)\n", regnameslong[FP], DBG_STACKFRAME_SIZE - 0x38, regnameslong[SP]);
+	fprintf(fp, "\t\t sw    %s, 0x%2.2X(%s)\n", regnameslong[GP], DBG_STACKFRAME_SIZE - 0x34, regnameslong[SP]);
+	fprintf(fp, "\t\t sw    %s, 0x%2.2X(%s)\n", regnameslong[T9], DBG_STACKFRAME_SIZE - 0x30, regnameslong[SP]);
 	fprintf(fp, "\t\t sw    %s, 0x%2.2X(%s)\n", regnameslong[S7], DBG_STACKFRAME_SIZE - 0x2C, regnameslong[SP]);
+	fprintf(fp, "\t\t .set noat\n");
 	fprintf(fp, "\t\t subu  %s, %s, %s\n", regnameslong[AT], regnameslong[S7], regnameslong[S6]);
 	fprintf(fp, "\t\t sw    %s, %s\n", regnameslong[AT], REG_PC);
+	fprintf(fp, "\t\t .set  at\n");
 	fprintf(fp, "\t\t sw    %s, 0x%2.2X(%s)\n", regnameslong[T0], DBG_STACKFRAME_SIZE - 0x28, regnameslong[SP]);
 	fprintf(fp, "\t\t sw    %s, 0x%2.2X(%s)\n", regnameslong[T1], DBG_STACKFRAME_SIZE - 0x24, regnameslong[SP]);
 	fprintf(fp, "\t\t sw    %s, 0x%2.2X(%s)\n", regnameslong[T2], DBG_STACKFRAME_SIZE - 0x20, regnameslong[SP]);
@@ -7408,11 +7480,29 @@ void CodeSegmentBegin(void)
 	fprintf(fp, "\t\t sw    %s, 0x%2.2X(%s)\n", regnameslong[T8], DBG_STACKFRAME_SIZE - 0x08, regnameslong[SP]);
 	fprintf(fp, "\t\t sw    %s, 0x%2.2X(%s)\n\n", regnameslong[RA], DBG_STACKFRAME_SIZE - 0x04, regnameslong[SP]);
 
+	fprintf(fp, "\t\t .set noat\n");
+
+	// update flags
+#ifdef MAME_DEBUG
+	ReadCCR('W', AT);
+#else
+	ReadCCR('B', AT);
+#endif
+
+	fprintf(fp, "\t\t sw    %s,%s\n", regnameslong[AT], REG_CCR);
+
 	fprintf(fp, "\t\t lw    $at, %s\n", MEMINTF_DBGCALLBACK);
+	fprintf(fp, "\t\t beq   $at, $zero, 9f\n");
+	fprintf(fp, "\t\t nop         	 # Delay slot\n", PREF);
 	fprintf(fp, "\t\t jalr  $at\n");
-	fprintf(fp, "\t\t nop         	 # Delay slot\n\n", PREF);
+	fprintf(fp, "\t\t nop         	 # Delay slot\n", PREF);
+	fprintf(fp, "\t\t .set  at\n\n");
+	fprintf(fp, "9:\n");
 
 	// restore regs here
+	fprintf(fp, "\t\t lw    %s, 0x%2.2X(%s)\n", regnameslong[FP], DBG_STACKFRAME_SIZE - 0x38, regnameslong[SP]);
+	fprintf(fp, "\t\t lw    %s, 0x%2.2X(%s)\n", regnameslong[GP], DBG_STACKFRAME_SIZE - 0x34, regnameslong[SP]);
+	fprintf(fp, "\t\t lw    %s, 0x%2.2X(%s)\n", regnameslong[T9], DBG_STACKFRAME_SIZE - 0x30, regnameslong[SP]);
 	fprintf(fp, "\t\t lw    %s, 0x%2.2X(%s)\n", regnameslong[S7], DBG_STACKFRAME_SIZE - 0x2C, regnameslong[SP]);
 	fprintf(fp, "\t\t sw    %s, %s\n", regnameslong[S7], REG_PC);
 	fprintf(fp, "\t\t lw    %s, 0x%2.2X(%s)\n", regnameslong[T0], DBG_STACKFRAME_SIZE - 0x28, regnameslong[SP]);
@@ -7605,6 +7695,7 @@ int main(int argc, char **argv)
 	printf("  based on Make68K - Copyright 1998, Mike Coates (mame@btinternet.com)\n");
 	printf("                               1999, & Darren Olafson (deo@mail.island.net)\n");
 	printf("                               2000\n");
+	printf("  OpenDingux adaptation - Copyright 2012-2013 Dmitry Smagin\n\n");
 
 	if (argc != 3) {
 		printf("Usage: %s outfile jumptable-outfile\n", argv[0]);
