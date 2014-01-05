@@ -27,8 +27,6 @@
 #include "snd.h"
 #include "burner.h"
 
-#include "cache.h"
-
 #include "sdl_run.h"
 #include "sdl_menu.h"
 #include "sdl_video.h"
@@ -89,9 +87,6 @@ void RunEmulator(int drvnum)
 	sdl_input_init();
 	InpInit();
 	InpDIP();
-
-	// Remove later
-	InitMemPool();
 
 	if(DrvInit(drvnum, false) != 0) {
 		printf("Driver initialisation failed! Likely causes are:\n"
@@ -154,7 +149,4 @@ finish:
 
 	VideoExit();
 	InpExit();
-
-	// Remove later
-	DestroyMemPool();
 }

@@ -133,8 +133,6 @@ depobj	+=	\
 			bzip.o config.o drv.o font.o input.o main.o paths.o \
 			run.o tchar.o \
 			\
-			cache.o \
-			\
 			sdl_audio.o sdl_input.o sdl_menu.o sdl_progress.o \
 			sdl_run.o sdl_video.o snd.o \
 			\
