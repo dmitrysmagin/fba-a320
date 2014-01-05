@@ -655,7 +655,6 @@ int BurnSetRefreshRate(double dFrameRate)
 	if (!bForce60Hz) {
 		nBurnFPS = (int)(100.0 * dFrameRate);
 	}
-	SndInit();
 
 	return 0;
 }
