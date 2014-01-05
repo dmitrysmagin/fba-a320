@@ -68,7 +68,7 @@ static int AllocateMemory()
 	CpsMemIndex();
 	nLen = CpsMemEnd - (unsigned char*)0;
 
-	if ((CpsMem = (unsigned char*)BurnMalloc(nLen)) == NULL) {
+	if ((CpsMem = (unsigned char*)malloc(nLen)) == NULL) {
 		return 1;
 	}
 
@@ -244,6 +244,8 @@ int CpsMemInit()
 		return 1;
 	}
 
+	SekOpen(0);
+
 	SekSetResetCallback(CPSResetCallback);
 
 	// Map in memory:
@@ -315,6 +317,8 @@ int CpsMemInit()
 		SekSetWriteByteHandler(2, CPSQSoundF0WriteByte);
 	}
 
+	SekClose();
+
 	return 0;
 }
 
@@ -329,7 +333,7 @@ int CpsMemExit()
 #endif
 
 	// Deallocate all used memory
-	BurnFree(CpsMem);
+	free(CpsMem);
 	CpsMem = NULL;
 
 	return 0;
@@ -400,6 +404,7 @@ int CpsAreaScan(int nAction, int *pnMin)
 			BurnAcb(&ba);
 		}
 	}
+
 
 	if (nAction & ACB_DRIVER_DATA) {					// Scan volatile variables/registers/RAM
 

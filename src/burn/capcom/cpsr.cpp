@@ -17,8 +17,7 @@ static void GetRowsRange(int *pnStart,int *pnWidth,int nRowFrom,int nRowTo)
 
   // Get the range of scroll values within nRowCount rows
   // Start with zero range
-	nStart = CpsrRows[nRowFrom & 0x3ff] & 0x3ff;
-	nWidth = 0;
+  nStart=CpsrRows[nRowFrom&0x3ff]; nStart&=0x3ff; nWidth=0;
   for (i=nRowFrom;i<nRowTo;i++)
   {
     int nViz; int nDiff;
@@ -66,9 +65,9 @@ static int PrepareRows()
     if (CpsrRows==NULL)
     {
       // No row shift - all the same
-			
-			int v = (pli->nTileStart << 4) - nCpsrScrX;
-			nMaxLeft = nMaxRight = v;
+      int v;
+      v =(pli->nTileStart<<4)-nCpsrScrX;
+      nMaxLeft=v; nMaxRight=v;
       for (ty=0,pr=pli->Rows; ty<16; ty++,pr++)
       {
         *pr=(short)v;
@@ -85,7 +84,7 @@ static int PrepareRows()
           v =(pli->nTileStart<<4)-nCpsrScrX;
           v-=CpsrRows[(nCpsrRowStart+r)&0x3ff];
           // clip to 10-bit signed
-			v = ((v + 0x200) & 0x3ff) - 0x200;
+          v+=0x200; v&=0x3ff; v-=0x200;
           *pr=(short)v;
                if (v<nMaxLeft)  nMaxLeft=v;
           else if (v>nMaxRight) nMaxRight=v;
@@ -138,7 +137,8 @@ int Cps1rPrepare()
       GetRowsRange(&nStart,&nWidth,nRowFrom,nRowTo);
     }
 
-	nStart = (nStart + nCpsrScrX) & 0x3ff;
+    nStart+=nCpsrScrX;
+    nStart&=0x3ff;
 
     // Save info in CpsrLineInfo table
     pli->nStart=nStart;
@@ -182,7 +182,7 @@ int Cps2rPrepare()
       GetRowsRange(&nStart,&nWidth,nRowFrom,nRowTo);
     }
 
-		nStart = (nStart + nCpsrScrX) & 0x3ff;
+    nStart+=nCpsrScrX;
     nStart&=0x3ff;
 
     // Save info in CpsrLineInfo table

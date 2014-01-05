@@ -2,7 +2,6 @@
 #include "psikyo.h"
 #include "burn_ym2610.h"
 #include "burn_ymf278b.h"
-#include "cache.h"
 
 // #undef USE_SPEEDHACKS
 
@@ -18,7 +17,7 @@ static unsigned char *Mem = NULL, *MemEnd = NULL;
 static unsigned char *RamStart, *RamEnd;
 static unsigned char *Psikyo68KROM, *PsikyoZ80ROM;
 static unsigned char *Psikyo68KRAM, *PsikyoZ80RAM;
-static unsigned char *PsikyoSampleROM01 = NULL, *PsikyoSampleROM02 = NULL;
+static unsigned char *PsikyoSampleROM01, *PsikyoSampleROM02;
 
 static int PsikyoSampleROM01Size, PsikyoSampleROM02Size;
 static int PsikyoTileROMSize, PsikyoSpriteROMSize;
@@ -66,8 +65,9 @@ static struct BurnInputInfo gunbirdInputList[] = {
 	{"P2 Button 3",	BIT_DIGITAL,	DrvJoy2 + 1,	"p2 fire 3"},
 
 	{"Reset",		BIT_DIGITAL,	&DrvReset,		"reset"},
-	{"Diagnostics",	BIT_DIGITAL,	DrvInp1 + 5,	"diag"},
-	{"Service",		BIT_DIGITAL,	DrvInp1 + 4,	"service"},
+	{"Test",	  BIT_DIGITAL,	DrvInp1 + 5,	"diag"},
+	{"Service",	BIT_DIGITAL,	DrvInp1 + 4,	"service"},
+//	{"Tilt",		BIT_DIGITAL,	DrvInp1 + 6,	"tilt"},
 
 	{"Dip 1",		BIT_DIPSWITCH,	((unsigned char*)(DrvInput + 2)) + 1,	"dip"},
 	{"Dip 2",		BIT_DIPSWITCH,	((unsigned char*)(DrvInput + 2)) + 0,	"dip"},
@@ -80,38 +80,40 @@ static struct BurnInputInfo btlkroadInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvInp1 + 0,	"p1 coin"},
 	{"P1 Start",	BIT_DIGITAL,	DrvJoy1 + 0,	"p1 start"},
 
-	{"P1 Up",		BIT_DIGITAL,	DrvJoy1 + 7, 	"p1 up"},
+	{"P1 Up",		  BIT_DIGITAL,	DrvJoy1 + 7, 	"p1 up"},
 	{"P1 Down",		BIT_DIGITAL,	DrvJoy1 + 6, 	"p1 down"},
 	{"P1 Left",		BIT_DIGITAL,	DrvJoy1 + 4, 	"p1 left"},
 	{"P1 Right",	BIT_DIGITAL,	DrvJoy1 + 5, 	"p1 right"},
-	{"P1 Button 1",	BIT_DIGITAL,	DrvJoy1 + 3,	"p1 fire 1"},
-	{"P1 Button 2",	BIT_DIGITAL,	DrvJoy1 + 2,	"p1 fire 2"},
-	{"P1 Button 3",	BIT_DIGITAL,	DrvInp2 + 1,	"p1 fire 3"},
-	{"P1 Button 4",	BIT_DIGITAL,	DrvInp2 + 7,	"p1 fire 4"},
-	{"P1 Button 5",	BIT_DIGITAL,	DrvInp2 + 6,	"p1 fire 5"},
-	{"P1 Button 6",	BIT_DIGITAL,	DrvInp2 + 5,	"p1 fire 6"},
+	{"P1 Weak punch",	  BIT_DIGITAL,	DrvJoy1 + 3,	"p1 fire 1"},
+	{"P1 Medium punch",	BIT_DIGITAL,	DrvJoy1 + 2,	"p1 fire 2"},
+	{"P1 Strong punch",	BIT_DIGITAL,	DrvJoy1 + 1,	"p1 fire 3"},
+	{"P1 Weak kick",	  BIT_DIGITAL,	DrvInp2 + 7,	"p1 fire 4"},
+	{"P1 Medium kick",	BIT_DIGITAL,	DrvInp2 + 6,	"p1 fire 5"},
+	{"P1 Strong kick",	BIT_DIGITAL,	DrvInp2 + 5,	"p1 fire 6"},
 
 	{"P2 Coin",		BIT_DIGITAL,	DrvInp1 + 1,	"p2 coin"},
 	{"P2 Start",	BIT_DIGITAL,	DrvJoy2 + 0,	"p2 start"},
 
-	{"P2 Up",		BIT_DIGITAL,	DrvJoy2 + 7, 	"p2 up"},
+	{"P2 Up",		  BIT_DIGITAL,	DrvJoy2 + 7, 	"p2 up"},
 	{"P2 Down",		BIT_DIGITAL,	DrvJoy2 + 6, 	"p2 down"},
 	{"P2 Left",		BIT_DIGITAL,	DrvJoy2 + 4, 	"p2 left"},
 	{"P2 Right",	BIT_DIGITAL,	DrvJoy2 + 5, 	"p2 right"},
-	{"P2 Button 1",	BIT_DIGITAL,	DrvJoy2 + 3,	"p2 fire 1"},
-	{"P2 Button 2",	BIT_DIGITAL,	DrvJoy2 + 2,	"p2 fire 2"},
-	{"P2 Button 3",	BIT_DIGITAL,	DrvJoy2 + 1,	"p2 fire 3"},
-	{"P2 Button 4",	BIT_DIGITAL,	DrvInp2 + 3,	"p2 fire 4"},
-	{"P2 Button 5",	BIT_DIGITAL,	DrvInp2 + 2,	"p2 fire 5"},
-	{"P2 Button 6",	BIT_DIGITAL,	DrvInp2 + 1,	"p2 fire 6"},
+	{"P2 Weak punch",	  BIT_DIGITAL,	DrvJoy2 + 3,	"p2 fire 1"},
+	{"P2 Medium punch",	BIT_DIGITAL,	DrvJoy2 + 2,	"p2 fire 2"},
+	{"P2 Strong punch",	BIT_DIGITAL,	DrvJoy2 + 1,	"p2 fire 3"},
+	{"P2 Weak kick",	  BIT_DIGITAL,	DrvInp2 + 3,	"p2 fire 4"},
+	{"P2 Medium kick",	BIT_DIGITAL,	DrvInp2 + 2,	"p2 fire 5"},
+	{"P2 Strong kick",	BIT_DIGITAL,	DrvInp2 + 1,	"p2 fire 6"},
 
 	{"Reset",		BIT_DIGITAL,	&DrvReset,		"reset"},
-	{"Diagnostics",	BIT_DIGITAL,	DrvInp1 + 5,	"diag"},
-	{"Service",		BIT_DIGITAL,	DrvInp1 + 4,	"service"},
+	{"Test",	  BIT_DIGITAL,	DrvInp1 + 5,	"diag"},
+	{"Service",	BIT_DIGITAL,	DrvInp1 + 4,	"service"},
+//	{"Tilt",		BIT_DIGITAL,	DrvInp1 + 6,	"tilt"},
 
 	{"Dip 1",		BIT_DIPSWITCH,	((unsigned char*)(DrvInput + 2)) + 1,	"dip"},
 	{"Dip 2",		BIT_DIPSWITCH,	((unsigned char*)(DrvInput + 2)) + 0,	"dip"},
 	{"Region",		BIT_DIPSWITCH,	((unsigned char*)(DrvInput + 3)) + 0,	"dip"},
+	{"Debug Dip",	BIT_DIPSWITCH,	((unsigned char*)(DrvInput + 3)) + 1,	"dip"},
 };
 
 STDINPUTINFO(btlkroad);
@@ -174,7 +176,7 @@ static struct BurnDIPInfo samuraiaDIPList[] = {
 	{0x16,	0x01, 0x0C,	0x04, "Easy"},
 	{0x16,	0x01, 0x0C,	0x08, "Hard"},
 	{0x16,	0x01, 0x0C,	0x0C, "Super hard"},
-	{0,		0xFE, 0,	4,	  "fighters"},
+	{0,		0xFE, 0,	4,	  "Fighters"},
 	{0x16,	0x01, 0x30,	0x00, "3"},
 	{0x16,	0x01, 0x30,	0x10, "1"},
 	{0x16,	0x01, 0x30,	0x20, "2"},
@@ -261,50 +263,51 @@ static struct BurnDIPInfo gunbirdDIPList[] = {
 static struct BurnDIPInfo btlkroadDIPList[] = {
 	// Defaults
 	{0x1B,	0xFF, 0xFF,	0x00, NULL},
-	{0x1C,	0xFF, 0xFF,	0x00, NULL},
+	{0x1C,	0xFF, 0xFF,	0x02, NULL},
 	{0x1D,	0xFF, 0xFF,	0x0F, NULL},
+	{0x1E,	0xFF, 0xFF,	0x00, NULL},
 
 	// DIP 1
 	{0,		0xFE, 0,	2,	  "Coin slot"},
-	{0x15,	0x82, 0x01,	0x00, "Same"},
-	{0x15,	0x00, 0xFF, 0xFF, NULL},
-	{0x15,	0x82, 0x01,	0x01, "Individual"},
-	{0x15,	0x00, 0xFF, 0xFF, NULL},
+	{0x1B,	0x82, 0x01,	0x00, "Same"},
+	{0x1B,	0x00, 0xFF, 0xFF, NULL},
+	{0x1B,	0x82, 0x01,	0x01, "Individual"},
+	{0x1B,	0x00, 0xFF, 0xFF, NULL},
 	{0,		0xFE, 0,	9,	  "Coin 1"},
-	{0x15,	0x01, 0x0E,	0x00, "1 coin = 1 credit"},
-	{0x15,	0x01, 0x0E,	0x02, "2 coins = 1 credit"},
-	{0x15,	0x01, 0x0E,	0x04, "3 coins = 1 credit"},
-	{0x15,	0x01, 0x0E,	0x08, "1 coin = 2 credits"},
-	{0x15,	0x01, 0x0E,	0x06, "1 coin = 3 credits"},
-	{0x15,	0x01, 0x0E,	0x0A, "1 coin = 4 credits"},
-	{0x15,	0x01, 0x0E,	0x0C, "1 coin = 5 credits"},
-	{0x15,	0x82, 0x0E,	0x0E, "1 coin = 6 credits"},
-	{0x15,	0x00, 0xFF, 0xFF, NULL},
-	{0x15,	0x01, 0xFF,	0xFF, "Free play"},
+	{0x1B,	0x01, 0x0E,	0x00, "1 coin = 1 credit"},
+	{0x1B,	0x01, 0x0E,	0x02, "2 coins = 1 credit"},
+	{0x1B,	0x01, 0x0E,	0x04, "3 coins = 1 credit"},
+	{0x1B,	0x01, 0x0E,	0x08, "1 coin = 2 credits"},
+	{0x1B,	0x01, 0x0E,	0x06, "1 coin = 3 credits"},
+	{0x1B,	0x01, 0x0E,	0x0A, "1 coin = 4 credits"},
+	{0x1B,	0x01, 0x0E,	0x0C, "1 coin = 5 credits"},
+	{0x1B,	0x82, 0x0E,	0x0E, "1 coin = 6 credits"},
+	{0x1B,	0x00, 0xFF, 0xFF, NULL},
+	{0x1B,	0x01, 0xFF,	0xFF, "Free play"},
 	{0,		0xFE, 0,	9,	  "Coin 2"},
-	{0x15,	0x82, 0x70,	0x00, "1 coin = 1 credit"},
-	{0x15,	0x00, 0xFF, 0xFF, NULL},
-	{0x15,	0x82, 0x70,	0x10, "2 coins = 1 credit"},
-	{0x15,	0x00, 0xFF, 0xFF, NULL},
-	{0x15,	0x82, 0x70,	0x20, "3 coins = 1 credit"},
-	{0x15,	0x00, 0xFF, 0xFF, NULL},
-	{0x15,	0x82, 0x70,	0x40, "1 coin = 2 credits"},
-	{0x15,	0x00, 0xFF, 0xFF, NULL},
-	{0x15,	0x82, 0x70,	0x30, "1 coin = 3 credits"},
-	{0x15,	0x00, 0xFF, 0xFF, NULL},
-	{0x15,	0x82, 0x70,	0x50, "1 coin = 4 credits"},
-	{0x15,	0x00, 0xFF, 0xFF, NULL},
-	{0x15,	0x82, 0x70,	0x60, "1 coin = 5 credits"},
-	{0x15,	0x00, 0xFF, 0xFF, NULL},
-	{0x15,	0x82, 0x70,	0x70, "1 coin = 6 credits"},
-	{0x15,	0x00, 0xFF, 0xFF, NULL},
-	{0x15,	0x82, 0xFF,	0xFF, "Free play"},
-	{0x15,	0x00, 0xFF, 0xFF, NULL},
+	{0x1B,	0x82, 0x70,	0x00, "1 coin = 1 credit"},
+	{0x1B,	0x00, 0xFF, 0xFF, NULL},
+	{0x1B,	0x82, 0x70,	0x10, "2 coins = 1 credit"},
+	{0x1B,	0x00, 0xFF, 0xFF, NULL},
+	{0x1B,	0x82, 0x70,	0x20, "3 coins = 1 credit"},
+	{0x1B,	0x00, 0xFF, 0xFF, NULL},
+	{0x1B,	0x82, 0x70,	0x40, "1 coin = 2 credits"},
+	{0x1B,	0x00, 0xFF, 0xFF, NULL},
+	{0x1B,	0x82, 0x70,	0x30, "1 coin = 3 credits"},
+	{0x1B,	0x00, 0xFF, 0xFF, NULL},
+	{0x1B,	0x82, 0x70,	0x50, "1 coin = 4 credits"},
+	{0x1B,	0x00, 0xFF, 0xFF, NULL},
+	{0x1B,	0x82, 0x70,	0x60, "1 coin = 5 credits"},
+	{0x1B,	0x00, 0xFF, 0xFF, NULL},
+	{0x1B,	0x82, 0x70,	0x70, "1 coin = 6 credits"},
+	{0x1B,	0x00, 0xFF, 0xFF, NULL},
+	{0x1B,	0x82, 0xFF,	0xFF, "Free play"},
+	{0x1B,	0x00, 0xFF, 0xFF, NULL},
 	{0,		0xFE, 0,	2,	  "Continue coin"},
-	{0x15,	0x82, 0x80,	0x00, "Normal mode"},
-	{0x15,	0x00, 0xFF, 0xFF, NULL},
-	{0x15,	0x82, 0x80,	0x80, "Continue mode"},
-	{0x15,	0x00, 0xFF, 0xFF, NULL},
+	{0x1B,	0x82, 0x80,	0x00, "Normal mode"},
+	{0x1B,	0x00, 0xFF, 0xFF, NULL},
+	{0x1B,	0x82, 0x80,	0x80, "Continue mode"},
+	{0x1B,	0x00, 0xFF, 0xFF, NULL},
 	// DIP 2
 	{0,		0xFE, 0,	2,	  NULL},
 	{0x1C,	0x01, 0x01,	0x00, "Normal screen"},
@@ -317,6 +320,12 @@ static struct BurnDIPInfo btlkroadDIPList[] = {
 	{0x1C,	0x01, 0x0C,	0x04, "Easy"},
 	{0x1C,	0x01, 0x0C,	0x08, "Hard"},
 	{0x1C,	0x01, 0x0C,	0x0C, "Hardest"},
+	{0,		0xFE, 0,	2,	  "Enable debug dip"},
+	{0x1C,	0x01, 0x40,	0x00, "Off"},
+	{0x1C,	0x01, 0x40,	0x40, "On"},
+	{0,		0xFE, 0,	2,	  "Test mode"},
+	{0x1C,	0x01, 0x80,	0x00, "Off"},
+	{0x1C,	0x01, 0x80,	0x80, "On"},
 
 	// Region
 	{0,		0xFE, 0,	6,	  "Region"},
@@ -327,6 +336,12 @@ static struct BurnDIPInfo btlkroadDIPList[] = {
 	{0x1D,	0x01, 0xFF,	0x09, "Taiwan"},
 	{0x1D,	0x01, 0xFF,	0x0F, "World"},
 
+	// Debug Dip
+	{0,		0xFE, 0,	2,	  "Debug test menu"},
+	{0x1E,	0x82, 0x80,	0x00, "Off"},
+	{0x1C,	0x00, 0x40, 0x00, NULL},
+	{0x1E,	0x82, 0x80,	0x80, "On"},
+	{0x1C,	0x00, 0x40, 0x00, NULL},
 };
 
 static struct BurnDIPInfo s1945DIPList[] = {
@@ -387,7 +402,7 @@ static struct BurnDIPInfo s1945DIPList[] = {
 static struct BurnDIPInfo tengaiDIPList[] = {
 	// Defaults
 	{0x15,	0xFF, 0xFF,	0x00, NULL},
-	{0x16,	0xFF, 0xFF,	0x00, NULL},
+	{0x16,	0xFF, 0xFF,	0x02, NULL},
 	{0x17,	0xFF, 0xFF,	0x0F, NULL},
 
 	{0,		0xFE, 0,	2,	  "Coin slot"},
@@ -488,6 +503,16 @@ static struct BurnDIPInfo gunbirdRegionDIPList[] = {
 	{0x17,	0x01, 0xFF,	0x08, "Taiwan"},
 };
 
+static struct BurnDIPInfo s1945aRegionDIPList[] = {
+	// Defaults
+	{0x17,	0xFF, 0xFF,	0x01, NULL},
+
+	// Region
+	{0,		0xFE, 0,	2,	  "Region"},
+	{0x17,	0x01, 0xFF,	0x00, "Japan"},
+	{0x17,	0x01, 0xFF,	0x01, "World"},
+};
+
 STDDIPINFOEXT(samuraia, samuraia, samuraiaRegion);
 STDDIPINFOEXT(sngkace, samuraia, NoRegion);
 
@@ -498,6 +523,7 @@ STDDIPINFOEXT(gunbird, gunbird, NoRegion);
 
 STDDIPINFOEXT(s1945World, s1945, gunbirdRegion);
 STDDIPINFOEXT(s1945, s1945, NoRegion);
+STDDIPINFOEXT(s1945a, s1945, s1945aRegion);
 
 STDDIPINFO(tengai);
 
@@ -1249,14 +1275,6 @@ static int DrvExit()
 	free(Mem);
 	Mem = NULL;
 
-	CachedFree(PsikyoSpriteROM);
-	PsikyoSpriteROM = NULL;
-	CachedFree(PsikyoTileROM);
-	PsikyoTileROM = NULL;
-	CachedFree(PsikyoSampleROM01);
-	PsikyoSampleROM01 = NULL;
-	CachedFree(PsikyoSampleROM02);
-	PsikyoSampleROM02 = NULL;
 	return 0;
 }
 
@@ -1698,7 +1716,11 @@ static int MemIndex()
 
 	Psikyo68KROM		= Next; Next += 0x100000;		// 68K program
 	PsikyoZ80ROM		= Next; Next += 0x020000;		// Z80 program
+	PsikyoSpriteROM		= Next; Next += PsikyoSpriteROMSize;
 	PsikyoSpriteLUT		= Next; Next += 0x040000;
+	PsikyoTileROM		= Next; Next += PsikyoTileROMSize;
+	PsikyoSampleROM01	= Next; Next += PsikyoSampleROM01Size;
+	PsikyoSampleROM02	= Next; Next += PsikyoSampleROM02Size;
 	RamStart			= Next;
 	Psikyo68KRAM		= Next; Next += 0x020000;		// 68K work RAM
 	if (PsikyoHardwareVersion == PSIKYO_HW_SAMURAIA) {
@@ -1810,41 +1832,7 @@ static int DrvInit()
 	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) {
 		return 1;
 	}
-	PsikyoSpriteROM		= (unsigned char *)CachedMalloc(PsikyoSpriteROMSize);
-	PsikyoTileROM		= (unsigned char *)CachedMalloc(PsikyoTileROMSize);
-	PsikyoSampleROM01	= (unsigned char *)CachedMalloc(PsikyoSampleROM01Size);
-	PsikyoSampleROM02	= (unsigned char *)CachedMalloc(PsikyoSampleROM02Size);
-	if (PsikyoSpriteROM == NULL || PsikyoTileROM == NULL || PsikyoSampleROM01 == NULL || PsikyoSampleROM02 == NULL)
-	{
-		free(Mem);
-		Mem = NULL;
-		if (PsikyoSpriteROM)
-		{
-			CachedFree(PsikyoSpriteROM);
-			PsikyoSpriteROM = NULL;
-		}
-		if (PsikyoTileROM)
-		{
-			CachedFree(PsikyoTileROM);
-			PsikyoTileROM = NULL;
-		}
-		if (PsikyoSampleROM01)
-		{
-			CachedFree(PsikyoSampleROM01);
-			PsikyoSampleROM01 = NULL;
-		}
-		if (PsikyoSampleROM02)
-		{
-			CachedFree(PsikyoSampleROM02);
-			PsikyoSampleROM02 = NULL;
-		}
-		return 1;
-	}
 	memset(Mem, 0, nLen);										// blank all memory
-	memset(PsikyoSpriteROM, 0, PsikyoSpriteROMSize);			// blank all memory
-	memset(PsikyoTileROM, 0, PsikyoTileROMSize);				// blank all memory
-	memset(PsikyoSampleROM01, 0, PsikyoSampleROM01Size);		// blank all memory
-	memset(PsikyoSampleROM02, 0, PsikyoSampleROM02Size);		// blank all memory
 	MemIndex();													// Index the allocated memory
 
 	// Load the roms into memory
@@ -2182,7 +2170,7 @@ struct BurnDriver BurnDrvSamuraiA = {
 struct BurnDriver BurnDrvSngkAce = {
 	"sngkace", "samuraia", NULL, "1993",
 	"Sengoku Ace (Japan)\0", NULL, "Psikyo / Banpresto", "Psikyo 68EC020",
-	L"\u6226\u56FD\u30A8\u30FC\u30B9 (Japan)\0Sengoku Ace (Japan)\0", NULL, NULL, NULL,
+	L"\u6226\u56FD\u30A8\u30FC\u30B9 (Japan)\0Sengoku Ace\0", NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_MISC_MISC,
 	NULL, sngkaceRomInfo, sngkaceRomName, gunbirdInputInfo, sngkaceDIPInfo,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &PsikyoRecalcPalette,
@@ -2287,7 +2275,7 @@ struct BurnDriver BurnDrvGunbirdk = {
 	224, 320, 3, 4
 };
 
-// Battle K Road
+// Battle K-Road
 
 static struct BurnRomInfo btlkroadRomDesc[] = {
 	{ "4-u46.bin",    0x040000, 0x8a7a28b4, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
@@ -2487,7 +2475,7 @@ struct BurnDriver BurnDrvS1945a = {
 	"Strikers 1945 (Alt)\0", NULL, "Psikyo", "Psikyo 68EC020",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_MISC_MISC,
-	NULL, s1945aRomInfo, s1945aRomName, gunbirdInputInfo, s1945DIPInfo,
+	NULL, s1945aRomInfo, s1945aRomName, gunbirdInputInfo, s1945aDIPInfo,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &PsikyoRecalcPalette,
 	224, 320, 3, 4
 };

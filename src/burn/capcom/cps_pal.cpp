@@ -8,7 +8,7 @@ unsigned int* CpsObjPal = NULL;
 
 int nLagObjectPalettes;
 
-inline static unsigned int CalcCol(unsigned short a)
+inline static unsigned int CalcColCPS1(unsigned short a)
 {
 	int r, g, b, f;
 	const int F_OFFSET = 0x0F;
@@ -16,11 +16,34 @@ inline static unsigned int CalcCol(unsigned short a)
 	// Format is FFFF RRRR GGGG BBBB
 	f = (a & 0xF000) >> 12;
 
-	r = (a & 0x0F00) >> 4;		// Red
+	r = (a & 0x0F00) >> 4;	  // Red
 	r |= r >> 4;
-	g = (a & 0x00F0);		// Green
+	g = (a & 0x00F0);		  // Green
 	g |= g >> 4;
-	b = (a & 0x000F);		// Blue
+	b = (a & 0x000F);		  // Blue
+	b |= b << 4;
+
+	f += F_OFFSET;
+	r *= f; r /= F_OFFSET + 0x0F;
+	g *= f; g /= F_OFFSET + 0x0F;
+	b *= f; b /= F_OFFSET + 0x0F;
+
+	return BurnHighCol(r, g, b, 0);
+}
+
+inline static unsigned int CalcColCPS2(unsigned short a)
+{
+	int r, g, b, f;
+	const int F_OFFSET = 0x0F;
+
+	// Format is FFFF RRRR GGGG BBBB
+	f = (a & 0xF000) >> 12;
+
+	r = (a & 0x0F00) >> 4;	  // Red
+	r |= r >> 4;
+	g = (a & 0x00F0);		  // Green
+	g |= g >> 4;
+	b = (a & 0x000F);		  // Blue
 	b |= b << 4;
 
 	f += F_OFFSET;
@@ -39,25 +62,25 @@ static int CalcAll()
 		if (nLagObjectPalettes) {
 			ps = (unsigned short*)CpsPalSrc + 0x0C00;
 			for (int i = 0x0C00; i < 0x0E00; i++, ps++) {
-				CpsPal[i ^ 15] = CalcCol(*ps);
+				CpsPal[i ^ 15] = CalcColCPS2(*ps);
 			}
 			ps = (unsigned short*)CpsPalSrc + 0x0200;
 			for (int i = 0x0200; i < 0x0800; i++, ps++) {
-				CpsPal[i ^ 15] = CalcCol(*ps);
+				CpsPal[i ^ 15] = CalcColCPS2(*ps);
 			}
 
 			memcpy(CpsPal + 0x0E00, CpsPal + 0x0C00, 0x0200 << 2);
 		} else {
 			ps = (unsigned short*)CpsPalSrc;
 			for (int i = 0x0000; i < 0x0800; i++, ps++) {
-				CpsPal[i ^ 15] = CalcCol(*ps);
+				CpsPal[i ^ 15] = CalcColCPS2(*ps);
 			}
 		}
 
 	} else {
 		ps = (unsigned short*)CpsPalSrc;
 		for (int i = 0x0000; i < 0x0800; i++, ps++) {
-			CpsPal[i ^ 15] = CalcCol(*ps);
+			CpsPal[i ^ 15] = CalcColCPS1(*ps);
 		}
 	}
 
@@ -70,7 +93,7 @@ static void CalcAllStar(int nLayer)
 	int nOffset = 0x0800 + (nLayer << 9);
 
 	for (int i = 0; i < 128; i++, ps++) {
-		CpsPal[(i + nOffset) ^ 15] = CalcCol(*(ps + nOffset));
+		CpsPal[(i + nOffset) ^ 15] = CalcColCPS1(*(ps + nOffset));
 	}
 }
 
@@ -79,7 +102,7 @@ int CpsPalInit()
 	int nLen = 0;
 
 	nLen = 0x1000 * sizeof(short);
-	CpsPalSrc = (unsigned char*)BurnMalloc(nLen);
+	CpsPalSrc = (unsigned char*)malloc(nLen);
 	if (CpsPalSrc == NULL) {
 		return 1;
 	}
@@ -87,7 +110,7 @@ int CpsPalInit()
 
 	// The star layer palettes are at the end of the normal palette, so double the size
 	nLen = 0x1000 * sizeof(int);
-	CpsPal = (unsigned int*)BurnMalloc(nLen);
+	CpsPal = (unsigned int*)malloc(nLen);
 	if (CpsPal == NULL) {
 		return 1;
 	}
@@ -111,11 +134,11 @@ int CpsPalInit()
 int CpsPalExit()
 {
 	if (CpsPal) {
-		BurnFree(CpsPal);
+		free(CpsPal);
 		CpsPal = NULL;
 	}
 	if (CpsPalSrc) {
-		BurnFree(CpsPalSrc);
+		free(CpsPalSrc);
 		CpsPalSrc = NULL;
 	}
 	return 0;
@@ -167,7 +190,7 @@ int CpsPalUpdate(unsigned char* pNewPal, int bRecalcAll)
 
 				*ps = n;									// Update our copy of the palette
 
-				CpsObjPal[i ^ 15] = CalcCol(n);
+				CpsObjPal[i ^ 15] = CalcColCPS2(n);
 			}
 
 			ps = (unsigned short*)CpsPalSrc + 0x0200;
@@ -182,7 +205,7 @@ int CpsPalUpdate(unsigned char* pNewPal, int bRecalcAll)
 
 				*ps = n;									// Update our copy of the palette
 
-				CpsPal[i ^ 15] = CalcCol(n);
+				CpsPal[i ^ 15] = CalcColCPS2(n);
 			}
 
 			CpsObjPal = CpsPal + nBuffer;
@@ -198,7 +221,7 @@ int CpsPalUpdate(unsigned char* pNewPal, int bRecalcAll)
 
 				*ps = n;									// Update our copy of the palette
 
-				CpsPal[i ^ 15] = CalcCol(n);
+				CpsPal[i ^ 15] = CalcColCPS2(n);
 			}
 		}
 	} else {
@@ -213,7 +236,7 @@ int CpsPalUpdate(unsigned char* pNewPal, int bRecalcAll)
 
 			*ps = n;									// Update our copy of the palette
 
-			CpsPal[i ^ 15] = CalcCol(n);
+			CpsPal[i ^ 15] = CalcColCPS1(n);
 		}
 	}
 
@@ -244,7 +267,7 @@ int CpsStarPalUpdate(unsigned char* pNewPal, int nLayer, int bRecalcAll)
 
 			*ps = n;							// Update our copy of the palette
 
-			CpsPal[i ^ 15] = CalcCol(n);
+			CpsPal[i ^ 15] = CalcColCPS1(n);
 		}
 	} else {
 		ps = (unsigned short*)CpsPalSrc + 0x0A00;
@@ -265,7 +288,7 @@ int CpsStarPalUpdate(unsigned char* pNewPal, int nLayer, int bRecalcAll)
 
 			*ps = n;							// Update our copy of the palette
 
-			CpsPal[i ^ 15] = CalcCol(n);
+			CpsPal[i ^ 15] = CalcColCPS1(n);
 		}
 	}
 

@@ -39,7 +39,7 @@ static struct BurnDIPInfo ffightDIPList[]=
 	// Defaults
 	{0x15, 0xff, 0xff, 0x00, NULL                },
 	{0x16, 0xff, 0xff, 0x00, NULL                },
-	{0x17, 0xff, 0xff, 0x40, NULL                },
+	{0x17, 0xff, 0xff, 0x00, NULL                },
 
 	// Dip A
 	{0   , 0xfe, 0   , 8   , "Coin 1"                 },
@@ -157,7 +157,6 @@ static int FfightInit()
   nCpsGfxLen= 4*0x080000;
   nCpsZRomLen=  0x010000;
   nCpsAdLen  =2*0x020000;
-  nCPS68KClockspeed = 10000000;
   nRet=CpsInit(); if (nRet!=0) return 1;
 
   // Load program roms

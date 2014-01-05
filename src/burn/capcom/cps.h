@@ -8,20 +8,16 @@
 // Maximum number of beam-synchronized interrupts to check
 #define MAX_RASTER 10
 
-#define GETCPSGFX(x) CpsGfxSeg[x>>24]+(x&0xFFFFFF)
-
 extern unsigned int CpsMProt[4];									// Mprot changes
 extern unsigned int CpsBID[3];										// Board ID changes
 
 // cps.cpp
-extern unsigned char UpperReserved;
 extern int Cps;														// 1 = CPS1, 2 = CPS2, 3 = CPS CHanger
 extern int Cps1Qs;
 extern int nCPS68KClockspeed;
 extern int nCpsCycles;												// Cycles per frame
 extern int nCpsZ80Cycles;
 extern unsigned char *CpsGfx;  extern unsigned int nCpsGfxLen;		// All the graphics
-extern unsigned char *CpsGfxSeg[2] ;
 extern unsigned char *CpsRom;  extern unsigned int nCpsRomLen;		// Program Rom (as in rom)
 extern unsigned char *CpsCode; extern unsigned int nCpsCodeLen;		// Program Rom (decrypted)
 extern unsigned char *CpsZRom; extern unsigned int nCpsZRomLen;		// Z80 Roms

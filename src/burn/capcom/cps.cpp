@@ -1,8 +1,6 @@
 #include "cps.h"
-#include "cache.h"
 // CPS (general)
 
-unsigned char UpperReserved = 0;
 int Cps = 0;							// 1 = CPS1, 2 = CPS2, 3 = CPS Changer
 int Cps1Qs = 0;
 
@@ -11,7 +9,6 @@ int nCpsCycles = 0;						// 68K Cycles per frame
 int	nCpsZ80Cycles;
 
 unsigned char *CpsGfx =NULL; unsigned int nCpsGfxLen =0; // All the graphics
-unsigned char *CpsGfxSeg[2] = {NULL};
 unsigned char *CpsRom =NULL; unsigned int nCpsRomLen =0; // Program Rom (as in rom)
 unsigned char *CpsCode=NULL; unsigned int nCpsCodeLen=0; // Program Rom (decrypted)
 unsigned char *CpsZRom=NULL; unsigned int nCpsZRomLen=0; // Z80 Roms
@@ -63,13 +60,13 @@ static int LoadUp(unsigned char** pRom, int* pnRomLen, int nNum)
 	}
 
 	// Load the rom
-	Rom = (unsigned char*)BurnMalloc(ri.nLen);
+	Rom = (unsigned char*)malloc(ri.nLen);
 	if (Rom == NULL) {
 		return 1;
 	}
 
 	if (BurnLoadRom(Rom,nNum,1)) {
-		BurnFree(Rom);
+		free(Rom);
 		return 1;
 	}
 
@@ -109,7 +106,7 @@ static int CpsLoadOne(unsigned char* Tile, int nNum, int nWord, int nShift)
 		*((unsigned int *)pt) |= Pix;
 	}
 
-	BurnFree(Rom);
+	free(Rom);
 	return 0;
 }
 
@@ -153,8 +150,8 @@ static int CpsLoadOneHack160(unsigned char *Tile, int nNum, int nWord, int nOffs
 		*((unsigned int *)pt) |= Pix;
 	}
 
-	BurnFree(Rom2);
-	BurnFree(Rom1);
+	free(Rom2);
+	free(Rom1);
 	return 0;
 }
 
@@ -183,7 +180,7 @@ static int CpsLoadOnePang(unsigned char *Tile,int nNum,int nWord,int nShift)
 		*((unsigned int *)pt) |= Pix;
 	}
 
-	BurnFree(Rom);
+	free(Rom);
 	return 0;
 }
 
@@ -237,8 +234,8 @@ int CpsLoadStars(unsigned char* pStar, int nStart)
 
 	for (int i = 0; i < 2; i++) {
 		if (LoadUp(&pTemp[i], &nLen, nStart + (i << 1))) {
-			BurnFree(pTemp[0]);
-			BurnFree(pTemp[1]);
+			free(pTemp[0]);
+			free(pTemp[1]);
 		}
 	}
 
@@ -247,8 +244,8 @@ int CpsLoadStars(unsigned char* pStar, int nStart)
 		pStar[0x01000 + i] = pTemp[1][i << 1];
 	}
 
-	BurnFree(pTemp[0]);
-	BurnFree(pTemp[1]);
+	free(pTemp[0]);
+	free(pTemp[1]);
 
 	return 0;
 }
@@ -301,10 +298,10 @@ static int Cps2LoadOne(unsigned char* Tile, int nNum, int nWord, int nShift)
 		}
 
 		nRomLen <<= 1;
-		Rom = (unsigned char*)BurnMalloc(nRomLen);
+		Rom = (unsigned char*)malloc(nRomLen);
 		if (Rom == NULL) {
-			BurnFree(Rom2);
-			BurnFree(Rom3);
+			free(Rom2);
+			free(Rom3);
 			return 1;
 		}
 
@@ -313,8 +310,8 @@ static int Cps2LoadOne(unsigned char* Tile, int nNum, int nWord, int nShift)
 			Rom[(i << 1) + 1] = Rom2[i];
 		}
 
-		BurnFree(Rom2);
-		BurnFree(Rom3);
+		free(Rom2);
+		free(Rom3);
 	}
 
 	// Go through each section
@@ -325,7 +322,7 @@ static int Cps2LoadOne(unsigned char* Tile, int nNum, int nWord, int nShift)
 		pr += 0x80000;
 	}
 
-	BurnFree(Rom);
+	free(Rom);
 
 	return 0;
 }
@@ -372,14 +369,14 @@ static int CpsGetROMs(bool bLoad)
 
 	unsigned char* CpsCodeLoad = CpsCode;
 	unsigned char* CpsRomLoad = CpsRom;
-	unsigned int CpsGfxLoad = 0;
+	unsigned char* CpsGfxLoad = CpsGfx;
 	unsigned char* CpsZRomLoad = CpsZRom;
 	unsigned char* CpsQSamLoad = (unsigned char*)CpsQSam;
 
 	int nGfxNum = 0;
 
 	if (bLoad) {
-		if (!CpsCodeLoad || !CpsRomLoad || !CpsZRomLoad || !CpsQSamLoad) {
+		if (!CpsCodeLoad || !CpsRomLoad || !CpsGfxLoad || !CpsZRomLoad || !CpsQSamLoad) {
 			return 1;
 		}
 	} else {
@@ -398,9 +395,8 @@ static int CpsGetROMs(bool bLoad)
 		// SIMM Graphics ROMs
 		if (BurnDrvGetHardwareCode() & HARDWARE_CAPCOM_CPS2_SIMM) {
 			if ((ri.nType & BRF_GRA) && (ri.nType & 8)) {
-				if (bLoad)
-				{
-					Cps2LoadTilesSIM(CpsGfx+CpsGfxLoad, i);
+				if (bLoad) {
+					Cps2LoadTilesSIM(CpsGfxLoad, i);
 					CpsGfxLoad += ri.nLen * 8;
 					i += 7;
 				} else {
@@ -468,12 +464,7 @@ static int CpsGetROMs(bool bLoad)
 		// Normal Graphics ROMs
 		if (ri.nType & BRF_GRA) {
 			if (bLoad) {
-				if (UpperReserved != 2)
-					Cps2LoadTiles(CpsGfx+CpsGfxLoad, i);
-				else
-				{
-					Cps2LoadTiles(GETCPSGFX(CpsGfxLoad), i);						
-				}
+				Cps2LoadTiles(CpsGfxLoad, i);
 				CpsGfxLoad += (nGfxMaxSize == ~0U ? ri.nLen : nGfxMaxSize) * 4;
 				i += 3;
 			} else {
@@ -548,13 +539,10 @@ int CpsInit()
 		if (!(Cps & 1)) {
 			nCPS68KClockspeed = 11800000;
 		} else {
-			nCPS68KClockspeed = 8000000;
+			nCPS68KClockspeed = 10000000;
 		}
 	}
 	nCPS68KClockspeed = nCPS68KClockspeed * 100 / nBurnFPS;
-
-	if ( bBurnUseRomCache )
-		nCpsCodeLen = BurnCacheBlockSize(2);		
 
 	nMemLen = nCpsGfxLen + nCpsRomLen + nCpsCodeLen + nCpsZRomLen + nCpsQSamLen + nCpsAdLen;
 
@@ -562,74 +550,23 @@ int CpsInit()
 		nMemLen += nCpsZRomLen * 2;
 	}
 
-	/*if (nMemLen > 0x1400000)
-	{
-		if (nCpsGfxLen <= 0x1600000)
-		{
-			CpsGfx = (unsigned char*)CachedMalloc(nCpsGfxLen);
-			memset(CpsGfx, 0, nCpsGfxLen);
-			UpperReserved = 1;
-			nMemLen -= nCpsGfxLen;
-			CpsRom = (unsigned char*)BurnMalloc(nMemLen);		
-			if (CpsRom == NULL) {
-				return 1;
-			}
-			memset(CpsRom, 0, nMemLen);
-			CpsCode = CpsRom + nCpsRomLen;
-			if (Cps1Qs == 1) {
-				CpsEncZRom = CpsCode + nCpsCodeLen;
-				CpsZRom = CpsEncZRom + nCpsZRomLen * 2;
-			} else {
-				CpsZRom = CpsCode + nCpsCodeLen;
-			}
-			CpsQSam =(char*)(CpsZRom + nCpsZRomLen);
-			CpsAd   =(unsigned char*)(CpsQSam + nCpsQSamLen);
-		}
-		else
-		{
-			CpsGfxSeg[0]=(unsigned char*)CachedMalloc(0x1000000);
-			if (CpsGfxSeg[0] == NULL)
-				return 1;
-			CpsQSam = (char *)CachedMalloc(nCpsQSamLen);
-			if (CpsQSam == NULL)
-				return 1;
-			CpsGfxSeg[1]=(unsigned char*)BurnMalloc(nCpsGfxLen-0x1000000);
-			if (CpsGfxSeg[1] == NULL)
-				return 1;
-			memset(CpsGfxSeg[1], 0, nCpsGfxLen-0x1000000);
-			nMemLen -= nCpsGfxLen+nCpsQSamLen;
-			CpsRom = (unsigned char*)BurnMalloc(nMemLen);		
-			if (CpsRom == NULL) {
-				return 1;
-			}
+	// Allocate Gfx, Rom and Z80 Roms
+	CpsGfx = (unsigned char*)malloc(nMemLen);
+	if (CpsGfx == NULL) {
+		return 1;
+	}
+	memset(CpsGfx, 0, nMemLen);
 
-			memset(CpsRom, 0, nMemLen);
-			CpsCode = CpsRom + nCpsRomLen;
-			CpsZRom = CpsCode + nCpsCodeLen;
-			CpsAd =(unsigned char*)(CpsZRom + nCpsZRomLen);
-			UpperReserved = 2;
-		}
+	CpsRom  = CpsGfx + nCpsGfxLen;
+	CpsCode = CpsRom + nCpsRomLen;
+	if (Cps1Qs == 1) {
+		CpsEncZRom = CpsCode + nCpsCodeLen;
+		CpsZRom = CpsEncZRom + nCpsZRomLen * 2;
+	} else {
+		CpsZRom = CpsCode + nCpsCodeLen;
 	}
-	else*/
-	{
-		// Allocate Gfx, Rom and Z80 Roms
-		CpsGfx = (unsigned char*)BurnMalloc(nMemLen);
-		if (CpsGfx == NULL) {
-			return 1;
-		}
-		memset(CpsGfx, 0, nMemLen);
-		CpsRom  = CpsGfx + nCpsGfxLen;
-		CpsCode = CpsRom + nCpsRomLen;
-		if (Cps1Qs == 1) {
-			CpsEncZRom = CpsCode + nCpsCodeLen;
-			CpsZRom = CpsEncZRom + nCpsZRomLen * 2;
-		} else {
-			CpsZRom = CpsCode + nCpsCodeLen;
-		}
-		CpsQSam =(char*)(CpsZRom + nCpsZRomLen);
-		CpsAd   =(unsigned char*)(CpsQSam + nCpsQSamLen);
-		UpperReserved = 0;
-	}
+	CpsQSam =(char*)(CpsZRom + nCpsZRomLen);
+	CpsAd   =(unsigned char*)(CpsQSam + nCpsQSamLen);
 
 	// Create Gfx addr mask
 	for (i = 0; i < 31; i++) {
@@ -646,22 +583,11 @@ int CpsInit()
 		nCpsGfxScroll[1] = nCpsGfxScroll[2] = nCpsGfxScroll[3] = 0;
 	}
 
-	if ( bBurnUseRomCache ) {
-		BurnCacheRead(CpsRom, 0);
-		BurnCacheRead(CpsZRom, 1);
-		BurnCacheRead(CpsCode, 2);
-		BurnCacheRead((unsigned char*)CpsQSam,3);
-		BurnCacheRead(CpsGfxSeg[0],4);
-		BurnCacheRead(CpsGfxSeg[1],5);
-		BurnCacheRead(CpsAd,6);
-	}
-	else {
-		if (nCpsZRomLen>=5) {
-			// 77->cfff and rst 00 in case driver doesn't load
-			CpsZRom[0] = 0x3E; CpsZRom[1] = 0x77;
-			CpsZRom[2] = 0x32; CpsZRom[3] = 0xFF; CpsZRom[4] = 0xCF;
-			CpsZRom[5] = 0xc7;
-		}
+	if (nCpsZRomLen>=5) {
+		// 77->cfff and rst 00 in case driver doesn't load
+		CpsZRom[0] = 0x3E; CpsZRom[1] = 0x77;
+		CpsZRom[2] = 0x32; CpsZRom[3] = 0xFF; CpsZRom[4] = 0xCF;
+		CpsZRom[5] = 0xc7;
 	}
 
 	// mprot
@@ -696,10 +622,9 @@ int Cps2Init()
 
 	CpsInit();
 
-	if ( !bBurnUseRomCache )
-		if (CpsGetROMs(true)) {
-			return 1;
-		}
+	if (CpsGetROMs(true)) {
+		return 1;
+	}
 
 	return CpsRunInit();
 }
@@ -716,28 +641,10 @@ int CpsExit()
 	nCpsGfxMask = 0;
 
 	nCpsCodeLen = nCpsRomLen = nCpsGfxLen = nCpsZRomLen = nCpsQSamLen = nCpsAdLen = 0;
-	CpsCode = CpsZRom = CpsAd = CpsStar = NULL;
-
-	switch(UpperReserved)
-	{
-		case 0:
-			BurnFree(CpsGfx);
-		break;
-		case 1:
-		BurnFree(CpsRom);
-		CpsRom = NULL;
-		CachedFree(CpsGfx);
-		break;
-		case 2:
-		BurnFree(CpsRom);
-		CpsRom = NULL;
-		BurnFree(CpsGfxSeg[1]);
-		CachedFree(CpsGfxSeg[0]);
-		CachedFree(CpsQSam);
-		break;
-	}
-	CpsRom = NULL;
+	CpsCode = CpsRom = CpsZRom = CpsAd = CpsStar = NULL;
 	CpsQSam = NULL;
+
+	free(CpsGfx);
 	CpsGfx  = NULL;
 
 	nCPS68KClockspeed = 0;

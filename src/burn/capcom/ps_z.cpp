@@ -134,7 +134,7 @@ int PsndZInit()
 		return 1;
 	}
 
-	PsndZRam = (unsigned char *)BurnMalloc(0x800);
+	PsndZRam = (unsigned char *)malloc(0x800);
 	if (PsndZRam == NULL) {
 		return 1;
 	}
@@ -170,16 +170,16 @@ int PsndZInit()
 	ZetMapArea(0xc000,0xcfff,2,CpsZRom);
 	ZetMapArea(0xd800,0xffff,2,CpsZRom);
 	ZetMemEnd();
+	ZetClose();
 
 	return 0;
 }
 
 int PsndZExit()
 {
-	BurnFree(PsndZRam);
+	free(PsndZRam);
 	PsndZRam = NULL;
 
-	ZetClose();
 	ZetExit();
 	return 0;
 }

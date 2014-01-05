@@ -58,7 +58,6 @@
 #include "neogeo.h"
 #include "burn_ym2610.h"
 #include "bitswap.h"
-#include "cache.h"
 
 // #define LOG_IRQ2
 // #define LOG_DRAW
@@ -70,7 +69,7 @@
 #define EMULATE_WATCHDOG
 
 // If defined, reset the Z80 when switching between the Z80 BIOS/cartridge ROM
-// #define Z80_RESET_ON_BANKSWITCH
+//#define Z80_RESET_ON_BANKSWITCH
 
 // If defined, adjust the Z80 speed along with the 68000 when overclocking
 #define Z80_SPEED_ADJUST
@@ -295,7 +294,7 @@ static inline bool NeoCheckAESBIOS()
 void kof2003biosdecode()
 {
 	unsigned short *pTemp = (unsigned short*)Neo68KBIOS;
-	unsigned short *pData = (unsigned short*)BurnMalloc(0x80000);
+	unsigned short *pData = (unsigned short*)malloc(0x80000);
 
 	for (int i = 0; i < 0x80000 / 2; i++) {
 		int j = (i ^ (0xA0 ^ ((i & 4) << 5)));
@@ -315,40 +314,8 @@ void kof2003biosdecode()
 
 	memcpy (pTemp, pData, 0x80000);
 
-	BurnFree(pData);
+	free(pData);
 }
-static void install_BIOS_memory_patch()
-{
-	// Hacks for Neo-Geo BIOS
-	// Thanks to IQ_132 & BisonSAS for the patches and info
-	for (int i = 0x10000; i < 0x12000; i+=2) {
-		if ((*((unsigned short*)(Neo68KBIOS + i + 0)) == 0x4EBA) && (*((unsigned short*)(Neo68KBIOS + i + 4)) == 0x13C0) &&
-		    (*((unsigned short*)(Neo68KBIOS + i + 6)) == 0x003A) && (*((unsigned short*)(Neo68KBIOS + i + 8)) == 0x001D) &&
-		    (*((unsigned short*)(Neo68KBIOS + i + 10)) == 0x5206) && (*((unsigned short*)(Neo68KBIOS + i + 12)) == 0x41F9) &&
-		    (*((unsigned short*)(Neo68KBIOS + i + 14)) == 0x00D0))
-		{
-			// Remove memory check for now
-			*((unsigned short*)(Neo68KBIOS + i + 0x000)) = 0x4E71;
-			*((unsigned short*)(Neo68KBIOS + i + 0x002)) = 0x4E71;
-			*((unsigned short*)(Neo68KBIOS + i + 0x016)) = 0x4EF9;
-			*((unsigned short*)(Neo68KBIOS + i + 0x018)) = 0x00C1;
-			*((unsigned short*)(Neo68KBIOS + i + 0x01A)) = 0x006A + (i&0xFFFF);
-
-			// Patch Calendar errors
-			*((unsigned short*)(Neo68KBIOS + i + 0x114)) = 0x4E71;
-			*((unsigned short*)(Neo68KBIOS + i + 0x116)) = 0x4E71;
-			*((unsigned short*)(Neo68KBIOS + i + 0x11C)) = 0x4E71;
-			*((unsigned short*)(Neo68KBIOS + i + 0x11E)) = 0x4E71;
-
-			// Patch checksum test
-			*((unsigned short*)(Neo68KBIOS + i + 0x162)) = 0x4E71;
-			*((unsigned short*)(Neo68KBIOS + i + 0x164)) = 0x4E71;		
-
-			i = 0x12001;
-		}
-	}
-}
-
 
 static int NeoLoad68KBIOS(int nNewBIOS)
 {
@@ -425,8 +392,6 @@ static int NeoLoad68KBIOS(int nNewBIOS)
 //		*((unsigned short*)(Neo68KBIOS + 0x011C64)) = 0x4E71;
 	}
 	
-	// Hacks for Neo-Geo BIOS
-	install_BIOS_memory_patch();
 	// Create copy of 68K with BIOS vector table
 	memcpy(Neo68KVectors + 0x00, Neo68KBIOS,	   0x0080);
 	memcpy(Neo68KVectors + 0x80, Neo68KROM + 0x80, 0x0380);
@@ -486,8 +451,8 @@ static int FindROMs(unsigned int nType, int* pOffset, int* pNum)
 
 static int LoadRoms(NeoGameInfo* pInfo)
 {
-	unsigned int nSpriteROMSize = nSpriteSize < (nNeoTileMask << 7) ? ((nNeoTileMask + 1) << 7) : nSpriteSize;
-	NeoSpriteROM = (unsigned char*)CachedMalloc(nSpriteROMSize);
+//	NeoSpriteROM = (unsigned char*)malloc(nSpriteSize);
+	NeoSpriteROM = (unsigned char*)malloc(nSpriteSize < (nNeoTileMask << 7) ? ((nNeoTileMask + 1) << 7) : nSpriteSize);
 	if (NeoSpriteROM == NULL) {
 		return 1;
 	}
@@ -505,7 +470,7 @@ static int LoadRoms(NeoGameInfo* pInfo)
 	// Load sprite data
 	NeoLoadSprites(pInfo->nSpriteOffset, pInfo->nSpriteNum, NeoSpriteROM, nSpriteSize);
 
-	NeoTextROM = (unsigned char*)BurnMalloc(nNeoTextROMSize + 0x020000);
+	NeoTextROM = (unsigned char*)malloc(nNeoTextROMSize + 0x020000);
 	if (NeoTextROM == NULL) {
 		return 1;
 	}
@@ -531,7 +496,7 @@ static int LoadRoms(NeoGameInfo* pInfo)
 
 		ROMIndex();													// Get amount of memory needed
 		nLen = ROMEnd - (unsigned char*)0;
-		if ((AllROM = (unsigned char*)BurnMalloc(nLen)) == NULL) {		// Allocate memory
+		if ((AllROM = (unsigned char*)malloc(nLen)) == NULL) {		// Allocate memory
 			return 1;
 		}
 		memset(AllROM, 0, nLen);									// Initialise memory
@@ -544,7 +509,7 @@ static int LoadRoms(NeoGameInfo* pInfo)
 		NeoLoadCode(pInfo->nCodeOffset + 1, pInfo->nCodeNum - 1, Neo68KROM + 0x100000);
 	} else {
 		if (BurnDrvGetHardwareCode() & HARDWARE_SNK_P32) {
-			unsigned char* pTemp = (unsigned char*)BurnMalloc(0x800000);
+			unsigned char* pTemp = (unsigned char*)malloc(0x800000);
 			if (pTemp == NULL) return 1;
 			
 			BurnLoadRom(pTemp, 0, 1);
@@ -555,7 +520,7 @@ static int LoadRoms(NeoGameInfo* pInfo)
 				((unsigned short*)Neo68KROM)[2 * i + 1] = ((unsigned short*)pTemp)[0x200000 + i];
 			}
 
-			BurnFree(pTemp);
+			free(pTemp);
 			
 			if (!strcmp(BurnDrvGetTextA(DRV_NAME), "kof2003")) {
 				BurnLoadRom(Neo68KROM + 0x800000, 2, 1);
@@ -572,7 +537,7 @@ static int LoadRoms(NeoGameInfo* pInfo)
 		struct BurnRomInfo ri;
 		unsigned char* pADPCMData;
 
-		YM2610ADPCMAROM	= (unsigned char*)BurnMalloc(nYM2610ADPCMASize);
+		YM2610ADPCMAROM	= (unsigned char*)malloc(nYM2610ADPCMASize);
 		if (YM2610ADPCMAROM == NULL) {
 			return 1;
 		}
@@ -601,7 +566,7 @@ static int LoadRoms(NeoGameInfo* pInfo)
 	}
 	
 	if (pInfo->nADPCMBNum) {
-		YM2610ADPCMBROM	= (unsigned char*)BurnMalloc(nYM2610ADPCMBSize);
+		YM2610ADPCMBROM	= (unsigned char*)malloc(nYM2610ADPCMBSize);
 		if (YM2610ADPCMBROM == NULL) {
 			return 1;
 		}
@@ -1806,9 +1771,6 @@ void __fastcall PVCWriteWordBankSwitch(unsigned int sekAddress, unsigned short w
 
 static int neogeoReset()
 {
-	// where fba will check dip setting and reload correct BIOS into Neo68KBIOS
-	// but cache can't load bios now , just skip it ...
-	if ( !bBurnUseRomCache ) {
 	NeoLoad68KBIOS((NeoSystem & 0x07) ^ 4);
 	
 	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "svcpcb") || !strcmp(BurnDrvGetTextA(DRV_NAME), "svcpcba")) {
@@ -1817,8 +1779,6 @@ static int neogeoReset()
 			case 0x02:
 			case 0x03:
 				memcpy(Neo68KBIOS, Neo68KBIOS + 0x20000 + harddip3 * 0x20000, 0x20000);
-				// No way... the trick in NeoLoad68KBIOS doesn't work so I decided to add this here...
-				install_BIOS_memory_patch();
 				break;
 		}
 	}
@@ -1826,7 +1786,6 @@ static int neogeoReset()
 	if (nBIOS == -1 || nBIOS == 9) {
 		// Write system type & region code into BIOS ROM
 		*((unsigned short*)(Neo68KBIOS + 0x000400)) = ((NeoSystem & 4) << 13) | (NeoSystem & 0x03);
-	}
 	}
 
 #if 1 && defined FBA_DEBUG
@@ -2120,44 +2079,6 @@ int NeoInit()
 	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "mahretsu")) nYM2610ADPCMASize = 0x100000;
 	
 	nBIOS = 9999;
-	if ( bBurnUseRomCache ) {
-		
-		//AllROM			= (unsigned char *)BurnCacheMap(0);
-		//ROMIndex();
-		
-		AllROM = 0;
-		ROMIndex();													// Get amount of memory needed
-		int nLen = ROMEnd - (unsigned char*)0;
-		if ((AllROM = (unsigned char*)BurnMalloc(nLen)) == NULL) {		// Allocate memory
-			return 1;
-		}
-		ROMIndex();	
-		BurnCacheRead(AllROM, 0);
-		
-		NeoSpriteROM	= (unsigned char *)BurnCacheMap(1);
-		NeoTextROM		= (unsigned char *)BurnCacheMap(2);
-		
-		if (nYM2610ADPCMASize)
-		{
-			YM2610ADPCMAROM = (unsigned char *)CachedMalloc(nYM2610ADPCMASize);
-			BurnCacheRead(YM2610ADPCMAROM, 3);			
-		}
-		if (nYM2610ADPCMBSize)
-		{
-			YM2610ADPCMAROM = (unsigned char *)CachedMalloc(nYM2610ADPCMBSize);
-			BurnCacheRead(YM2610ADPCMAROM, 4);			
-		}
-		//YM2610ADPCMAROM	= (unsigned char *)BurnCacheMap(3);
-		//YM2610ADPCMBROM	= (unsigned char *)BurnCacheMap(4);
-		if (YM2610ADPCMBROM == 0) {
-			YM2610ADPCMBROM = YM2610ADPCMAROM;
-			nYM2610ADPCMBSize = nYM2610ADPCMASize;
-		}
-	
-//		if (pNeoInitCallback)
-//			pNeoInitCallback();
-		
-	} else 
 	if (LoadRoms(pInfo)) {
 		return 1;
 	}
@@ -2168,7 +2089,7 @@ int NeoInit()
 
 		RAMIndex();													// Get amount of memory needed
 		nLen = RAMEnd - (unsigned char*)0;
-		if ((AllRAM = (unsigned char*)BurnMalloc(nLen)) == NULL) {		// Allocate memory
+		if ((AllRAM = (unsigned char*)malloc(nLen)) == NULL) {		// Allocate memory
 			return 1;
 		}
 		memset(AllRAM, 0, nLen);									// Initialise memory
@@ -2367,34 +2288,26 @@ int NeoExit()
 	SekExit();								// Deallocate 68000
 
 	// Deallocate all used memory
-	if ( !bBurnUseRomCache )
-	BurnFree(NeoTextROM);						// Text ROM
+	free(NeoTextROM);						// Text ROM
 	NeoTextROM = NULL;
-	if ( !bBurnUseRomCache )
-		CachedFree(NeoSpriteROM);						// Sprite ROM
+	free(NeoSpriteROM);						// Sprite ROM
 	NeoSpriteROM = NULL;
 
 	if (nYM2610ADPCMASize) {				// ADPCM data
-		if ( !bBurnUseRomCache )
-			BurnFree(YM2610ADPCMAROM);
-		else
-			CachedFree(YM2610ADPCMAROM);
+		free(YM2610ADPCMAROM);
 	}
 	if (YM2610ADPCMBROM != YM2610ADPCMAROM) {
-		if ( !bBurnUseRomCache )
-			BurnFree(YM2610ADPCMBROM);
-		else
-			CachedFree(YM2610ADPCMAROM);
+		free(YM2610ADPCMBROM);
 	}
 	YM2610ADPCMAROM = NULL;
 	YM2610ADPCMBROM = NULL;
 
 	Neo68KROM = NULL;						// 68000 ROM
 
-	BurnFree(AllROM);							// Misc ROM
+	free(AllROM);							// Misc ROM
 	AllROM = NULL;
 
-	BurnFree(AllRAM);							// Misc RAM
+	free(AllRAM);							// Misc RAM
 	AllRAM = NULL;
 
 	nNeoSRAMProtection = -1;

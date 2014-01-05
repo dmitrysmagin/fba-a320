@@ -113,13 +113,13 @@ int QsndZInit()
 	ZetMapArea(0xF000, 0xFFFF, 2, CpsZRamF0);
 
 	ZetMemEnd();
+	ZetClose();
 
 	return 0;
 }
 
 int QsndZExit()
 {
-	ZetClose();
 	ZetExit();
 	return 0;
 }

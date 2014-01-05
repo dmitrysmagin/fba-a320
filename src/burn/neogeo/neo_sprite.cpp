@@ -29,7 +29,6 @@ static RenderBankFunction* RenderBank;
 // Include the tile rendering functions
 #include "neo_sprite_func.h"
 
-#include "cache.h"
 int NeoRenderSprites()
 {
 	if (nLastBPP != nBurnBpp ) {
@@ -99,10 +98,7 @@ int NeoRenderSprites()
 int NeoInitSprites()
 {
 	// Create a table that indicates if a tile is transparent
-	NeoTileAttrib = (unsigned char*)BurnMalloc(nNeoTileMask + 1);
-	if ( bBurnUseRomCache ) {
-		BurnCacheRead(NeoTileAttrib, 5);
-	} else {
+	NeoTileAttrib = (unsigned char*)malloc(nNeoTileMask + 1);
 	for (int i = 0; i < nNeoMaxTile; i++) {
 		bool bTransparent = true;
 		for (int j = i << 7; j < (i + 1) << 7; j++) {
@@ -122,12 +118,11 @@ int NeoInitSprites()
 		NeoTileAttrib[i] = 1;
 	}
 
-	}
 	return 0;
 }
 
 void NeoExitSprites()
 {
-	BurnFree(NeoTileAttrib);
+	free(NeoTileAttrib);
 }
 

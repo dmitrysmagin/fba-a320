@@ -23,9 +23,13 @@ static int DrvReset()
 	// Reset machine
 	EEPROMReset();
 
+	SekOpen(0);
 	SekReset();
+	SekClose();
 
+	ZetOpen(0);
 	ZetReset();
+	ZetClose();
 
 	if (Cps == 2) {
 		// Disable beam-synchronized interrupts
@@ -57,7 +61,6 @@ int CpsRunInit()
 	}
 
 	SekInit(0, 0x68000);					// Allocate 68000
-	SekOpen(0);
 
 	if (CpsMemInit()) {						// Memory init
 		return 1;
@@ -120,7 +123,6 @@ int CpsRunExit()
 	CpsRwExit();
 	CpsMemExit();
 
-	SekClose();
 	SekExit();
 
 	return 0;
@@ -241,6 +243,7 @@ int Cps1Frame()
 	if (Cps1Qs == 1) {
 		QsndNewFrame();
 	} else {
+		ZetOpen(0);
 		PsndNewFrame();
 	}
 
@@ -250,6 +253,7 @@ int Cps1Frame()
 
 	nDisplayEnd = (nCpsCycles * (nFirstLine + 224)) / 0x0106;	// Account for VBlank
 
+	SekOpen(0);
 	SekIdle(nCpsCyclesExtra);
 
 	SekRun(nCpsCycles * nFirstLine / 0x0106);					// run 68K for the first few lines
@@ -291,10 +295,12 @@ int Cps1Frame()
 	} else {
 		PsndSyncZ80(nCpsZ80Cycles);
 		PsmUpdate(nBurnSoundLen);
-		MSM6295Render(0, pBurnSoundOut ,nBurnSoundLen);
-}
+		ZetClose();
+	}
 
 	nCpsCyclesExtra = SekTotalCycles() - nCpsCycles;
+
+	SekClose();
 
 	return 0;
 }
@@ -343,6 +349,7 @@ int Cps2Frame()
 	}
 	ScheduleIRQ();
 
+	SekOpen(0);
 	SekIdle(nCpsCyclesExtra);
 
 //	if (nGigawing) {
@@ -398,6 +405,8 @@ int Cps2Frame()
 	nCpsCyclesExtra = SekTotalCycles() - nCpsCycles;
 
 	QsndEndFrame();
+
+	SekClose();
 
 //	bprintf(PRINT_NORMAL, _T("    -\n"));
 

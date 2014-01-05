@@ -34,16 +34,16 @@
 #endif
 
 {
-  register int y;
-  register unsigned int *ctp;
+  int y;
+  unsigned int *ctp;
   unsigned int nBlank = 0;
 
-  register unsigned int b;      			// Eight bit-packed pixels (msb) AAAABBBB CCCCDDDD EEEEFFFF GGGGHHHH (lsb)
-  register unsigned int c;				// 32-bit colour value
-  register unsigned char *pPix;			// Pointer to output bitmap
+  unsigned int b;      			// Eight bit-packed pixels (msb) AAAABBBB CCCCDDDD EEEEFFFF GGGGHHHH (lsb)
+  unsigned int c;				// 32-bit colour value
+  unsigned char *pPix;			// Pointer to output bitmap
 
 #if CU_ROWS == 1
-  register short *Rows = CpstRowShift;
+  short *Rows = CpstRowShift;
 #endif
 
   ctp = CpstPal;

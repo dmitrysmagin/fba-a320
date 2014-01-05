@@ -270,7 +270,7 @@ struct BurnDriver BurnDrvCpsSlammast = {
 	"slammast", NULL, NULL, "1993",
 	"Saturday Night Slam Masters (Slam Masters 930713 etc)\0", NULL, "Capcom", "CPS1",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING,4,HARDWARE_CAPCOM_CPS1_QSOUND,
+	BDF_GAME_WORKING,4,HARDWARE_CAPCOM_CPS1,
 	NULL,SlammastRomInfo,SlammastRomName,DrvInputInfo, slammastDIPInfo,
 	DrvInit,DrvExit,Cps1Frame,CpsRedraw,CpsAreaScan,
 	&CpsRecalcPal,384,224,4,3
@@ -325,7 +325,7 @@ struct BurnDriver BurnDrvCpsSlammasu = {
 	"slammasu", "slammast", NULL, "1993",
 	"Saturday Night Slam Masters (slam masters 930713 USA)\0", NULL, "Capcom", "CPS1",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE,4,HARDWARE_CAPCOM_CPS1_QSOUND,
+	BDF_GAME_WORKING | BDF_CLONE,4,HARDWARE_CAPCOM_CPS1,
 	NULL,SlammasuRomInfo,SlammasuRomName,DrvInputInfo, slammastDIPInfo,
 	DrvInit,DrvExit,Cps1Frame,CpsRedraw,CpsAreaScan,
 	&CpsRecalcPal,384,224,4,3
@@ -380,7 +380,7 @@ struct BurnDriver BurnDrvCpsMbomberj = {
 	"mbomberj", "slammast", NULL, "1993",
 	"Muscle Bomber - the body explosion (930713 Japan)\0", NULL, "Capcom", "CPS1",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE,4,HARDWARE_CAPCOM_CPS1_QSOUND,
+	BDF_GAME_WORKING | BDF_CLONE,4,HARDWARE_CAPCOM_CPS1,
 	NULL,MbomberjRomInfo,MbomberjRomName,DrvInputInfo, slammastDIPInfo,
 	DrvInit,DrvExit,Cps1Frame,CpsRedraw,CpsAreaScan,
 	&CpsRecalcPal,384,224,4,3
@@ -438,7 +438,7 @@ struct BurnDriver BurnDrvCpsMbombrd = {
 	"mbombrd", "slammast", NULL, "1993",
 	"Muscle Bomber Duo - ultimate team battle (931206 etc)\0", NULL, "Capcom", "CPS1",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE,4,HARDWARE_CAPCOM_CPS1_QSOUND,
+	BDF_GAME_WORKING | BDF_CLONE,4,HARDWARE_CAPCOM_CPS1,
 	NULL,MbombrdRomInfo,MbombrdRomName,DrvInputInfo, slammastDIPInfo,
 	DuoInit,DrvExit,Cps1Frame,CpsRedraw,CpsAreaScan,
 	&CpsRecalcPal,384,224,4,3
@@ -496,7 +496,7 @@ struct BurnDriver BurnDrvCpsMbombrdj = {
 	"mbombrdj", "slammast", NULL, "1993",
 	"Muscle Bomber Duo - heat up warriors (931206 Japan)\0", NULL, "Capcom", "CPS1",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE,4,HARDWARE_CAPCOM_CPS1_QSOUND,
+	BDF_GAME_WORKING | BDF_CLONE,4,HARDWARE_CAPCOM_CPS1,
 	NULL,MbombrdjRomInfo,MbombrdjRomName,DrvInputInfo, slammastDIPInfo,
 	DuoInit,DrvExit,Cps1Frame,CpsRedraw,CpsAreaScan,
 	&CpsRecalcPal,384,224,4,3

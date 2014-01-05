@@ -32,7 +32,7 @@ static struct BurnDIPInfo cworld2jDIPList[]=
 	// Defaults
 	{0x0f, 0xff, 0xff, 0x00, NULL                },
 	{0x10, 0xff, 0xff, 0x00, NULL                },
-	{0x11, 0xff, 0xff, 0x40, NULL                },
+	{0x11, 0xff, 0xff, 0x00, NULL                },
 
 	// Dip A
 	{0   , 0xfe, 0   , 8   , "Coin"                   },

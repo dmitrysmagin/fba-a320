@@ -44,12 +44,7 @@ static int CpstOne()
 
   // Clip to loaded graphics data (we have a gap of 0x200 at the end)
   nCpstTile&=nCpsGfxMask; if (nCpstTile>=nCpsGfxLen) return 1;
-  if (UpperReserved != 2)
-	pCtvTile=CpsGfx+nCpstTile;
-  else
-  {
-	pCtvTile=GETCPSGFX(nCpstTile);
-  }
+  pCtvTile=CpsGfx+nCpstTile;
 
   // Find pLine (pointer to first pixel)
   pCtvLine=pBurnDraw + nCpstY*nBurnPitch + nCpstX*nBurnBpp;
@@ -66,7 +61,6 @@ static int CpstOne()
 
   nFun =nCpstType&0x1e;
   nFun|=nCpstFlip&1;
-  
   return CtvDoX[nFun]();
 }
 
@@ -133,12 +127,8 @@ static int Cps2tOne()
 
   // Clip to loaded graphics data (we have a gap of 0x200 at the end)
   nCpstTile&=nCpsGfxMask; if (nCpstTile>=nCpsGfxLen) return 0;
-  if (UpperReserved != 2)
-	pCtvTile=CpsGfx+nCpstTile;
-  else
-  {
-	pCtvTile=GETCPSGFX(nCpstTile);
-  }
+  pCtvTile=CpsGfx+nCpstTile;
+
   // Find pLine (pointer to first pixel)
   pCtvLine=pBurnDraw + nCpstY*nBurnPitch + nCpstX*nBurnBpp;
 
@@ -180,12 +170,7 @@ static int CpstOneObjZ()
 
   // Clip to loaded graphics data (we have a gap of 0x200 at the end)
   nCpstTile&=nCpsGfxMask; if (nCpstTile>=nCpsGfxLen) return 1;
-  if (UpperReserved != 2)
-	pCtvTile=CpsGfx+nCpstTile;
-  else
-  {
-	pCtvTile=GETCPSGFX(nCpstTile);
-  }
+  pCtvTile=CpsGfx+nCpstTile;
 
   // Find pLine (pointer to first pixel)
   pCtvLine=pBurnDraw + nCpstY*nBurnPitch + nCpstX*nBurnBpp;

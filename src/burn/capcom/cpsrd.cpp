@@ -20,23 +20,18 @@ static void Cps1TileLine(int y,int sx)
   int x,ix,iy,sy;
 
   bVCare=0;
-	if (y < 0 || y >= 13)	// Take care on the edges
-		bVCare = 1; 
+  if (y<0 || y>=14-1) bVCare=1; // Take care on the edges
 
-	ix = (sx >> 4) + 1;
-	sx = 0x10 - (sx & 0x0f);
-	sy = 0x10 - (nCpsrScrY & 0x0f);
-	iy = (nCpsrScrY >> 4) + 1;
-	nCpstY = sy + (y << 4);
+  ix=(sx>>4)+1; sx&=15; sx=16-sx;
+  sy=16-(nCpsrScrY&15); iy=(nCpsrScrY>>4)+1;
+  nCpstY=sy+(y<<4);
 
   for (x=-1; x<24; x++)
   {
     unsigned short *pst; int t,a;
     // Don't need to clip except around the border
-		if (bVCare || x < 0 || x >= 23)
-			nCpstType = CTT_16X16 | CTT_CARE;
-		else
-			nCpstType = CTT_16X16;
+    if (bVCare || x<0 || x>=24-1) nCpstType=CTT_16X16 | CTT_CARE;
+    else nCpstType=CTT_16X16;
 
     pst=FindTile(ix+x,iy+y);
     t=pst[0];
@@ -44,8 +39,8 @@ static void Cps1TileLine(int y,int sx)
 	if(Mercs && t>=0x1e00 && t<0x5400)                   continue;
 	if(t<StartScroll[SCROLL_2] || t>EndScroll[SCROLL_2]) continue;
 
-
-		t = (t << 7) + nCpsGfxScroll[2]; // Get real tile address and add offset to scroll tiles
+    t<<=7; // Get real tile address
+    t+=nCpsGfxScroll[2]; // add on offset to scroll tiles
 	if (t==nKnowBlank) continue; // Don't draw: we know it's blank
     a=pst[1];
 
@@ -61,25 +56,21 @@ static void Cps2TileLine(int y,int sx)
 {
   int x,ix,iy,sy;
 
-	ix = (sx >> 4) + 1;
-	sx = 0x10 - (sx & 0x0f);
-	sy = 0x10 - (nCpsrScrY & 0x0f);
-	iy = (nCpsrScrY >> 4) + 1;
+  ix=(sx>>4)+1; sx&=15; sx=16-sx;
+  sy=16-(nCpsrScrY&15); iy=(nCpsrScrY>>4)+1;
   nCpstY=sy+(y<<4);
 
   for (x=-1; x<24; x++)
   {
     unsigned short *pst; int t,a;
     // Don't need to clip except around the border
-		if (bVCare || x < 0 || x >= 23)
-			nCpstType = CTT_16X16 | CTT_CARE;
-		else
-			nCpstType = CTT_16X16;
+    if (bVCare || x<0 || x>=24-1) nCpstType=CTT_16X16 | CTT_CARE;
+    else nCpstType=CTT_16X16;
 
     pst=FindTile(ix+x,iy+y);
-		t = pst[0];
-
-		t = (t << 7) + nCpsGfxScroll[2]; // Get real tile address and add offset to scroll tiles
+    t=pst[0];
+    t<<=7; // Get real tile address
+    t+=nCpsGfxScroll[2]; // add on offset to scroll tiles
 	if (t==nKnowBlank) continue; // Don't draw: we know it's blank
     a=pst[1];
 

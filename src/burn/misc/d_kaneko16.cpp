@@ -3,7 +3,6 @@
 #include "burn_ym2151.h"
 #include "eeprom_93cxx.h"
 #include "kanekotb.h"
-#include "cache.h"
 
 #include "driver.h"
 extern "C" {
@@ -1299,6 +1298,8 @@ static int GtmrMemIndex()
 
 	RamEnd = Next;
 
+	Kaneko16Sprites       = Next; Next += (Kaneko16NumSprites * 16 * 16);
+	Kaneko16Tiles         = Next; Next += (Kaneko16NumTiles * 16 * 16);
 	LayerQueueXY[0]       = (UINT32*)Next; Next += nScreenWidth * nScreenHeight * sizeof(UINT32);
 	LayerQueueXY[1]       = (UINT32*)Next; Next += nScreenWidth * nScreenHeight * sizeof(UINT32);
 	LayerQueueColour[0]   = (UINT32*)Next; Next += nScreenWidth * nScreenHeight * sizeof(UINT32);
@@ -1316,18 +1317,6 @@ static int GtmrMemIndex()
 	}
 	Kaneko16Palette       = (unsigned int*)Next; Next += 0x010000 * sizeof(unsigned int);
 	MemEnd = Next;
-	if (Kaneko16Sprites == NULL)
-	{
-		Kaneko16Sprites       = (unsigned char*)CachedMalloc(Kaneko16NumSprites * 16 * 16);
-		if (Kaneko16Sprites)
-			memset(Kaneko16Sprites,0,Kaneko16NumSprites * 16 * 16);
-	}
-	if (Kaneko16Tiles == NULL)
-	{
-		Kaneko16Tiles         = (unsigned char*)CachedMalloc(Kaneko16NumTiles * 16 * 16);
-		if (Kaneko16Tiles)
-			memset(Kaneko16Tiles,0,Kaneko16NumTiles * 16 * 16);
-	}
 
 	return 0;
 }
@@ -3177,6 +3166,7 @@ static int BloodwarInit()
 static int BonkadvInit()
 {
 	int nRet = 0, nLen;
+	
 	Bonkadv = 1;
 	
 	Kaneko16NumSprites = 0x5000;
@@ -3485,7 +3475,7 @@ int Gtmr2Init()
 	memset(Mem, 0, nLen);
 	GtmrMemIndex();
 
-	Kaneko16TempGfx = (unsigned char*)CachedMalloc(0x800000);
+	Kaneko16TempGfx = (unsigned char*)malloc(0x800000);
 	
 	// Load and byte-swap 68000 Program roms
 	nRet = BurnLoadRom(Kaneko16Rom + 0x00001, 0, 2); if (nRet != 0) return 1;
@@ -3507,7 +3497,7 @@ int Gtmr2Init()
 	nRet = BurnLoadRom(Kaneko16TempGfx + 0x400001, 11, 2); if (nRet != 0) return 1;
 	UnscrambleTiles(0x440000);
 	Kaneko16Decode4BppGfx(Kaneko16Tiles, Kaneko16NumTiles);
-	CachedFree(Kaneko16TempGfx);
+	free(Kaneko16TempGfx);
 	memcpy(Kaneko16Tiles2, Kaneko16Tiles, Kaneko16NumTiles * 16 * 16);
 
 	// Load Sample Rom
@@ -3703,17 +3693,6 @@ int Kaneko16Exit()
 
 	free(Mem);
 	Mem = NULL;
-	
-	if (Kaneko16Sprites != NULL)
-	{
-		CachedFree(Kaneko16Sprites);
-		Kaneko16Sprites = NULL;
-	}
-	if (Kaneko16Tiles != NULL)
-	{
-		CachedFree(Kaneko16Tiles);
-		Kaneko16Tiles = NULL;
-	}
 	
 	Kaneko16NumTiles = 0;
 	Kaneko16NumTiles2 = 0;
@@ -4032,8 +4011,7 @@ static int Kaneko16GetLayerFlipOffset(int curroffs)
 
 static void Kaneko16QueueTilesLayer(int Layer)
 {
-	register int x, y, px, py;
-	int mx, my, Code, Attr, Colour, Flip, Priority, LineScroll, TileIndex, pSrcXOffs, pSrcYOffs, xScroll, yScroll;
+	int x, y, mx, my, px, py, Code, Attr, Colour, Flip, Priority, LineScroll, TileIndex, pSrcXOffs, pSrcYOffs, xScroll, yScroll;
 	unsigned char pTileSrc;
 	
 	LayerQueueSize[Layer] = 0;
@@ -4160,8 +4138,7 @@ static void Kaneko16RenderLayerQueue(int Layer, int Priority)
 
 void Kaneko16RenderTileLayer(int Layer, int PriorityDraw, int xScroll)
 {
-	register int mx, my, x, y;
-	int Code, Attr, Colour, Flip, Priority, TileIndex = 0;
+	int mx, my, Code, Attr, Colour, Flip, Priority, x, y, TileIndex = 0;
 	
 	UINT16 *VRAM = NULL;
 	UINT16 *LAYERREGS = NULL;
@@ -4673,7 +4650,7 @@ int ExplbrkrFrame()
 
 	Kaneko16MakeInputs();
 	
-	nCyclesTotal[0] = 9600000 / 60;
+	nCyclesTotal[0] = 12000000 / 60;
 	nCyclesDone[0] = 0;
 	
 	for (int i = 0; i < nInterleave; i++) {
@@ -4766,8 +4743,8 @@ int BlazeonFrame()
 
 	Kaneko16MakeInputs();
 	
-	nCyclesTotal[0] = 9600000 / 60;
-	nCyclesTotal[1] = 3200000 / 60;
+	nCyclesTotal[0] = 12000000 / 60;
+	nCyclesTotal[1] = 4000000 / 60;
 	nCyclesDone[0] = nCyclesDone[1] = 0;
 	
 	for (int i = 0; i < nInterleave; i++) {
@@ -4824,13 +4801,13 @@ int GtmrFrame()
 	SekOpen(0);
 	SekNewFrame();
 	
-	SekRun((12800000 / 60) / 4);
+	SekRun((16000000 / 60) / 4);
 	SekSetIRQLine(3, SEK_IRQSTATUS_AUTO);
-	SekRun((12800000 / 60) / 4);
+	SekRun((16000000 / 60) / 4);
 	SekSetIRQLine(4, SEK_IRQSTATUS_AUTO);
-	SekRun((12800000 / 60) / 4);
+	SekRun((16000000 / 60) / 4);
 	SekSetIRQLine(5, SEK_IRQSTATUS_AUTO);
-	SekRun((12800000 / 60) / 4);
+	SekRun((16000000 / 60) / 4);
 
 	SekClose();
 	
@@ -4901,7 +4878,7 @@ static int Kaneko16Scan(int nAction,int *pnMin)
 static int BlazeonScan(int nAction,int *pnMin)
 {
 	if (pnMin != NULL) {
-		*pnMin =  0x029672;
+		*pnMin =  0x029671;
 	}
 	
 	if (nAction & ACB_DRIVER_DATA) {
@@ -4917,7 +4894,7 @@ static int BlazeonScan(int nAction,int *pnMin)
 static int ExplbrkrScan(int nAction,int *pnMin)
 {
 	if (pnMin != NULL) {
-		*pnMin =  0x029672;
+		*pnMin =  0x029671;
 	}
 	
 	if (nAction & ACB_DRIVER_DATA) {
@@ -4937,7 +4914,7 @@ static int ExplbrkrScan(int nAction,int *pnMin)
 static int GtmrScan(int nAction,int *pnMin)
 {
 	if (pnMin != NULL) {
-		*pnMin =  0x029672;
+		*pnMin =  0x029671;
 	}
 	
 	if (nAction & ACB_DRIVER_DATA) {

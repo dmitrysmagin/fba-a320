@@ -24,8 +24,8 @@ static void drvYM2151IRQHandler(int nStatus)
 
 int PsndInit()
 {
-	nCpsZ80Cycles = 3200000 * 100 / nBurnFPS;
-	nSyncPeriod = nCpsZ80Cycles / 8 /*/ 32*/;
+	nCpsZ80Cycles = 4000000 * 100 / nBurnFPS;
+	nSyncPeriod = nCpsZ80Cycles / 32;
 
 	// Init PSound z80
 	if (PsndZInit()!= 0) {

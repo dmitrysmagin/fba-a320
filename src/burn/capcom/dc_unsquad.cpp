@@ -40,7 +40,7 @@ static struct BurnDIPInfo unsquadDIPList[]=
 	// Defaults
 	{0x15, 0xff, 0xff, 0x00, NULL                },
 	{0x16, 0xff, 0xff, 0x00, NULL                },
-	{0x17, 0xff, 0xff, 0x40, NULL                },
+	{0x17, 0xff, 0xff, 0x00, NULL                },
 
 	// Dip A
         {0   , 0xfe, 0   , 7   , "Coin A"            },

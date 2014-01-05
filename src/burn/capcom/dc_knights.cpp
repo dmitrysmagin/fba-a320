@@ -46,7 +46,7 @@ static struct BurnDIPInfo knightsDIPList[]=
 	// Defaults
 	{0x1b, 0xff, 0xff, 0x00, NULL                },
 	{0x1c, 0xff, 0xff, 0x00, NULL                },
-	{0x1d, 0xff, 0xff, 0x40, NULL                },
+	{0x1d, 0xff, 0xff, 0x00, NULL                },
 
 	// Dip A
 	{0   , 0xfe, 0   , 8   , "Coin"                   },

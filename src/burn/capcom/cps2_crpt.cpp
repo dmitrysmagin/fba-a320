@@ -120,7 +120,6 @@ the decryption keys.
 #if 1
 #include "cps.h"
 #include "bitswap.h"
-#include "cache.h"
 
 #define BIT(x,n) (((x)>>(n))&1)
 #define BITSWAP8(a, b, c, d, e, f, g, h, i) BITSWAP08(a, b, c, d, e, f, g, h, i)
@@ -663,7 +662,7 @@ static void cps2_decrypt(const UINT32 *master_key, unsigned int upper_limit)
 #if 1
 	UINT16 *rom = (UINT16 *)CpsRom;
 	unsigned int length = upper_limit;
-	CpsCode = (UINT8*)CachedMalloc(length);
+	CpsCode = (UINT8*)malloc(length);
 	UINT16 *dec = (UINT16*)CpsCode;
 	unsigned int i;
 #endif
@@ -717,12 +716,10 @@ static void cps2_decrypt(const UINT32 *master_key, unsigned int upper_limit)
 			ui_set_startup_text(loadingMessage,FALSE);
 #endif
 
-#ifndef OOPSWARE_FIX
 #if 1
 			TCHAR loadingMessage[256]; // for displaying with UI 
 			_stprintf(loadingMessage, _T("Decrypting 68000 ROMs with key %d %s"), (i*100/0x10000), _T("%")); 
 			BurnUpdateProgress(0.0, loadingMessage, 0); 
-#endif
 #endif
 		}
 

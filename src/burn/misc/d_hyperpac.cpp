@@ -3913,7 +3913,7 @@ static int Snowbro3Scan(int nAction,int *pnMin)
 	struct BurnArea ba;
 
 	if (pnMin != NULL) {					// Return minimum compatible version
-		*pnMin = 0x029672;
+		*pnMin = 0x029671;
 	}
 
 	if (nAction & ACB_MEMORY_RAM) {								// Scan all memory, devices & variables

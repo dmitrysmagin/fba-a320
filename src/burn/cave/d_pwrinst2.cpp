@@ -403,7 +403,7 @@ static int DrvExit()
 	DrvOkiBank2[0] = DrvOkiBank2[1] = DrvOkiBank2[2] = DrvOkiBank2[3] = 0;
 
 	// Deallocate all used memory
-	BurnFree(Mem);
+	free(Mem);
 	Mem = NULL;
 
 	return 0;
@@ -667,7 +667,7 @@ static int LoadRoms()
 	
 	BurnLoadRom(RomZ80, 4, 1);
 
-	unsigned char *pTemp = (unsigned char*)BurnMalloc(0xe00000);
+	unsigned char *pTemp = (unsigned char*)malloc(0xe00000);
 	BurnLoadRom(pTemp + 0x000000, 5, 1);
 	BurnLoadRom(pTemp + 0x200000, 6, 1);
 	BurnLoadRom(pTemp + 0x400000, 7, 1);
@@ -680,7 +680,7 @@ static int LoadRoms()
 		if (((j & 6) == 0) || ((j & 6) == 6)) j ^= 6;
 		CaveSpriteROM[j ^ 7] = (pTemp[i] >> 4) | (pTemp[i] << 4);
 	}
-	BurnFree(pTemp);
+	free(pTemp);
 	NibbleSwap1(CaveSpriteROM, 0xe00000);
 
 	BurnLoadRom(CaveTileROM[0], 12, 1);
@@ -712,7 +712,7 @@ static int PlegendsLoadRoms()
 	
 	BurnLoadRom(RomZ80, 6, 1);
 
-	unsigned char *pTemp = (unsigned char*)BurnMalloc(0x1000000);
+	unsigned char *pTemp = (unsigned char*)malloc(0x1000000);
 	BurnLoadRom(pTemp + 0x000000, 7, 1);
 	BurnLoadRom(pTemp + 0x200000, 8, 1);
 	BurnLoadRom(pTemp + 0x400000, 9, 1);
@@ -726,7 +726,7 @@ static int PlegendsLoadRoms()
 		if (((j & 6) == 0) || ((j & 6) == 6)) j ^= 6;
 		CaveSpriteROM[j ^ 7] = (pTemp[i] >> 4) | (pTemp[i] << 4);
 	}
-	BurnFree(pTemp);
+	free(pTemp);
 	NibbleSwap1(CaveSpriteROM, 0x1000000);
 
 	BurnLoadRom(CaveTileROM[0], 15, 1);
@@ -860,7 +860,7 @@ static int DrvInit()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)BurnMalloc(nLen)) == NULL) {
+	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);										// blank all memory
@@ -940,7 +940,7 @@ static int PlegendsInit()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)BurnMalloc(nLen)) == NULL) {
+	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);										// blank all memory

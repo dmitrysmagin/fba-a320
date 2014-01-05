@@ -54,7 +54,7 @@ static struct BurnDIPInfo captcommDIPList[]=
 	// Defaults
 	{0x23, 0xff, 0xff, 0x00, NULL                     },
 	{0x24, 0xff, 0xff, 0x00, NULL                     },
-	{0x25, 0xff, 0xff, 0x40, NULL                     },
+	{0x25, 0xff, 0xff, 0x00, NULL                     },
 
 	// Dip A
 	{0   , 0xfe, 0   , 8   , "Coin 1"                 },

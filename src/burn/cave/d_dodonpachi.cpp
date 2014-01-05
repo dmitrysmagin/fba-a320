@@ -255,7 +255,7 @@ static int DrvExit()
 	SekExit();				// Deallocate 68000s
 
 	// Deallocate all used memory
-	BurnFree(Mem);
+	free(Mem);
 	Mem = NULL;
 
 	return 0;
@@ -460,13 +460,13 @@ static int LoadRoms()
 	BurnLoadRom(CaveTileROM[1], 7, 1);
 	NibbleSwap2(CaveTileROM[1], 0x200000);
 
-	unsigned char* pTemp = (unsigned char*)BurnMalloc(0x200000);
+	unsigned char* pTemp = (unsigned char*)malloc(0x200000);
 	BurnLoadRom(pTemp, 8, 1);
 	for (int i = 0; i < 0x0100000; i++) {
 		CaveTileROM[2][(i << 1) + 1] = (pTemp[(i << 1) + 0] & 15) | ((pTemp[(i << 1) + 1] & 15) << 4);
 		CaveTileROM[2][(i << 1) + 0] = (pTemp[(i << 1) + 0] >> 4) | (pTemp[(i << 1) + 1] & 240);
 	}
-	BurnFree(pTemp);
+	free(pTemp);
 
 	// Load YMZ280B data
 	BurnLoadRom(YMZ280BROM + 0x000000, 9, 1);
@@ -521,7 +521,7 @@ static int DrvInit()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)BurnMalloc(nLen)) == NULL) {
+	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);										// blank all memory

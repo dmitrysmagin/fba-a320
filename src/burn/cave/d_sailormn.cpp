@@ -480,7 +480,7 @@ static int DrvExit()
 	SekExit();				// Deallocate 68000s
 
 	// Deallocate all used memory
-	BurnFree(Mem);
+	free(Mem);
 	Mem = NULL;
 
 	return 0;
@@ -751,13 +751,13 @@ static int sailormnLoadRoms()
 	// Load Z80 ROM
 	BurnLoadRom(RomZ80, 2, 1);
 
-	pTemp = (unsigned char*)BurnMalloc(0x400000);
+	pTemp = (unsigned char*)malloc(0x400000);
 	BurnLoadRom(pTemp + 0x000000, 3, 1);
 	BurnLoadRom(pTemp + 0x200000, 4, 1);
 	for (int i = 0; i < 0x400000; i++) {
 		CaveSpriteROM[i ^ 0x950C4] = pTemp[BITSWAP24(i, 23, 22, 21, 20, 15, 10, 12, 6, 11, 1, 13, 3, 16, 17, 2, 5, 14, 7, 18, 8, 4, 19, 9, 0)];
 	}
-	BurnFree(pTemp);
+	free(pTemp);
 	sailormnDecodeSprites(CaveSpriteROM, 0x400000);
 
 	BurnLoadRom(CaveTileROM[0], 5, 1);
@@ -771,7 +771,7 @@ static int sailormnLoadRoms()
 	BurnLoadRom(CaveTileROM[2] + 0x800000, 11, 1);
 	sailormnDecodeTiles(CaveTileROM[2], 0xA00000);
 
-	pTemp = (unsigned char*)BurnMalloc(0x600000);
+	pTemp = (unsigned char*)malloc(0x600000);
 	BurnLoadRom(pTemp + 0x000000, 12, 1);
 	BurnLoadRom(pTemp + 0x200000, 13, 1);
 	BurnLoadRom(pTemp + 0x400000, 14, 1);
@@ -781,7 +781,7 @@ static int sailormnLoadRoms()
 		CaveTileROM[2][(i << 2) + 2] |= (pTemp[i] & 0x30);
 		CaveTileROM[2][(i << 2) + 3] |= (pTemp[i] & 0xC0) >> 2;
 	}
-	BurnFree(pTemp);
+	free(pTemp);
 
 	// Load OKIM6295 data
 	BurnLoadRom(MSM6295ROM + 0x0000000, 15, 1);
@@ -812,7 +812,7 @@ static int agalletLoadRoms()
 	BurnLoadRom(CaveTileROM[2], 6, 1);
 	sailormnDecodeTiles(CaveTileROM[2], 0x200000);
 
-	unsigned char* pTemp = (unsigned char*)BurnMalloc(0x200000);
+	unsigned char* pTemp = (unsigned char*)malloc(0x200000);
 	BurnLoadRom(pTemp, 7, 1);
 	for (int i = 0; i < 0x0100000; i++) {
 		CaveTileROM[2][(i << 2) + 0] |= (pTemp[i] & 0x03) << 4;
@@ -820,7 +820,7 @@ static int agalletLoadRoms()
 		CaveTileROM[2][(i << 2) + 2] |= (pTemp[i] & 0x30);
 		CaveTileROM[2][(i << 2) + 3] |= (pTemp[i] & 0xC0) >> 2;
 	}
-	BurnFree(pTemp);
+	free(pTemp);
 
 	// Load OKIM6295 data
 	BurnLoadRom(MSM6295ROM + 0x0000000, 8, 1);
@@ -894,7 +894,7 @@ static int gameInit()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)BurnMalloc(nLen)) == NULL) {
+	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);										// blank all memory
@@ -903,7 +903,7 @@ static int gameInit()
 	EEPROMInit(1024, 16);										// EEPROM has 1024 bits, uses 16-bit words
 
 	if (nWhichGame) {
-		unsigned char* data = (unsigned char*)BurnMalloc(48);
+		unsigned char* data = (unsigned char*)malloc(48);
 		for (int i = 0; i < 16; i++) {
 			data[i + 0x00] = 0xFF;
 			data[i + 0x10] = 0x00;

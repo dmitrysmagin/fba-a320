@@ -48,7 +48,7 @@ CPSINPEX
 static unsigned char CpsReadPort(const unsigned int ia)
 {
 	unsigned char d = 0xFF;
-
+	
 	if (ia == 0x000) {
 		d = (unsigned char)~Inp000;
 		if (Pzloop2) {
@@ -255,10 +255,9 @@ static unsigned char CpsReadPort(const unsigned int ia)
 // Write output port 0x000-0x1ff
 static void CpsWritePort(const unsigned int ia, unsigned char d)
 {
-
 	if ((Cps & 1) && Cps1Qs == 0) {
 		if (Cawingb && ia == 0x006) {
-			//PsndSyncZ80((long long)SekTotalCycles() * nCpsZ80Cycles / nCpsCycles);
+			PsndSyncZ80((long long)SekTotalCycles() * nCpsZ80Cycles / nCpsCycles);
 
 			PsndCode = d;
 			return;
@@ -266,7 +265,7 @@ static void CpsWritePort(const unsigned int ia, unsigned char d)
 
 		// CPS1 sound code
 		if (ia == 0x181) {
-			//PsndSyncZ80((long long)SekTotalCycles() * nCpsZ80Cycles / nCpsCycles);
+			PsndSyncZ80((long long)SekTotalCycles() * nCpsZ80Cycles / nCpsCycles);
 //			bprintf(PRINT_NORMAL, (T" -- Sound latch -> %i\n"), d);
 
 			PsndCode = d;
@@ -275,7 +274,7 @@ static void CpsWritePort(const unsigned int ia, unsigned char d)
 
 		// CPS1 sound fade
 		if (ia == 0x189) {
-			//PsndSyncZ80((long long)SekTotalCycles() * nCpsZ80Cycles / nCpsCycles);
+			PsndSyncZ80((long long)SekTotalCycles() * nCpsZ80Cycles / nCpsCycles);
 
 			PsndFade = d;
 			return;
@@ -398,6 +397,7 @@ void __fastcall CpsWriteByte(unsigned int a,unsigned char d)
 				// bit 1 toggled on/off each frame
 				n664001 = d;
 			}
+			
 			return;
 		}
 
@@ -433,7 +433,7 @@ unsigned short __fastcall CpsReadWord(unsigned int a)
 	if ((a & 0xFF8FFF) == 0x800100 + CpsMProt[2]) {
 		return (unsigned short)((nCalc[0] * nCalc[1]));
 	}
-
+	
 	SEK_DEF_READ_WORD(0, a);
 }
 
@@ -450,7 +450,7 @@ void __fastcall CpsWriteWord(unsigned int a, unsigned short d)
 			ZetReset();
 		}
 	}
-
+	
 	SEK_DEF_WRITE_WORD(0, a, d);
 }
 

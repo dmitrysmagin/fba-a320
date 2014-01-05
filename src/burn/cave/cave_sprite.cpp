@@ -2,6 +2,7 @@
 #include "cave.h"
 
 int CaveSpriteVisibleXOffset;
+
 unsigned char* CaveSpriteROM = NULL;
 unsigned char* CaveSpriteRAM = NULL;
 
@@ -519,7 +520,7 @@ static int CaveSpriteBuffer_ZoomB()
 
 	short word;
 	int x, y, xs, ys;
-
+	
 	for (int i = 0, z = 0; i < 0x0400; i++, pSprite += 8) {
 
 		word = pSprite[6];
@@ -534,7 +535,11 @@ static int CaveSpriteBuffer_ZoomB()
 
 		nPriority = (word >> 4) & 0x03;
 
+#if 0
+		x = (pSprite[0] + nCaveExtraXOffset) & 0x03FF;
+# else
 		x = (pSprite[0] + CaveSpriteVisibleXOffset) & 0x03FF;
+#endif
 #if 0
 		y = (pSprite[1] + nCaveExtraYOffset) & 0x03FF;
 #else
@@ -660,10 +665,10 @@ static int CaveSpriteBuffer_PowerInstinct()
 
 void CaveSpriteExit()
 {
-	BurnFree(pSpriteList);
+	free(pSpriteList);
 	pSpriteList = NULL;
 
-	BurnFree(pZBuffer);
+	free(pZBuffer);
 	pZBuffer = NULL;
 	
 	CaveSpriteVisibleXOffset = 0;
@@ -673,8 +678,8 @@ void CaveSpriteExit()
 
 int CaveSpriteInit(int nType, int nROMSize)
 {
-	BurnFree(pSpriteList);
-	pSpriteList = (CaveSprite*)BurnMalloc(0x0401 * sizeof(CaveSprite));
+	free(pSpriteList);
+	pSpriteList = (CaveSprite*)malloc(0x0401 * sizeof(CaveSprite));
 	if (pSpriteList == NULL) {
 		CaveSpriteExit();
 		return 1;
@@ -689,8 +694,8 @@ int CaveSpriteInit(int nType, int nROMSize)
 		nLastSprite[i] = -1;
 	}
 
-	BurnFree(pZBuffer);
-	pZBuffer = (unsigned short*)BurnMalloc(nCaveXSize * nCaveYSize * sizeof(short));
+	free(pZBuffer);
+	pZBuffer = (unsigned short*)malloc(nCaveXSize * nCaveYSize * sizeof(short));
 	if (pZBuffer == NULL) {
 		CaveSpriteExit();
 		return 1;
@@ -727,4 +732,3 @@ int CaveSpriteInit(int nType, int nROMSize)
 
 	return 0;
 }
-

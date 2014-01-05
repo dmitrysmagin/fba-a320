@@ -33,7 +33,6 @@ static int nMinX, nMaxX;
  #include "neo_text_render.h"
 #undef BPP
 
-#include "cache.h"
 int NeoRenderText()
 {
 	int x, y;
@@ -177,7 +176,7 @@ void NeoUpdateTextOne(int nOffset, const unsigned char byteValue)
 
 void NeoExitText()
 {
-	BurnFree(NeoTextTileAttrib);
+	free(NeoTextTileAttrib);
 	NeoTextTileAttrib = NULL;
 }
 
@@ -185,8 +184,8 @@ int NeoInitText()
 {
 	int nTileNum = (0x020000 + nNeoTextROMSize) >> 5;
 
-	BurnFree(NeoTextTileAttrib);
-	NeoTextTileAttrib = (char*)BurnMalloc((nTileNum < 0x2000) ? 0x2000 : nTileNum);
+	free(NeoTextTileAttrib);
+	NeoTextTileAttrib = (char*)malloc((nTileNum < 0x2000) ? 0x2000 : nTileNum);
 
 	if (nNeoScreenWidth == 304) {
 		nMinX = 1;
@@ -196,9 +195,6 @@ int NeoInitText()
 		nMaxX = 40;
 	}
 
-	if ( bBurnUseRomCache ) {
-		BurnCacheRead((unsigned char *)NeoTextTileAttrib, 6);
-	} else {
 	for (int i = 0; i < nTileNum; i++) {
 		pTile = NeoTextROM + (i << 5);
 		bool bTransparent = true;
@@ -219,7 +215,6 @@ int NeoInitText()
 		NeoTextTileAttrib[i] = 1;
 	}
 
-	}
 	nBankswitch = 0;
 	if (nNeoTextROMSize > 0x020000) {
 		if (BurnDrvGetHardwareCode() & HARDWARE_SNK_ALTERNATE_TEXT) {

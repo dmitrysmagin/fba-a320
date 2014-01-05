@@ -1,7 +1,6 @@
 #include "tiles_generic.h"
 #include "burn_ym2151.h"
 #include "msm6295.h"
-#include "cache.h"
 
 static unsigned char DrvInputPort0[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 static unsigned char DrvInputPort1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
@@ -41,7 +40,6 @@ static UINT16        DrvBg0ScrollY;
 static UINT16        DrvBg1ScrollX;
 static UINT16        DrvBg1ScrollY;
 static UINT16        DrvVReg;
-static bool RecalcPalette;
 
 static int DrvSpriteXOffset;
 static int DrvBg0XOffset;
@@ -470,7 +468,6 @@ void __fastcall Wwfwfest68KWriteWord(unsigned int a, unsigned short d)
 		int Offset = (a - 0x180000) >> 1;
 		Offset = (Offset & 0x0f) | (Offset & 0x7fc0) >> 2;
 		PaletteRam[Offset] = d;
-		RecalcPalette = true;
 		return;
 	}
 	
@@ -621,8 +618,6 @@ static int DrvInit()
 {
 	int nRet = 0, nLen, RomOffset;
 	
-	RecalcPalette = true;
-	
 	RomOffset = 0;
 	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "wwfwfstb")) RomOffset = 2;
 
@@ -634,7 +629,7 @@ static int DrvInit()
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	DrvTempRom = (unsigned char *)CachedMalloc(0x800000);
+	DrvTempRom = (unsigned char *)malloc(0x800000);
 
 	// Load 68000 Program Roms
 	nRet = BurnLoadRom(Drv68KRom + 0x00000, 0, 2); if (nRet != 0) return 1;
@@ -676,7 +671,7 @@ static int DrvInit()
 	nRet = BurnLoadRom(DrvMSM6295ROMSrc + 0x00000, 14 + RomOffset, 1); if (nRet != 0) return 1;
 	memcpy(MSM6295ROM, DrvMSM6295ROMSrc, 0x40000);
 	
-	CachedFree(DrvTempRom);
+	free(DrvTempRom);
 	
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);
@@ -789,7 +784,6 @@ static void DrvCalcPalette()
 	for (i = 0, ps = (unsigned short*)DrvPaletteRam, pd = DrvPalette; i < 0x2000; i++, ps++, pd++) {
 		*pd = CalcCol(*ps);
 	}
-	RecalcPalette = false;
 }
 
 static void DrvRenderBg0Layer(int Opaque)
@@ -1025,8 +1019,7 @@ static void DrvRenderCharLayer()
 static void DrvDraw()
 {
 	BurnTransferClear();
-	if (RecalcPalette)
-		DrvCalcPalette();
+	DrvCalcPalette();
 	
 	if (DrvVReg == 0x7b) {
 		DrvRenderBg0Layer(1);
@@ -1128,7 +1121,7 @@ static int DrvScan(int nAction, int *pnMin)
 	struct BurnArea ba;
 	
 	if (pnMin != NULL) {			// Return minimum compatible version
-		*pnMin = 0x029671;
+		*pnMin = 0x029674;
 	}
 
 	if (nAction & ACB_MEMORY_RAM) {

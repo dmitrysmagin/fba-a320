@@ -68,7 +68,7 @@ int NeoLoadSprites(int nOffset, int nNum, unsigned char* pDest, unsigned int nSp
 			}
 		}
 
-		unsigned char* pBuf = (unsigned char*)BurnMalloc(0x800000 * 2);
+		unsigned char* pBuf = (unsigned char*)malloc(0x800000 * 2);
 		if (pBuf == NULL) {
 			return 1;
 		}
@@ -78,7 +78,7 @@ int NeoLoadSprites(int nOffset, int nNum, unsigned char* pDest, unsigned int nSp
 
 			if (!strcmp(BurnDrvGetTextA(DRV_NAME), "ms5pcb") || !strcmp(BurnDrvGetTextA(DRV_NAME), "svcpcb") || !strcmp(BurnDrvGetTextA(DRV_NAME), "svcpcba")) {
 				if ((nSpriteSize == 0x4000000) && (nNum == 4)) {
-					pBuf = (unsigned char*)BurnMalloc(0x2000000);
+					pBuf = (unsigned char*)malloc(0x2000000);
 					BurnLoadRom(pBuf + 0, nOffset + 0 + (i << 1), 2);
 					BurnLoadRom(pBuf + 1, nOffset + 1 + (i << 1), 2);
 					k = 8, n = i * 2;
@@ -89,7 +89,7 @@ int NeoLoadSprites(int nOffset, int nNum, unsigned char* pDest, unsigned int nSp
 
 					svcpcb_gfx_decrypt(pBuf);
 				} else if ((nSpriteSize == 0x4000000) && (nNum == 2)) {
-					pBuf = (unsigned char*)BurnMalloc(0x2000000);
+					pBuf = (unsigned char*)malloc(0x2000000);
 					BurnLoadRom(pBuf, nOffset + i, 1);
 					k = 8, n = i * 2, ROM32MB = 2;
 
@@ -106,7 +106,7 @@ int NeoLoadSprites(int nOffset, int nNum, unsigned char* pDest, unsigned int nSp
 			}
 		}
 		
-		BurnFree(pBuf);
+		free(pBuf);
 
 	} else {
 		nSpriteSize = 0;
@@ -135,7 +135,7 @@ int NeoLoadSprites(int nOffset, int nNum, unsigned char* pDest, unsigned int nSp
 
 	// Swap data for viewpoin, aof, ssideki, kotm2, more
 	if (BurnDrvGetHardwareCode() & HARDWARE_SNK_SWAPC) {
-		unsigned char* pBuf = (unsigned char*)BurnMalloc(0x600000);
+		unsigned char* pBuf = (unsigned char*)malloc(0x600000);
 
 		if (pBuf) {
 			for (int i = 0x200000; i < 0x600000; i++) {
@@ -146,7 +146,7 @@ int NeoLoadSprites(int nOffset, int nNum, unsigned char* pDest, unsigned int nSp
 				((short*)(pDest + 0x400000))[i] = ((short*)(pBuf + 0x200000))[i];
 			}
 
-			BurnFree(pBuf);
+			free(pBuf);
 		} else {
 			return 1;
 		}

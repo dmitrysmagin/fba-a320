@@ -4,32 +4,32 @@
 
 static struct BurnInputInfo DrvInputList[] =
 {
-  {"P1 Coin"       , BIT_DIGITAL, CpsInp018+0, "p1 coin"},
-  {"P1 Start"      , BIT_DIGITAL, CpsInp018+4, "p1 start"},
-  {"P1 Up"         , BIT_DIGITAL, CpsInp001+3, "p1 up"},
-  {"P1 Down"       , BIT_DIGITAL, CpsInp001+2, "p1 down"},
-  {"P1 Left"       , BIT_DIGITAL, CpsInp001+1, "p1 left"},
-  {"P1 Right"      , BIT_DIGITAL, CpsInp001+0, "p1 right"},
-  {"P1 Attack"     , BIT_DIGITAL, CpsInp001+4, "p1 fire 1"},
-  {"P1 Jump"       , BIT_DIGITAL, CpsInp001+5, "p1 fire 2"},
-  {"P1 Fire 3"     , BIT_DIGITAL, CpsInp001+6, "p1 fire 3"},
+  {"P1 Coin"       , 0, CpsInp018+0, "p1 coin"},
+  {"P1 Start"      , 0, CpsInp018+4, "p1 start"},
+  {"P1 Up"         , 0, CpsInp001+3, "p1 up"},
+  {"P1 Down"       , 0, CpsInp001+2, "p1 down"},
+  {"P1 Left"       , 0, CpsInp001+1, "p1 left"},
+  {"P1 Right"      , 0, CpsInp001+0, "p1 right"},
+  {"P1 Attack"     , 0, CpsInp001+4, "p1 fire 1"},
+  {"P1 Jump"       , 0, CpsInp001+5, "p1 fire 2"},
+  {"P1 Fire 3"     , 0, CpsInp001+6, "p1 fire 3"},
 
-  {"P2 Coin"       , BIT_DIGITAL, CpsInp018+1, "p2 coin"},
-  {"P2 Start"      , BIT_DIGITAL, CpsInp018+5, "p2 start"},
-  {"P2 Up"         , BIT_DIGITAL, CpsInp000+3, "p2 up"},
-  {"P2 Down"       , BIT_DIGITAL, CpsInp000+2, "p2 down"},
-  {"P2 Left"       , BIT_DIGITAL, CpsInp000+1, "p2 left"},
-  {"P2 Right"      , BIT_DIGITAL, CpsInp000+0, "p2 right"},
-  {"P2 Attack"     , BIT_DIGITAL, CpsInp000+4, "p2 fire 1"},
-  {"P2 Jump"       , BIT_DIGITAL, CpsInp000+5, "p2 fire 2"},
-  {"P2 Fire 3"     , BIT_DIGITAL, CpsInp000+6, "p2 fire 3"},
+  {"P2 Coin"       , 0, CpsInp018+1, "p2 coin"},
+  {"P2 Start"      , 0, CpsInp018+5, "p2 start"},
+  {"P2 Up"         , 0, CpsInp000+3, "p2 up"},
+  {"P2 Down"       , 0, CpsInp000+2, "p2 down"},
+  {"P2 Left"       , 0, CpsInp000+1, "p2 left"},
+  {"P2 Right"      , 0, CpsInp000+0, "p2 right"},
+  {"P2 Attack"     , 0, CpsInp000+4, "p2 fire 1"},
+  {"P2 Jump"       , 0, CpsInp000+5, "p2 fire 2"},
+  {"P2 Fire 3"     , 0, CpsInp000+6, "p2 fire 3"},
 
-  {"Reset"         , BIT_DIGITAL, &CpsReset,   "reset"},
-  {"Diagnostic"    , BIT_DIGITAL, CpsInp018+6, "diag"},
-  {"Service"       , BIT_DIGITAL, CpsInp018+2, "service"},
-  {"Dip A"         , BIT_DIPSWITCH, &Cpi01A    , "dip"},
-  {"Dip B"         , BIT_DIPSWITCH, &Cpi01C    , "dip"},
-  {"Dip C"         , BIT_DIPSWITCH, &Cpi01E    , "dip"},
+  {"Reset"         , 0, &CpsReset,   "reset"},
+  {"Diagnostic"    , 0, CpsInp018+6, "diag"},
+  {"Service"       , 0, CpsInp018+2, "service"},
+  {"Dip A"         , 2, &Cpi01A    , "dip"},
+  {"Dip B"         , 2, &Cpi01C    , "dip"},
+  {"Dip C"         , 2, &Cpi01E    , "dip"},
 };
 
 STDINPUTINFO(Drv);
@@ -39,7 +39,7 @@ static struct BurnDIPInfo mswordDIPList[]=
 	// Defaults
 	{0x15, 0xff, 0xff, 0x00, NULL                },
 	{0x16, 0xff, 0xff, 0x00, NULL                },
-	{0x17, 0xff, 0xff, 0x40, NULL                },
+	{0x17, 0xff, 0xff, 0x00, NULL                },
 
 	// Dip A
 	{0   , 0xfe, 0   , 8   , "A Side"                 },

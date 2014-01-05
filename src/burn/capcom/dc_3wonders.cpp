@@ -36,7 +36,7 @@ static struct BurnDIPInfo threewondersDIPList[]=
 	// Defaults
 	{0x13, 0xff, 0xff, 0x00, NULL                     },
 	{0x14, 0xff, 0xff, 0x00, NULL                     },
-	{0x15, 0xff, 0xff, 0x40, NULL                     },
+	{0x15, 0xff, 0xff, 0x00, NULL                     },
 
 	// Dip A
 	{0   , 0xfe, 0   , 8   , "Coin 1"                 },

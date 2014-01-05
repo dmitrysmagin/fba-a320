@@ -101,6 +101,7 @@ void QsndNewFrame()
 {
 	ZetNewFrame();
 
+	ZetOpen(0);
 	ZetIdle(nQsndCyclesExtra);
 
 	QscNewFrame();
@@ -112,6 +113,7 @@ void QsndEndFrame()
 	if (pBurnSoundOut) QscUpdate(nBurnSoundLen);
 
 	nQsndCyclesExtra = ZetTotalCycles() - nCpsZ80Cycles;
+	ZetClose();
 }
 
 void QsndSyncZ80()
