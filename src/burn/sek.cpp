@@ -934,6 +934,9 @@ int SekInit(int nCount, int nCPUType)
 		nSekCount = nCount;
 	}
 
+	// only m68k supports 68010 and 68EC020
+	if(nCount == 0 && nCPUType != 0x68000 && nSekCpuCore != SEK_CORE_M68K) nSekCpuCore = SEK_CORE_M68K;
+
 	// Allocate cpu extenal data (memory map etc)
 	SekExt[nCount] = (struct SekExt*)malloc(sizeof(struct SekExt));
 	if (SekExt[nCount] == NULL) {
@@ -1015,9 +1018,6 @@ int SekInit(int nCount, int nCPUType)
 
 	// Map the normal memory handlers
 	SekDbgDisableBreakpoints();
-
-	// only m68k supports 68010 and 68EC020
-	if(nCount == 0 && nCPUType != 0x68000 && nSekCpuCore != SEK_CORE_M68K) nSekCpuCore = SEK_CORE_M68K;
 
 #ifdef EMU_A68K
 	if(nSekCpuCore == SEK_CORE_A68K) {
@@ -1190,7 +1190,7 @@ void SekClose()
 INT32 SekGetActive()
 {
 #if defined FBA_DEBUG
-	if (!DebugCPU_SekInitted) bprintf(PRINT_ERROR, _T("SekGetActive called without init\n"));
+	//if (!DebugCPU_SekInitted) bprintf(PRINT_ERROR, _T("SekGetActive called without init\n"));
 #endif
 
 	return nSekActive;
