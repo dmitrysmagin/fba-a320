@@ -248,54 +248,66 @@ static void YM2203UpdateNormal(short* pSoundBuf, int nSegmentEnd)
 		pYM2203Buffer[10] = pBuffer + 4 + 10 * 4096;
 	}
 
-
-	for (int n = nFractionalPosition; n < nSegmentLength; n++) {
-		int nAYSample, nTotalSample;
-
-		nAYSample  = pYM2203Buffer[2][n];
-		nAYSample += pYM2203Buffer[3][n];
-		nAYSample += pYM2203Buffer[4][n];
-		if (nNumChips > 1) {
-			nAYSample += pYM2203Buffer[8][n];
-			nAYSample += pYM2203Buffer[9][n];
-			nAYSample += pYM2203Buffer[10][n];
+#ifdef BUILD_X86_ASM
+	if (bBurnUseMMX) {
+		for (int n = nFractionalPosition; n < nSegmentLength; n++) {
+			pAYBuffer[n] = pYM2203Buffer[2][n] + pYM2203Buffer[3][n] + pYM2203Buffer[4][n];
+			if (nNumChips > 1) pAYBuffer2[n] = pYM2203Buffer[8][n] + pYM2203Buffer[9][n] + pYM2203Buffer[10][n];;
 		}
+		BurnSoundCopy_FM_OPN_A(pYM2203Buffer[0], pAYBuffer, pSoundBuf, nSegmentLength, 65536 * 60 / 100, 65536 * 60 / 100);
+		if (nNumChips > 1) BurnSoundCopy_FM_OPN_Add_A(pYM2203Buffer[6], pAYBuffer2, pSoundBuf, nSegmentLength, 65536 * 60 / 100, 65536 * 60 / 100);
+	} else {
+#endif
+		for (int n = nFractionalPosition; n < nSegmentLength; n++) {
+			int nAYSample, nTotalSample;
 
-		nAYSample  *= 4096 * 60 / 100;
-		nAYSample >>= 12;
+			nAYSample  = pYM2203Buffer[2][n];
+			nAYSample += pYM2203Buffer[3][n];
+			nAYSample += pYM2203Buffer[4][n];
+			if (nNumChips > 1) {
+				nAYSample += pYM2203Buffer[8][n];
+				nAYSample += pYM2203Buffer[9][n];
+				nAYSample += pYM2203Buffer[10][n];
+			}
 
-		nTotalSample = nAYSample + pYM2203Buffer[0][n];
-		if (nNumChips > 1) nTotalSample += pYM2203Buffer[6][n];
-		if (nTotalSample < -32768) {
-			nTotalSample = -32768;
-		} else {
-			if (nTotalSample > 32767) {
-				nTotalSample = 32767;
+			nAYSample  *= 4096 * 60 / 100;
+			nAYSample >>= 12;
+
+			nTotalSample = nAYSample + pYM2203Buffer[0][n];
+			if (nNumChips > 1) nTotalSample += pYM2203Buffer[6][n];
+			if (nTotalSample < -32768) {
+				nTotalSample = -32768;
+			} else {
+				if (nTotalSample > 32767) {
+					nTotalSample = 32767;
+				}
+			}
+			
+			if (bYM2203AddSignal) {
+				pSoundBuf[(n << 1) + 0] += nTotalSample;
+			} else {
+				pSoundBuf[(n << 1) + 0] = nTotalSample;
+			}
+			
+			nTotalSample = nAYSample + pYM2203Buffer[1][n];
+			if (nNumChips > 1) nTotalSample += pYM2203Buffer[7][n];
+			if (nTotalSample < -32768) {
+				nTotalSample = -32768;
+			} else {
+				if (nTotalSample > 32767) {
+					nTotalSample = 32767;
+				}
+			}
+			
+			if (bYM2203AddSignal) {
+				pSoundBuf[(n << 1) + 1] += nTotalSample;
+			} else {
+				pSoundBuf[(n << 1) + 1] = nTotalSample;
 			}
 		}
-		
-		if (bYM2203AddSignal) {
-			pSoundBuf[(n << 1) + 0] += nTotalSample;
-		} else {
-			pSoundBuf[(n << 1) + 0] = nTotalSample;
-		}
-		
-		nTotalSample = nAYSample + pYM2203Buffer[1][n];
-		if (nNumChips > 1) nTotalSample += pYM2203Buffer[7][n];
-		if (nTotalSample < -32768) {
-			nTotalSample = -32768;
-		} else {
-			if (nTotalSample > 32767) {
-				nTotalSample = 32767;
-			}
-		}
-		
-		if (bYM2203AddSignal) {
-			pSoundBuf[(n << 1) + 1] += nTotalSample;
-		} else {
-			pSoundBuf[(n << 1) + 1] = nTotalSample;
-		}
+#ifdef BUILD_X86_ASM
 	}
+#endif
 
 	nFractionalPosition = nSegmentLength;
 

@@ -7,19 +7,8 @@
  extern "C" {
 #endif
 
-#ifndef OOPSWARE_FIX
-
 #if !defined (_WIN32)
  #define __cdecl
-#endif
-
-#else
-
-#ifdef __cdecl
-#undef __cdecl
-#define __cdecl
-#endif
-
 #endif
 
 #include <time.h>
@@ -30,8 +19,6 @@
 // #define MAME_USE_LOGERROR
 
 // Give access to the CPUID function for various compilers
-#ifndef OOPSWARE_FIX
-
 #if defined (__GNUC__)
  #define CPUID(f,ra,rb,rc,rd) __asm__ __volatile__ ("cpuid"											\
  													: "=a" (ra), "=b" (rb), "=c" (rc), "=d" (rd)	\
@@ -48,14 +35,12 @@
  #define CPUID(f,ra,rb,rc,rd)
 #endif
 
-#endif
-
 #ifdef _UNICODE
  #define SEPERATOR_1 " \u2022 "
  #define SEPERATOR_2 " \u25E6 "
 #else
- #define SEPERATOR_1 " - "
- #define SEPERATOR_2 " / "
+ #define SEPERATOR_1 " ~ "
+ #define SEPERATOR_2 " ~ "
 #endif
 
 #ifdef _UNICODE
@@ -238,24 +223,36 @@ int BurnDrvGetFlags();
 bool BurnDrvIsWorking();
 int BurnDrvGetMaxPlayers();
 
+#define JUKEBOX_SOUND_NULL	0
+#define JUKEBOX_SOUND_STOP	1
+#define JUKEBOX_SOUND_PLAY	2
+extern unsigned int JukeboxSoundLatch;
+extern unsigned int JukeboxSoundCommand;
+int BurnJukeboxGetFlags();
+int BurnJukeboxInit();
+int BurnJukeboxExit();
+int BurnJukeboxFrame();
+
+extern bool bSaveCRoms;
+
 // ---------------------------------------------------------------------------
 // Flags used with the Burndriver structure
 
 // Flags for the flags member
-#define BDF_GAME_WORKING		(1 << 0)
+#define BDF_GAME_WORKING			(1 << 0)
 #define BDF_ORIENTATION_FLIPPED		(1 << 1)
 #define BDF_ORIENTATION_VERTICAL	(1 << 2)
-#define BDF_BOARDROM			(1 << 3)
-#define BDF_CLONE			(1 << 4)
-#define BDF_BOOTLEG			(1 << 5)
-#define BDF_PROTOTYPE			(1 << 6)
-#define BDF_16BIT_ONLY			(1 << 7)
+#define BDF_BOARDROM				(1 << 3)
+#define BDF_CLONE					(1 << 4)
+#define BDF_BOOTLEG					(1 << 5)
+#define BDF_PROTOTYPE				(1 << 6)
+#define BDF_16BIT_ONLY				(1 << 7)
 
 // Flags for the hardware member
 // Format: 0xDDEEFFFF, where EE: Manufacturer, DD: Hardware platform, FFFF: Flags (used by driver)
 
 #define HARDWARE_PUBLIC_MASK		(0xFFFF0000)
-#define HARDWARE_PREFIX_MISC		(0x00000000)
+#define HARDWARE_PREFIX_MISC_PRE90S	(0x00000000)
 #define HARDWARE_PREFIX_CAPCOM		(0x01000000)
 #define HARDWARE_PREFIX_SEGA		(0x02000000)
 #define HARDWARE_PREFIX_KONAMI		(0x03000000)
@@ -264,8 +261,15 @@ int BurnDrvGetMaxPlayers();
 #define HARDWARE_PREFIX_CAVE		(0x06000000)
 #define HARDWARE_PREFIX_CPS2		(0x07000000)
 #define HARDWARE_PREFIX_IGS_PGM		(0x08000000)
+#define HARDWARE_PREFIX_CPS3		(0x09000000)
+#define HARDWARE_PREFIX_MISC_POST90S	(0x0a000000)
+#define HARDWARE_PREFIX_TAITO		(0x0b000000)
+#define HARDWARE_PREFIX_SEGA_MEGADRIVE	(0x0c000000)
+#define HARDWARE_PREFIX_PSIKYO		(0x0d000000)
+#define HARDWARE_PREFIX_KANEKO16	(0x0e000000)
 
-#define HARDWARE_MISC_MISC			(HARDWARE_PREFIX_MISC)
+#define HARDWARE_MISC_PRE90S		(HARDWARE_PREFIX_MISC_PRE90S)
+#define HARDWARE_MISC_POST90S		(HARDWARE_PREFIX_MISC_POST90S)
 
 #define HARDWARE_CAPCOM_CPS1		(HARDWARE_PREFIX_CAPCOM | 0x00010000)
 #define HARDWARE_CAPCOM_CPS1_QSOUND (HARDWARE_PREFIX_CAPCOM | 0x00020000)
@@ -282,6 +286,7 @@ int BurnDrvGetMaxPlayers();
 #define HARDWARE_SEGA_SYSTEM18		(HARDWARE_PREFIX_SEGA | 0x00060000)
 #define HARDWARE_SEGA_HANGON		(HARDWARE_PREFIX_SEGA | 0x00070000)
 #define HARDWARE_SEGA_OUTRUN		(HARDWARE_PREFIX_SEGA | 0x00080000)
+#define HARDWARE_SEGA_SYSTEM1		(HARDWARE_PREFIX_SEGA | 0x00090000)
 
 #define HARDWARE_SEGA_FD1089A_ENC	(0x0002)
 #define HARDWARE_SEGA_FD1089B_ENC	(0x0004)
@@ -331,6 +336,23 @@ int BurnDrvGetMaxPlayers();
 
 #define HARDWARE_IGS_PGM		(HARDWARE_PREFIX_IGS_PGM)
 #define HARDWARE_IGS_USE_ARM_CPU	(0x0001)
+
+#define HARDWARE_CAPCOM_CPS3	(HARDWARE_PREFIX_CPS3)
+#define HARDWARE_CAPCOM_CPS3_NO_CD   (0x0001)
+
+#define HARDWARE_TAITO_TAITOZ		(HARDWARE_PREFIX_TAITO | 0x00010000)
+#define HARDWARE_TAITO_TAITOF2		(HARDWARE_PREFIX_TAITO | 0x00020000)
+#define HARDWARE_TAITO_MISC		(HARDWARE_PREFIX_TAITO | 0x00030000)
+#define HARDWARE_TAITO_TAITOX		(HARDWARE_PREFIX_TAITO | 0x00040000)
+
+#define HARDWARE_SEGA_MEGADRIVE		(HARDWARE_PREFIX_SEGA_MEGADRIVE)
+
+#define HARDWARE_PSIKYO			(HARDWARE_PREFIX_PSIKYO)
+
+#define HARDWARE_KANEKO16		(HARDWARE_PREFIX_KANEKO16)
+
+// flags for the jukebox member
+#define JBF_GAME_WORKING		(1 << 0)
 
 #ifdef __cplusplus
  } // End of extern "C"

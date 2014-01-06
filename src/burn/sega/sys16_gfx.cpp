@@ -1,13 +1,20 @@
 #include "sys16.h"
 
 int System16SpriteBanks[16];
-int System16TileBanks[2];
+int System16TileBanks[8];
+int System16OldTileBanks[8];
 int System16Page[4];
+int System16OldPage[4];
+unsigned char BootlegFgPage[4];
+unsigned char BootlegBgPage[4];
 int System16ScrollX[4] = {0, 0, 0, 0};
 int System16ScrollY[4] = {0, 0, 0, 0};
 int System16VideoEnable;
+int System18VdpEnable;
+int System18VdpMixing;
 int System16ScreenFlip;
 int System16SpriteShadow;
+int System16SpriteXOffset = 0;
 int System16ColScroll = 0;
 int System16RowScroll = 0;
 int System16RoadControl = 0;
@@ -18,8 +25,26 @@ int System16RoadXOffset = 0;
 int System16RoadPriority = 0;
 int System16PaletteEntries = 0;
 int System16TilemapColorOffset = 0;
+int System16TileBankSize = 0;
+int System16RecalcBgTileMap = 0;
+int System16RecalcBgAltTileMap = 0;
+int System16RecalcFgTileMap = 0;
+int System16RecalcFgAltTileMap = 0;
+int System16CreateOpaqueTileMaps = 0;
+
+bool bSystem16BootlegRender;
 
 unsigned short *pTempDraw = NULL;
+static unsigned short *pSys16BgTileMapOpaque = NULL;
+static unsigned short *pSys16BgAltTileMapOpaque = NULL;
+static unsigned short *pSys16BgTileMapPri0 = NULL;
+static unsigned short *pSys16BgTileMapPri1 = NULL;
+static unsigned short *pSys16FgTileMapPri0 = NULL;
+static unsigned short *pSys16FgTileMapPri1 = NULL;
+static unsigned short *pSys16BgAltTileMapPri0 = NULL;
+static unsigned short *pSys16BgAltTileMapPri1 = NULL;
+static unsigned short *pSys16FgAltTileMapPri0 = NULL;
+static unsigned short *pSys16FgAltTileMapPri1 = NULL;
 
 /*====================================================
 Decode Functions
@@ -89,61 +114,940 @@ void HangonDecodeRoad()
 Tile Layer Rendering
 ====================================================*/
 
-static void System16ARenderTileLayer(int Page, int PriorityDraw, int Transparent)
+#define PLOTPIXEL(x, po) pPixel[x] = nPalette | pTileData[x] | po;
+#define PLOTPIXEL_MASK(x, mc, po) if (pTileData[x] != mc) {pPixel[x] = nPalette | pTileData[x] | po;}
+
+static inline void RenderTile(unsigned short* pDestDraw, int nTileNumber, int StartX, int StartY, int nTilePalette, int nColourDepth, int nPaletteOffset, unsigned char *pTile)
 {
-	int mx, my, Code, Colour, x, y, Priority, TileIndex, ColourOff;
+	UINT32 nPalette = nTilePalette << nColourDepth;
+	pTileData = pTile + (nTileNumber << 6);
+
+	unsigned short* pPixel = pDestDraw + (StartY * 1024) + StartX;
+
+	for (int y = 0; y < 8; y++, pPixel += 1024, pTileData += 8) {
+		PLOTPIXEL(0, nPaletteOffset);
+		PLOTPIXEL(1, nPaletteOffset);
+		PLOTPIXEL(2, nPaletteOffset);
+		PLOTPIXEL(3, nPaletteOffset);
+		PLOTPIXEL(4, nPaletteOffset);
+		PLOTPIXEL(5, nPaletteOffset);
+		PLOTPIXEL(6, nPaletteOffset);
+		PLOTPIXEL(7, nPaletteOffset);
+	}
+}
+
+static void RenderTile_Mask(unsigned short* pDestDraw, int nTileNumber, int StartX, int StartY, int nTilePalette, int nColourDepth, int nMaskColour, int nPaletteOffset, unsigned char *pTile)
+{
+	UINT32 nPalette = nTilePalette << nColourDepth;
+	pTileData = pTile + (nTileNumber << 6);
+
+	unsigned short* pPixel = pDestDraw + (StartY * 1024) + StartX;
+
+	for (int y = 0; y < 8; y++, pPixel += 1024, pTileData += 8) {
+		PLOTPIXEL_MASK(0, nMaskColour, nPaletteOffset);
+		PLOTPIXEL_MASK(1, nMaskColour, nPaletteOffset);
+		PLOTPIXEL_MASK(2, nMaskColour, nPaletteOffset);
+		PLOTPIXEL_MASK(3, nMaskColour, nPaletteOffset);
+		PLOTPIXEL_MASK(4, nMaskColour, nPaletteOffset);
+		PLOTPIXEL_MASK(5, nMaskColour, nPaletteOffset);
+		PLOTPIXEL_MASK(6, nMaskColour, nPaletteOffset);
+		PLOTPIXEL_MASK(7, nMaskColour, nPaletteOffset);
+	}
+}
+
+#undef PLOTPIXEL
+#undef PLOTPIXEL_MASK
+
+void System16ATileMapsInit(int bOpaque)
+{
+	if (bOpaque) {
+		pSys16BgTileMapOpaque = (unsigned short*)malloc(1024 * 512 * sizeof(unsigned short));
+	}
 	
-	UINT16 EffPage, ActPage = 0, xScroll, yScroll;
+	pSys16BgTileMapPri0 = (unsigned short*)malloc(1024 * 512 * sizeof(unsigned short));
+	pSys16BgTileMapPri1 = (unsigned short*)malloc(1024 * 512 * sizeof(unsigned short));
+	pSys16FgTileMapPri0 = (unsigned short*)malloc(1024 * 512 * sizeof(unsigned short));
+	pSys16FgTileMapPri1 = (unsigned short*)malloc(1024 * 512 * sizeof(unsigned short));
+}
+
+void System16BTileMapsInit(int bOpaque)
+{
+	if (bOpaque) {
+		pSys16BgTileMapOpaque = (unsigned short*)malloc(1024 * 512 * sizeof(unsigned short));
+		pSys16BgAltTileMapOpaque = (unsigned short*)malloc(1024 * 512 * sizeof(unsigned short));
+	}
 	
-	xScroll = ((System16TextRam[0xff8 + 1 + (Page * 2)] << 8) | System16TextRam[0xff8 + 0 + (Page * 2)]) & 0x1ff;
-	yScroll = ((System16TextRam[0xf24 + 1 + (Page * 2)] << 8) | System16TextRam[0xf24 + 0 + (Page * 2)]) & 0x0ff;
-	EffPage = (System16TextRam[0xe9e + 1 - (Page * 2)] << 8) | System16TextRam[0xe9e + 0 - (Page * 2)];
+	pSys16BgTileMapPri0 = (unsigned short*)malloc(1024 * 512 * sizeof(unsigned short));
+	pSys16BgTileMapPri1 = (unsigned short*)malloc(1024 * 512 * sizeof(unsigned short));
+	pSys16FgTileMapPri0 = (unsigned short*)malloc(1024 * 512 * sizeof(unsigned short));
+	pSys16FgTileMapPri1 = (unsigned short*)malloc(1024 * 512 * sizeof(unsigned short));
 	
-	if (System16ScreenFlip) xScroll += 17;
+	pSys16BgAltTileMapPri0 = (unsigned short*)malloc(1024 * 512 * sizeof(unsigned short));
+	pSys16BgAltTileMapPri1 = (unsigned short*)malloc(1024 * 512 * sizeof(unsigned short));
+	pSys16FgAltTileMapPri0 = (unsigned short*)malloc(1024 * 512 * sizeof(unsigned short));
+	pSys16FgAltTileMapPri1 = (unsigned short*)malloc(1024 * 512 * sizeof(unsigned short));
+}
+
+void System16TileMapsExit()
+{
+	free(pSys16BgTileMapOpaque);
+	pSys16BgTileMapOpaque = NULL;
+	free(pSys16BgAltTileMapOpaque);
+	pSys16BgAltTileMapOpaque = NULL;
+	free(pSys16BgTileMapPri0);
+	pSys16BgTileMapPri0 = NULL;
+	free(pSys16BgTileMapPri1);
+	pSys16BgTileMapPri1 = NULL;
+	free(pSys16FgTileMapPri0);
+	pSys16FgTileMapPri0 = NULL;
+	free(pSys16FgTileMapPri1);
+	pSys16FgTileMapPri1 = NULL;
+	free(pSys16BgAltTileMapPri0);
+	pSys16BgAltTileMapPri0 = NULL;
+	free(pSys16BgAltTileMapPri1);
+	pSys16BgAltTileMapPri1 = NULL;
+	free(pSys16FgAltTileMapPri0);
+	pSys16FgAltTileMapPri0 = NULL;
+	free(pSys16FgAltTileMapPri1);
+	pSys16FgAltTileMapPri1 = NULL;
+}
+
+static void System16ACreateBgTileMaps()
+{
+	int mx, my, Attr, Code, Colour, x, y, TileIndex, Priority, ColourOff, TilePage, i, xOffs, yOffs;
+	UINT16 *VideoRam = (UINT16*)System16TileRam;
+	UINT16 EffPage, ActPage;
+	UINT16 *pDest = NULL;
 	
+	if (System16CreateOpaqueTileMaps) memset(pSys16BgTileMapOpaque, 0, 1024 * 512 * sizeof(unsigned short));
+	EffPage = System16Page[1];
 	EffPage = ((EffPage >> 4) & 0x0707) | ((EffPage << 4) & 0x7070);
+	if ((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SEGA_HANGON) EffPage &= 0x3333;
+	for (i = 0; i < 2; i++) {
+		if (i == 0) pDest = pSys16BgTileMapPri0;
+		if (i == 1) pDest = pSys16BgTileMapPri1;
+		memset(pDest, 0, 1024 * 512 * sizeof(unsigned short));
+		for (TilePage = 0; TilePage < 4; TilePage++) {
+			ActPage = (EffPage >> 0) & 0x0f;
+			xOffs = 0;
+			yOffs = 0;
+			if (TilePage == 1) { ActPage = (EffPage >> 4) & 0x0f; xOffs = 512; }
+			if (TilePage == 2) { ActPage = (EffPage >> 8) & 0x0f; yOffs = 256; }
+			if (TilePage == 3) { ActPage = (EffPage >> 12) & 0x0f; xOffs = 512; yOffs = 256; }
+			for (my = 0; my < 32; my++) {
+				y = 8 * my;
+				y += yOffs;
+				for (mx = 0; mx < 64; mx++) {
+					TileIndex = (ActPage * 64 * 32) + (my * 64) + mx;
+						
+					Attr = VideoRam[TileIndex];
+					Priority = (Attr >> 12) & 1;
+			
+					if (Priority != i) continue;
+					
+					x = 8 * mx;
+					x += xOffs;
+								
+					Code = ((Attr >> 1) & 0x1000) | (Attr & 0xfff);
+					Code &= (System16NumTiles - 1);
+					Colour = (Attr >> 5) & 0x7f;
+				
+					ColourOff = System16TilemapColorOffset;
+					if (Colour >= 0x20) ColourOff = 0x100 | System16TilemapColorOffset;
+					if (Colour >= 0x40) ColourOff = 0x200 | System16TilemapColorOffset;
+					if (Colour >= 0x60) ColourOff = 0x300 | System16TilemapColorOffset;
+			
+					if (System16CreateOpaqueTileMaps) RenderTile(pSys16BgTileMapOpaque, Code, x, y, Colour, 3, ColourOff, System16Tiles);
+					RenderTile_Mask(pDest, Code, x, y, Colour, 3, 0, ColourOff, System16Tiles);
+				}
+			}
+		}
+	}
+}
+
+static void System16ACreateFgTileMaps()
+{
+	int mx, my, Attr, Code, Colour, x, y, TileIndex, Priority, ColourOff, TilePage, xOffs, yOffs;
+	UINT16 *VideoRam = (UINT16*)System16TileRam;
+	UINT16 EffPage, ActPage;
 	
-	for (my = 0; my < 64; my++) {
-		for (mx = 0; mx < 128; mx++) {
-			if (my < 32 && mx < 64) ActPage = (EffPage >> 0) & 0x0f;
-			if (my < 32 && mx >= 64) ActPage = (EffPage >> 4) & 0x0f;
-			if (my >= 32 && mx < 64) ActPage = (EffPage >> 8) & 0x0f;
-			if (my >= 32 && mx >= 64) ActPage = (EffPage >> 12) & 0x0f;
-			TileIndex = 64 * 32 * 2 * ActPage + ((2 * 64 * my) & 0xfff) + ((2 * mx) & 0x7f);
-			int Data = (System16TileRam[TileIndex + 1] << 8) | System16TileRam[TileIndex + 0];
-			
-			Priority = (Data >> 12) & 1;
-			
-			if (Priority == PriorityDraw) {
-				Code = ((Data >> 1) & 0x1000) | (Data & 0xfff);
-				Code &= (System16NumTiles - 1);
-				Colour = (Data >> 5) & 0x7f;
+	memset(pSys16FgTileMapPri0, 0, 1024 * 512 * sizeof(unsigned short));
+	memset(pSys16FgTileMapPri1, 0, 1024 * 512 * sizeof(unsigned short));
+		
+	EffPage = System16Page[0];
+	EffPage = ((EffPage >> 4) & 0x0707) | ((EffPage << 4) & 0x7070);
+	if ((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SEGA_HANGON) EffPage &= 0x3333;
+	for (TilePage = 0; TilePage < 4; TilePage++) {
+		ActPage = (EffPage >> 0) & 0x0f;
+		xOffs = 0;
+		yOffs = 0;
+		if (TilePage == 1) { ActPage = (EffPage >> 4) & 0x0f; xOffs = 512; }
+		if (TilePage == 2) { ActPage = (EffPage >> 8) & 0x0f; yOffs = 256; }
+		if (TilePage == 3) { ActPage = (EffPage >> 12) & 0x0f; xOffs = 512; yOffs = 256; }
+		for (my = 0; my < 32; my++) {
+			y = 8 * my;
+			y += yOffs;
+			for (mx = 0; mx < 64; mx++) {
+				TileIndex = (ActPage * 64 * 32) + (my * 64) + mx;
+					
+				Attr = VideoRam[TileIndex];
+				Priority = (Attr >> 12) & 1;
 			
 				x = 8 * mx;
-				y = 8 * my;
-				
-				x -= (200 - xScroll) & 0x3ff;
-				y -= yScroll & 0x1ff;
-				
-				if (x < -200) x += 1024;
-				if (y < -288) y += 512;
+				x += xOffs;
+			
+				Code = ((Attr >> 1) & 0x1000) | (Attr & 0xfff);
+				Code &= (System16NumTiles - 1);
+				Colour = (Attr >> 5) & 0x7f;
 				
 				ColourOff = System16TilemapColorOffset;
 				if (Colour >= 0x20) ColourOff = 0x100 | System16TilemapColorOffset;
 				if (Colour >= 0x40) ColourOff = 0x200 | System16TilemapColorOffset;
 				if (Colour >= 0x60) ColourOff = 0x300 | System16TilemapColorOffset;
+		
+				if (Priority == 0) RenderTile_Mask(pSys16FgTileMapPri0, Code, x, y, Colour, 3, 0, ColourOff, System16Tiles);
+				if (Priority == 1) RenderTile_Mask(pSys16FgTileMapPri1, Code, x, y, Colour, 3, 0, ColourOff, System16Tiles);
+			}
+		}
+	}
+}
+
+static void System16BCreateBgTileMaps()
+{
+	int mx, my, Attr, Code, Colour, x, y, TileIndex, Priority, ColourOff, TilePage, i, xOffs, yOffs;
+	UINT16 *VideoRam = (UINT16*)System16TileRam;
+	UINT16 EffPage, ActPage;
+	UINT16 *pDest = NULL;
+		
+	if (System16CreateOpaqueTileMaps) memset(pSys16BgTileMapOpaque, 0, 1024 * 512 * sizeof(unsigned short));
+	EffPage = System16Page[1];
+	for (i = 0; i < 2; i++) {
+		if (i == 0) pDest = pSys16BgTileMapPri0;
+		if (i == 1) pDest = pSys16BgTileMapPri1;
+		memset(pDest, 0, 1024 * 512 * sizeof(unsigned short));
+		for (TilePage = 0; TilePage < 4; TilePage++) {
+			ActPage = (EffPage >> 0) & 0x0f;
+			xOffs = 0;
+			yOffs = 0;
+			if (TilePage == 1) { ActPage = (EffPage >> 4) & 0x0f; xOffs = 512; }
+			if (TilePage == 2) { ActPage = (EffPage >> 8) & 0x0f; yOffs = 256; }
+			if (TilePage == 3) { ActPage = (EffPage >> 12) & 0x0f; xOffs = 512; yOffs = 256; }
+			for (my = 0; my < 32; my++) {
+				y = 8 * my;
+				y += yOffs;
+				for (mx = 0; mx < 64; mx++) {
+					TileIndex = (ActPage * 64 * 32) + (my * 64) + mx;
+						
+					Attr = VideoRam[TileIndex];
+					Priority = (Attr >> 15) & 1;
 			
+					if (Priority != i) continue;
+					
+					x = 8 * mx;
+					x += xOffs;
+								
+					Code = Attr & 0x1fff;
+					Code = System16TileBanks[Code / System16TileBankSize] * System16TileBankSize + Code % System16TileBankSize;
+					Code &= (System16NumTiles - 1);
+					Colour = (Attr >> 6) & 0x7f;
+				
+					ColourOff = System16TilemapColorOffset;
+					if (Colour >= 0x20) ColourOff = 0x100 | System16TilemapColorOffset;
+					if (Colour >= 0x40) ColourOff = 0x200 | System16TilemapColorOffset;
+					if (Colour >= 0x60) ColourOff = 0x300 | System16TilemapColorOffset;
+			
+					if (System16CreateOpaqueTileMaps) RenderTile(pSys16BgTileMapOpaque, Code, x, y, Colour, 3, ColourOff, System16Tiles);
+					RenderTile_Mask(pDest, Code, x, y, Colour, 3, 0, ColourOff, System16Tiles);
+				}
+			}
+		}
+	}
+}
+
+static void System16BCreateBgAltTileMaps()
+{
+	int mx, my, Attr, Code, Colour, x, y, TileIndex, Priority, ColourOff, TilePage, i, xOffs, yOffs;
+	UINT16 *VideoRam = (UINT16*)System16TileRam;
+	UINT16 EffPage, ActPage;
+	UINT16 *pDest = NULL;
+	
+	if (System16CreateOpaqueTileMaps) memset(pSys16BgAltTileMapOpaque, 0, 1024 * 512 * sizeof(unsigned short));
+	EffPage = System16Page[3];
+	for (i = 0; i < 2; i++) {
+		if (i == 0) pDest = pSys16BgAltTileMapPri0;
+		if (i == 1) pDest = pSys16BgAltTileMapPri1;
+		if (System16RecalcBgAltTileMap) memset(pDest, 0,1024 * 512 * sizeof(unsigned short));
+		for (TilePage = 0; TilePage < 4; TilePage++) {
+			ActPage = (EffPage >> 0) & 0x0f;
+			xOffs = 0;
+			yOffs = 0;
+			if (TilePage == 1) { ActPage = (EffPage >> 4) & 0x0f; xOffs = 512; }
+			if (TilePage == 2) { ActPage = (EffPage >> 8) & 0x0f; yOffs = 256; }
+			if (TilePage == 3) { ActPage = (EffPage >> 12) & 0x0f; xOffs = 512; yOffs = 256; }
+			for (my = 0; my < 32; my++) {
+				y = 8 * my;
+				y += yOffs;
+				for (mx = 0; mx < 64; mx++) {
+					TileIndex = (ActPage * 64 * 32) + (my * 64) + mx;
+						
+					Attr = VideoRam[TileIndex];
+					Priority = (Attr >> 15) & 1;
+			
+					if (Priority != i) continue;
+					
+					x = 8 * mx;
+					x += xOffs;
+			
+					Code = Attr & 0x1fff;
+					Code = System16TileBanks[Code / System16TileBankSize] * System16TileBankSize + Code % System16TileBankSize;
+					Code &= (System16NumTiles - 1);
+					Colour = (Attr >> 6) & 0x7f;
+				
+					ColourOff = System16TilemapColorOffset;
+					if (Colour >= 0x20) ColourOff = 0x100 | System16TilemapColorOffset;
+					if (Colour >= 0x40) ColourOff = 0x200 | System16TilemapColorOffset;
+					if (Colour >= 0x60) ColourOff = 0x300 | System16TilemapColorOffset;
+			
+					if (System16CreateOpaqueTileMaps) RenderTile(pSys16BgAltTileMapOpaque, Code, x, y, Colour, 3, ColourOff, System16Tiles);
+					if (System16RecalcBgAltTileMap) RenderTile_Mask(pDest, Code, x, y, Colour, 3, 0, ColourOff, System16Tiles);
+				}
+			}
+		}
+	}
+}
+
+static void System16BCreateFgTileMaps()
+{
+	int mx, my, Attr, Code, Colour, x, y, TileIndex, Priority, ColourOff, TilePage, xOffs, yOffs;
+	UINT16 *VideoRam = (UINT16*)System16TileRam;
+	UINT16 EffPage, ActPage;
+	
+	memset(pSys16FgTileMapPri0, 0, 1024 * 512 * sizeof(unsigned short));
+	memset(pSys16FgTileMapPri1, 0, 1024 * 512 * sizeof(unsigned short));
+		
+	EffPage = System16Page[0];
+	for (TilePage = 0; TilePage < 4; TilePage++) {
+		ActPage = (EffPage >> 0) & 0x0f;
+		xOffs = 0;
+		yOffs = 0;
+		if (TilePage == 1) { ActPage = (EffPage >> 4) & 0x0f; xOffs = 512; }
+		if (TilePage == 2) { ActPage = (EffPage >> 8) & 0x0f; yOffs = 256; }
+		if (TilePage == 3) { ActPage = (EffPage >> 12) & 0x0f; xOffs = 512; yOffs = 256; }
+		for (my = 0; my < 32; my++) {
+			y = 8 * my;
+			y += yOffs;
+			for (mx = 0; mx < 64; mx++) {
+				TileIndex = (ActPage * 64 * 32) + (my * 64) + mx;
+					
+				Attr = VideoRam[TileIndex];
+				Priority = (Attr >> 15) & 1;
+			
+				x = 8 * mx;
+				x += xOffs;
+			
+				Code = Attr & 0x1fff;
+				Code = System16TileBanks[Code / System16TileBankSize] * System16TileBankSize + Code % System16TileBankSize;
+				Code &= (System16NumTiles - 1);
+				Colour = (Attr >> 6) & 0x7f;
+			
+				ColourOff = System16TilemapColorOffset;
+				if (Colour >= 0x20) ColourOff = 0x100 | System16TilemapColorOffset;
+				if (Colour >= 0x40) ColourOff = 0x200 | System16TilemapColorOffset;
+				if (Colour >= 0x60) ColourOff = 0x300 | System16TilemapColorOffset;
+		
+				if (Priority == 0) RenderTile_Mask(pSys16FgTileMapPri0, Code, x, y, Colour, 3, 0, ColourOff, System16Tiles);
+				if (Priority == 1) RenderTile_Mask(pSys16FgTileMapPri1, Code, x, y, Colour, 3, 0, ColourOff, System16Tiles);
+			}
+		}
+	}
+}
+
+static void System16BCreateFgAltTileMaps()
+{
+	int mx, my, Attr, Code, Colour, x, y, TileIndex, Priority, ColourOff, TilePage, xOffs, yOffs;
+	UINT16 *VideoRam = (UINT16*)System16TileRam;
+	UINT16 EffPage, ActPage;
+	
+	memset(pSys16FgAltTileMapPri0, 0, 1024 * 512 * sizeof(unsigned short));
+	memset(pSys16FgAltTileMapPri1, 0, 1024 * 512 * sizeof(unsigned short));
+		
+	EffPage = System16Page[2];
+	for (TilePage = 0; TilePage < 4; TilePage++) {
+		ActPage = (EffPage >> 0) & 0x0f;
+		xOffs = 0;
+		yOffs = 0;
+		if (TilePage == 1) { ActPage = (EffPage >> 4) & 0x0f; xOffs = 512; }
+		if (TilePage == 2) { ActPage = (EffPage >> 8) & 0x0f; yOffs = 256; }
+		if (TilePage == 3) { ActPage = (EffPage >> 12) & 0x0f; xOffs = 512; yOffs = 256; }
+		for (my = 0; my < 32; my++) {
+			y = 8 * my;
+			y += yOffs;
+			for (mx = 0; mx < 64; mx++) {
+				TileIndex = (ActPage * 64 * 32) + (my * 64) + mx;
+					
+				Attr = VideoRam[TileIndex];
+				Priority = (Attr >> 15) & 1;
+		
+				x = 8 * mx;
+				x += xOffs;
+			
+				Code = Attr & 0x1fff;
+				Code = System16TileBanks[Code / System16TileBankSize] * System16TileBankSize + Code % System16TileBankSize;
+				Code &= (System16NumTiles - 1);
+				Colour = (Attr >> 6) & 0x7f;
+			
+				ColourOff = System16TilemapColorOffset;
+				if (Colour >= 0x20) ColourOff = 0x100 | System16TilemapColorOffset;
+				if (Colour >= 0x40) ColourOff = 0x200 | System16TilemapColorOffset;
+				if (Colour >= 0x60) ColourOff = 0x300 | System16TilemapColorOffset;
+		
+				if (Priority == 0) RenderTile_Mask(pSys16FgAltTileMapPri0, Code, x, y, Colour, 3, 0, ColourOff, System16Tiles);
+				if (Priority == 1) RenderTile_Mask(pSys16FgAltTileMapPri1, Code, x, y, Colour, 3, 0, ColourOff, System16Tiles);
+			}
+		}
+	}
+}
+
+static void System16BAltCreateBgTileMaps()
+{
+	int mx, my, Attr, Code, Colour, x, y, TileIndex, Priority, ColourOff, TilePage, i, xOffs, yOffs;
+	UINT16 *VideoRam = (UINT16*)System16TileRam;
+	UINT16 EffPage, ActPage;
+	UINT16 *pDest = NULL;
+		
+	if (System16CreateOpaqueTileMaps) memset(pSys16BgTileMapOpaque, 0, 1024 * 512 * sizeof(unsigned short));
+	EffPage = System16Page[1];
+	for (i = 0; i < 2; i++) {
+		if (i == 0) pDest = pSys16BgTileMapPri0;
+		if (i == 1) pDest = pSys16BgTileMapPri1;
+		memset(pDest, 0, 1024 * 512 * sizeof(unsigned short));
+		for (TilePage = 0; TilePage < 4; TilePage++) {
+			ActPage = (EffPage >> 0) & 0x0f;
+			xOffs = 0;
+			yOffs = 0;
+			if (TilePage == 1) { ActPage = (EffPage >> 4) & 0x0f; xOffs = 512; }
+			if (TilePage == 2) { ActPage = (EffPage >> 8) & 0x0f; yOffs = 256; }
+			if (TilePage == 3) { ActPage = (EffPage >> 12) & 0x0f; xOffs = 512; yOffs = 256; }
+			for (my = 0; my < 32; my++) {
+				y = 8 * my;
+				y += yOffs;
+				for (mx = 0; mx < 64; mx++) {
+					TileIndex = (ActPage * 64 * 32) + (my * 64) + mx;
+						
+					Attr = VideoRam[TileIndex];
+					Priority = (Attr >> 15) & 1;
+			
+					if (Priority != i) continue;
+					
+					x = 8 * mx;
+					x += xOffs;
+								
+					Code = Attr & 0x1fff;
+					Code = System16TileBanks[Code / System16TileBankSize] * System16TileBankSize + Code % System16TileBankSize;
+					Code &= (System16NumTiles - 1);
+					Colour = (Attr >> 5) & 0x7f;
+				
+					ColourOff = System16TilemapColorOffset;
+					if (Colour >= 0x20) ColourOff = 0x100 | System16TilemapColorOffset;
+					if (Colour >= 0x40) ColourOff = 0x200 | System16TilemapColorOffset;
+					if (Colour >= 0x60) ColourOff = 0x300 | System16TilemapColorOffset;
+			
+					if (System16CreateOpaqueTileMaps) RenderTile(pSys16BgTileMapOpaque, Code, x, y, Colour, 3, ColourOff, System16Tiles);
+					RenderTile_Mask(pDest, Code, x, y, Colour, 3, 0, ColourOff, System16Tiles);
+				}
+			}
+		}
+	}
+}
+
+static void System16BAltCreateBgAltTileMaps()
+{
+	int mx, my, Attr, Code, Colour, x, y, TileIndex, Priority, ColourOff, TilePage, i, xOffs, yOffs;
+	UINT16 *VideoRam = (UINT16*)System16TileRam;
+	UINT16 EffPage, ActPage;
+	UINT16 *pDest = NULL;
+	
+	if (System16CreateOpaqueTileMaps) memset(pSys16BgAltTileMapOpaque, 0, 1024 * 512 * sizeof(unsigned short));
+	EffPage = System16Page[3];
+	for (i = 0; i < 2; i++) {
+		if (i == 0) pDest = pSys16BgAltTileMapPri0;
+		if (i == 1) pDest = pSys16BgAltTileMapPri1;
+		if (System16RecalcBgAltTileMap) memset(pDest, 0,1024 * 512 * sizeof(unsigned short));
+		for (TilePage = 0; TilePage < 4; TilePage++) {
+			ActPage = (EffPage >> 0) & 0x0f;
+			xOffs = 0;
+			yOffs = 0;
+			if (TilePage == 1) { ActPage = (EffPage >> 4) & 0x0f; xOffs = 512; }
+			if (TilePage == 2) { ActPage = (EffPage >> 8) & 0x0f; yOffs = 256; }
+			if (TilePage == 3) { ActPage = (EffPage >> 12) & 0x0f; xOffs = 512; yOffs = 256; }
+			for (my = 0; my < 32; my++) {
+				y = 8 * my;
+				y += yOffs;
+				for (mx = 0; mx < 64; mx++) {
+					TileIndex = (ActPage * 64 * 32) + (my * 64) + mx;
+						
+					Attr = VideoRam[TileIndex];
+					Priority = (Attr >> 15) & 1;
+			
+					if (Priority != i) continue;
+					
+					x = 8 * mx;
+					x += xOffs;
+			
+					Code = Attr & 0x1fff;
+					Code = System16TileBanks[Code / System16TileBankSize] * System16TileBankSize + Code % System16TileBankSize;
+					Code &= (System16NumTiles - 1);
+					Colour = (Attr >> 5) & 0x7f;
+				
+					ColourOff = System16TilemapColorOffset;
+					if (Colour >= 0x20) ColourOff = 0x100 | System16TilemapColorOffset;
+					if (Colour >= 0x40) ColourOff = 0x200 | System16TilemapColorOffset;
+					if (Colour >= 0x60) ColourOff = 0x300 | System16TilemapColorOffset;
+			
+					if (System16CreateOpaqueTileMaps) RenderTile(pSys16BgAltTileMapOpaque, Code, x, y, Colour, 3, ColourOff, System16Tiles);
+					if (System16RecalcBgAltTileMap) RenderTile_Mask(pDest, Code, x, y, Colour, 3, 0, ColourOff, System16Tiles);
+				}
+			}
+		}
+	}
+}
+
+static void System16BAltCreateFgTileMaps()
+{
+	int mx, my, Attr, Code, Colour, x, y, TileIndex, Priority, ColourOff, TilePage, xOffs, yOffs;
+	UINT16 *VideoRam = (UINT16*)System16TileRam;
+	UINT16 EffPage, ActPage;
+	
+	memset(pSys16FgTileMapPri0, 0, 1024 * 512 * sizeof(unsigned short));
+	memset(pSys16FgTileMapPri1, 0, 1024 * 512 * sizeof(unsigned short));
+		
+	EffPage = System16Page[0];
+	for (TilePage = 0; TilePage < 4; TilePage++) {
+		ActPage = (EffPage >> 0) & 0x0f;
+		xOffs = 0;
+		yOffs = 0;
+		if (TilePage == 1) { ActPage = (EffPage >> 4) & 0x0f; xOffs = 512; }
+		if (TilePage == 2) { ActPage = (EffPage >> 8) & 0x0f; yOffs = 256; }
+		if (TilePage == 3) { ActPage = (EffPage >> 12) & 0x0f; xOffs = 512; yOffs = 256; }
+		for (my = 0; my < 32; my++) {
+			y = 8 * my;
+			y += yOffs;
+			for (mx = 0; mx < 64; mx++) {
+				TileIndex = (ActPage * 64 * 32) + (my * 64) + mx;
+					
+				Attr = VideoRam[TileIndex];
+				Priority = (Attr >> 15) & 1;
+			
+				x = 8 * mx;
+				x += xOffs;
+			
+				Code = Attr & 0x1fff;
+				Code = System16TileBanks[Code / System16TileBankSize] * System16TileBankSize + Code % System16TileBankSize;
+				Code &= (System16NumTiles - 1);
+				Colour = (Attr >> 5) & 0x7f;
+			
+				ColourOff = System16TilemapColorOffset;
+				if (Colour >= 0x20) ColourOff = 0x100 | System16TilemapColorOffset;
+				if (Colour >= 0x40) ColourOff = 0x200 | System16TilemapColorOffset;
+				if (Colour >= 0x60) ColourOff = 0x300 | System16TilemapColorOffset;
+		
+				if (Priority == 0) RenderTile_Mask(pSys16FgTileMapPri0, Code, x, y, Colour, 3, 0, ColourOff, System16Tiles);
+				if (Priority == 1) RenderTile_Mask(pSys16FgTileMapPri1, Code, x, y, Colour, 3, 0, ColourOff, System16Tiles);
+			}
+		}
+	}
+}
+
+static void System16BAltCreateFgAltTileMaps()
+{
+	int mx, my, Attr, Code, Colour, x, y, TileIndex, Priority, ColourOff, TilePage, xOffs, yOffs;
+	UINT16 *VideoRam = (UINT16*)System16TileRam;
+	UINT16 EffPage, ActPage;
+	
+	memset(pSys16FgAltTileMapPri0, 0, 1024 * 512 * sizeof(unsigned short));
+	memset(pSys16FgAltTileMapPri1, 0, 1024 * 512 * sizeof(unsigned short));
+		
+	EffPage = System16Page[2];
+	for (TilePage = 0; TilePage < 4; TilePage++) {
+		ActPage = (EffPage >> 0) & 0x0f;
+		xOffs = 0;
+		yOffs = 0;
+		if (TilePage == 1) { ActPage = (EffPage >> 4) & 0x0f; xOffs = 512; }
+		if (TilePage == 2) { ActPage = (EffPage >> 8) & 0x0f; yOffs = 256; }
+		if (TilePage == 3) { ActPage = (EffPage >> 12) & 0x0f; xOffs = 512; yOffs = 256; }
+		for (my = 0; my < 32; my++) {
+			y = 8 * my;
+			y += yOffs;
+			for (mx = 0; mx < 64; mx++) {
+				TileIndex = (ActPage * 64 * 32) + (my * 64) + mx;
+					
+				Attr = VideoRam[TileIndex];
+				Priority = (Attr >> 15) & 1;
+		
+				x = 8 * mx;
+				x += xOffs;
+			
+				Code = Attr & 0x1fff;
+				Code = System16TileBanks[Code / System16TileBankSize] * System16TileBankSize + Code % System16TileBankSize;
+				Code &= (System16NumTiles - 1);
+				Colour = (Attr >> 5) & 0x7f;
+			
+				ColourOff = System16TilemapColorOffset;
+				if (Colour >= 0x20) ColourOff = 0x100 | System16TilemapColorOffset;
+				if (Colour >= 0x40) ColourOff = 0x200 | System16TilemapColorOffset;
+				if (Colour >= 0x60) ColourOff = 0x300 | System16TilemapColorOffset;
+		
+				if (Priority == 0) RenderTile_Mask(pSys16FgAltTileMapPri0, Code, x, y, Colour, 3, 0, ColourOff, System16Tiles);
+				if (Priority == 1) RenderTile_Mask(pSys16FgAltTileMapPri1, Code, x, y, Colour, 3, 0, ColourOff, System16Tiles);
+			}
+		}
+	}
+}
+
+static void System16ACreateTileMaps()
+{
+	if (System16RecalcBgTileMap) {
+		System16ACreateBgTileMaps();
+		System16RecalcBgTileMap = 0;
+	}
+	
+	if (System16RecalcFgTileMap) {
+		System16ACreateFgTileMaps();
+		System16RecalcFgTileMap = 0;
+	}
+}
+
+static void System16BCreateTileMaps()
+{
+	UINT16 *TextRam = (UINT16*)System16TextRam;
+	int i;
+	
+	// Check if we need the alt tilemaps
+	if (System16RecalcFgAltTileMap) {
+		System16RecalcFgAltTileMap = 0;
+		for (i = 0xf80/2 + 0 * 0x40/2; i < 0xf80/2 + 0 * 0x40/2 + 224/8; i++) {
+			if (TextRam[i] & 0x8000) System16RecalcFgAltTileMap = 1;
+		}
+	}
+	
+	if (System16RecalcBgAltTileMap) {
+		System16RecalcBgAltTileMap = 0;
+		for (i = 0xf80/2 + 1 * 0x40/2; i < 0xf80/2 + 1 * 0x40/2 + 224/8; i++) {
+			if (TextRam[i] & 0x8000) System16RecalcBgAltTileMap = 1;
+		}
+	}
+
+	if (System16RecalcBgTileMap) {
+		System16BCreateBgTileMaps();
+		System16RecalcBgTileMap = 0;
+	}
+	
+	if (System16RecalcBgAltTileMap) {
+		System16BCreateBgAltTileMaps();
+		System16RecalcBgAltTileMap = 0;
+	}
+	
+	if (System16RecalcFgTileMap) {
+		System16BCreateFgTileMaps();
+		System16RecalcFgTileMap = 0;
+	}
+	
+	if (System16RecalcFgAltTileMap) {
+		System16BCreateFgAltTileMaps();
+		System16RecalcFgAltTileMap = 0;
+	}
+}
+
+static void System16BAltCreateTileMaps()
+{
+	UINT16 *TextRam = (UINT16*)System16TextRam;
+	int i;
+	
+	// Check if we need the alt tilemaps
+	if (System16RecalcFgAltTileMap) {
+		System16RecalcFgAltTileMap = 0;
+		for (i = 0xf80/2 + 0 * 0x40/2; i < 0xf80/2 + 0 * 0x40/2 + 224/8; i++) {
+			if (TextRam[i] & 0x8000) System16RecalcFgAltTileMap = 1;
+		}
+	}
+	
+	if (System16RecalcBgAltTileMap) {
+		System16RecalcBgAltTileMap = 0;
+		for (i = 0xf80/2 + 1 * 0x40/2; i < 0xf80/2 + 1 * 0x40/2 + 224/8; i++) {
+			if (TextRam[i] & 0x8000) System16RecalcBgAltTileMap = 1;
+		}
+	}
+
+	if (System16RecalcBgTileMap) {
+		System16BAltCreateBgTileMaps();
+		System16RecalcBgTileMap = 0;
+	}
+	
+	if (System16RecalcBgAltTileMap) {
+		System16BAltCreateBgAltTileMaps();
+		System16RecalcBgAltTileMap = 0;
+	}
+	
+	if (System16RecalcFgTileMap) {
+		System16BAltCreateFgTileMaps();
+		System16RecalcFgTileMap = 0;
+	}
+	
+	if (System16RecalcFgAltTileMap) {
+		System16BAltCreateFgAltTileMaps();
+		System16RecalcFgAltTileMap = 0;
+	}
+}
+
+void System16ATileWordWrite(unsigned int Offset, unsigned short d)
+{
+	UINT16 *TileRam = (UINT16*)System16TileRam;
+	
+	unsigned int FgPage1Addr = (((System16Page[0] >> 0) & 0xf) * (32 * 64)) << 1;
+	unsigned int FgPage2Addr = (((System16Page[0] >> 4) & 0xf) * (32 * 64)) << 1;
+	unsigned int FgPage3Addr = (((System16Page[0] >> 8) & 0xf) * (32 * 64)) << 1;
+	unsigned int FgPage4Addr = (((System16Page[0] >> 12) & 0xf) * (32 * 64)) << 1;
+	
+	unsigned int BgPage1Addr = (((System16Page[1] >> 0) & 0xf) * (32 * 64)) << 1;
+	unsigned int BgPage2Addr = (((System16Page[1] >> 4) & 0xf) * (32 * 64)) << 1;
+	unsigned int BgPage3Addr = (((System16Page[1] >> 8) & 0xf) * (32 * 64)) << 1;
+	unsigned int BgPage4Addr = (((System16Page[1] >> 12) & 0xf) * (32 * 64)) << 1;
+	
+	if ((Offset >= FgPage1Addr && Offset <= (FgPage1Addr + 0xfff)) || (Offset >= FgPage2Addr && Offset <= (FgPage2Addr + 0xfff)) || (Offset >= FgPage3Addr && Offset <= (FgPage3Addr + 0xfff)) || (Offset >= FgPage4Addr && Offset <= (FgPage4Addr + 0xfff))) {
+		if (TileRam[Offset >> 1] != d) System16RecalcFgTileMap = 1;
+	}
+	
+	if ((Offset >= BgPage1Addr && Offset <= (BgPage1Addr + 0xfff)) || (Offset >= BgPage2Addr && Offset <= (BgPage2Addr + 0xfff)) || (Offset >= BgPage3Addr && Offset <= (BgPage3Addr + 0xfff)) || (Offset >= BgPage4Addr && Offset <= (BgPage4Addr + 0xfff))) {
+		if (TileRam[Offset >> 1] != d) System16RecalcBgTileMap = 1;
+	}
+	
+	TileRam[Offset >> 1] = d;
+}
+
+void System16ATileByteWrite(unsigned int Offset, unsigned char d)
+{
+	unsigned int FgPage1Addr = (((System16Page[0] >> 0) & 0xf) * (32 * 64)) << 1;
+	unsigned int FgPage2Addr = (((System16Page[0] >> 4) & 0xf) * (32 * 64)) << 1;
+	unsigned int FgPage3Addr = (((System16Page[0] >> 8) & 0xf) * (32 * 64)) << 1;
+	unsigned int FgPage4Addr = (((System16Page[0] >> 12) & 0xf) * (32 * 64)) << 1;
+	
+	unsigned int BgPage1Addr = (((System16Page[1] >> 0) & 0xf) * (32 * 64)) << 1;
+	unsigned int BgPage2Addr = (((System16Page[1] >> 4) & 0xf) * (32 * 64)) << 1;
+	unsigned int BgPage3Addr = (((System16Page[1] >> 8) & 0xf) * (32 * 64)) << 1;
+	unsigned int BgPage4Addr = (((System16Page[1] >> 12) & 0xf) * (32 * 64)) << 1;
+	
+	if ((Offset >= FgPage1Addr && Offset <= (FgPage1Addr + 0xfff)) || (Offset >= FgPage2Addr && Offset <= (FgPage2Addr + 0xfff)) || (Offset >= FgPage3Addr && Offset <= (FgPage3Addr + 0xfff)) || (Offset >= FgPage4Addr && Offset <= (FgPage4Addr + 0xfff))) {
+		if (System16TileRam[Offset] != d) System16RecalcFgTileMap = 1;
+	}
+	
+	if ((Offset >= BgPage1Addr && Offset <= (BgPage1Addr + 0xfff)) || (Offset >= BgPage2Addr && Offset <= (BgPage2Addr + 0xfff)) || (Offset >= BgPage3Addr && Offset <= (BgPage3Addr + 0xfff)) || (Offset >= BgPage4Addr && Offset <= (BgPage4Addr + 0xfff))) {
+		if (System16TileRam[Offset] != d) System16RecalcBgTileMap = 1;
+	}
+	
+	System16TileRam[Offset] = d;
+}
+
+void System16BTileWordWrite(unsigned int Offset, unsigned short d)
+{
+	UINT16 *TileRam = (UINT16*)System16TileRam;
+	
+	unsigned int FgPage1Addr = (((System16Page[0] >> 0) & 0xf) * (32 * 64)) << 1;
+	unsigned int FgPage2Addr = (((System16Page[0] >> 4) & 0xf) * (32 * 64)) << 1;
+	unsigned int FgPage3Addr = (((System16Page[0] >> 8) & 0xf) * (32 * 64)) << 1;
+	unsigned int FgPage4Addr = (((System16Page[0] >> 12) & 0xf) * (32 * 64)) << 1;
+	
+	unsigned int BgPage1Addr = (((System16Page[1] >> 0) & 0xf) * (32 * 64)) << 1;
+	unsigned int BgPage2Addr = (((System16Page[1] >> 4) & 0xf) * (32 * 64)) << 1;
+	unsigned int BgPage3Addr = (((System16Page[1] >> 8) & 0xf) * (32 * 64)) << 1;
+	unsigned int BgPage4Addr = (((System16Page[1] >> 12) & 0xf) * (32 * 64)) << 1;
+	
+	unsigned int FgAltPage1Addr = (((System16Page[2] >> 0) & 0xf) * (32 * 64)) << 1;
+	unsigned int FgAltPage2Addr = (((System16Page[2] >> 4) & 0xf) * (32 * 64)) << 1;
+	unsigned int FgAltPage3Addr = (((System16Page[2] >> 8) & 0xf) * (32 * 64)) << 1;
+	unsigned int FgAltPage4Addr = (((System16Page[2] >> 12) & 0xf) * (32 * 64)) << 1;
+	
+	unsigned int BgAltPage1Addr = (((System16Page[3] >> 0) & 0xf) * (32 * 64)) << 1;
+	unsigned int BgAltPage2Addr = (((System16Page[3] >> 4) & 0xf) * (32 * 64)) << 1;
+	unsigned int BgAltPage3Addr = (((System16Page[3] >> 8) & 0xf) * (32 * 64)) << 1;
+	unsigned int BgAltPage4Addr = (((System16Page[3] >> 12) & 0xf) * (32 * 64)) << 1;
+	
+	if ((Offset >= FgPage1Addr && Offset <= (FgPage1Addr + 0xfff)) || (Offset >= FgPage2Addr && Offset <= (FgPage2Addr + 0xfff)) || (Offset >= FgPage3Addr && Offset <= (FgPage3Addr + 0xfff)) || (Offset >= FgPage4Addr && Offset <= (FgPage4Addr + 0xfff))) {
+		if (TileRam[Offset >> 1] != d) System16RecalcFgTileMap = 1;
+	}
+	
+	if ((Offset >= BgPage1Addr && Offset <= (BgPage1Addr + 0xfff)) || (Offset >= BgPage2Addr && Offset <= (BgPage2Addr + 0xfff)) || (Offset >= BgPage3Addr && Offset <= (BgPage3Addr + 0xfff)) || (Offset >= BgPage4Addr && Offset <= (BgPage4Addr + 0xfff))) {
+		if (TileRam[Offset >> 1] != d) System16RecalcBgTileMap = 1;
+	}
+	
+	if ((Offset >= FgAltPage1Addr && Offset <= (FgAltPage1Addr + 0xfff)) || (Offset >= FgAltPage2Addr && Offset <= (FgAltPage2Addr + 0xfff)) || (Offset >= FgAltPage3Addr && Offset <= (FgAltPage3Addr + 0xfff)) || (Offset >= FgAltPage4Addr && Offset <= (FgAltPage4Addr + 0xfff))) {
+		if (TileRam[Offset >> 1] != d) System16RecalcFgAltTileMap = 1;
+	}
+	
+	if ((Offset >= BgAltPage1Addr && Offset <= (BgAltPage1Addr + 0xfff)) || (Offset >= BgAltPage2Addr && Offset <= (BgAltPage2Addr + 0xfff)) || (Offset >= BgAltPage3Addr && Offset <= (BgAltPage3Addr + 0xfff)) || (Offset >= BgAltPage4Addr && Offset <= (BgAltPage4Addr + 0xfff))) {
+		if (TileRam[Offset >> 1] != d) System16RecalcBgAltTileMap = 1;
+	}	
+	
+	TileRam[Offset >> 1] = d;
+}
+
+void System16BTileByteWrite(unsigned int Offset, unsigned char d)
+{
+	unsigned int FgPage1Addr = (((System16Page[0] >> 0) & 0xf) * (32 * 64)) << 1;
+	unsigned int FgPage2Addr = (((System16Page[0] >> 4) & 0xf) * (32 * 64)) << 1;
+	unsigned int FgPage3Addr = (((System16Page[0] >> 8) & 0xf) * (32 * 64)) << 1;
+	unsigned int FgPage4Addr = (((System16Page[0] >> 12) & 0xf) * (32 * 64)) << 1;
+	
+	unsigned int BgPage1Addr = (((System16Page[1] >> 0) & 0xf) * (32 * 64)) << 1;
+	unsigned int BgPage2Addr = (((System16Page[1] >> 4) & 0xf) * (32 * 64)) << 1;
+	unsigned int BgPage3Addr = (((System16Page[1] >> 8) & 0xf) * (32 * 64)) << 1;
+	unsigned int BgPage4Addr = (((System16Page[1] >> 12) & 0xf) * (32 * 64)) << 1;
+	
+	unsigned int FgAltPage1Addr = (((System16Page[2] >> 0) & 0xf) * (32 * 64)) << 1;
+	unsigned int FgAltPage2Addr = (((System16Page[2] >> 4) & 0xf) * (32 * 64)) << 1;
+	unsigned int FgAltPage3Addr = (((System16Page[2] >> 8) & 0xf) * (32 * 64)) << 1;
+	unsigned int FgAltPage4Addr = (((System16Page[2] >> 12) & 0xf) * (32 * 64)) << 1;
+	
+	unsigned int BgAltPage1Addr = (((System16Page[3] >> 0) & 0xf) * (32 * 64)) << 1;
+	unsigned int BgAltPage2Addr = (((System16Page[3] >> 4) & 0xf) * (32 * 64)) << 1;
+	unsigned int BgAltPage3Addr = (((System16Page[3] >> 8) & 0xf) * (32 * 64)) << 1;
+	unsigned int BgAltPage4Addr = (((System16Page[3] >> 12) & 0xf) * (32 * 64)) << 1;
+	
+	if ((Offset >= FgPage1Addr && Offset <= (FgPage1Addr + 0xfff)) || (Offset >= FgPage2Addr && Offset <= (FgPage2Addr + 0xfff)) || (Offset >= FgPage3Addr && Offset <= (FgPage3Addr + 0xfff)) || (Offset >= FgPage4Addr && Offset <= (FgPage4Addr + 0xfff))) {
+		if (System16TileRam[Offset] != d) System16RecalcFgTileMap = 1;
+	}
+	
+	if ((Offset >= BgPage1Addr && Offset <= (BgPage1Addr + 0xfff)) || (Offset >= BgPage2Addr && Offset <= (BgPage2Addr + 0xfff)) || (Offset >= BgPage3Addr && Offset <= (BgPage3Addr + 0xfff)) || (Offset >= BgPage4Addr && Offset <= (BgPage4Addr + 0xfff))) {
+		if (System16TileRam[Offset] != d) System16RecalcBgTileMap = 1;
+	}
+	
+	if ((Offset >= FgAltPage1Addr && Offset <= (FgAltPage1Addr + 0xfff)) || (Offset >= FgAltPage2Addr && Offset <= (FgAltPage2Addr + 0xfff)) || (Offset >= FgAltPage3Addr && Offset <= (FgAltPage3Addr + 0xfff)) || (Offset >= FgAltPage4Addr && Offset <= (FgAltPage4Addr + 0xfff))) {
+		if (System16TileRam[Offset] != d) System16RecalcFgAltTileMap = 1;
+	}
+	
+	if ((Offset >= BgAltPage1Addr && Offset <= (BgAltPage1Addr + 0xfff)) || (Offset >= BgAltPage2Addr && Offset <= (BgAltPage2Addr + 0xfff)) || (Offset >= BgAltPage3Addr && Offset <= (BgAltPage3Addr + 0xfff)) || (Offset >= BgAltPage4Addr && Offset <= (BgAltPage4Addr + 0xfff))) {
+		if (System16TileRam[Offset] != d) System16RecalcBgAltTileMap = 1;
+	}	
+	
+	System16TileRam[Offset] = d;
+}
+
+static void System16ARenderTileLayer(int Page, int PriorityDraw, int Transparent)
+{
+	int xScroll, yScroll, x, y;
+	UINT16 *TextRam = (UINT16*)System16TextRam;
+	
+	xScroll = System16ScrollX[Page];
+	yScroll = System16ScrollY[Page];
+	UINT16 Pix;
+	
+	unsigned short *pTileMapSrc = NULL;
+	unsigned short *pTileMapDest = NULL;
+	int xSrcOff, ySrcOff, RowScrollIndex, xEffScroll, yEffScroll;
+	
+	if (System16ColScroll && System16RowScroll) {
+		for (y = 0; y < nScreenHeight; y++) {
+			pTileMapDest = pTransDraw + (y * nScreenWidth);
+		
+			RowScrollIndex = y / 8;
+		
+			xEffScroll = TextRam[0xf80/2 + RowScrollIndex * 2 + Page] & 0x1ff;
+			
+			for (x = 0; x < nScreenWidth; x++) {
+				yEffScroll = TextRam[0xf30/2 + (x/16) * 2 + Page] & 0xff;
+		
+				ySrcOff = (y + yEffScroll) & 0x1ff;
+				if (Page == 0 && PriorityDraw == 0) pTileMapSrc = pSys16FgTileMapPri0 + (ySrcOff * 1024);
+				if (Page == 0 && PriorityDraw == 1) pTileMapSrc = pSys16FgTileMapPri1 + (ySrcOff * 1024);
+				if (Page == 1 && PriorityDraw == 0 && Transparent == 1) pTileMapSrc = pSys16BgTileMapPri0 + (ySrcOff * 1024);
+				if (Page == 1 && PriorityDraw == 1 && Transparent == 1) pTileMapSrc = pSys16BgTileMapPri1 + (ySrcOff * 1024);
+				if (Page == 1 && Transparent == 0) pTileMapSrc = pSys16BgTileMapOpaque + (ySrcOff * 1024);
+							
+				xSrcOff = (x - xEffScroll + 200) & 0x3ff;
+				Pix = pTileMapSrc[xSrcOff];
+
 				if (Transparent) {
-					if (x > 7 && x < 312 && y > 7 && y < 216) {
-						Render8x8Tile_Mask(pTransDraw, Code, x, y, Colour, 3, 0, ColourOff, System16Tiles);
-					} else {
-						Render8x8Tile_Mask_Clip(pTransDraw, Code, x, y, Colour, 3, 0, ColourOff, System16Tiles);
-					}
+					if (Pix) pTileMapDest[x] = Pix;
 				} else {
-					if (x > 7 && x < 312 && y > 7 && y < 216) {
-						Render8x8Tile(pTransDraw, Code, x, y, Colour, 3, ColourOff, System16Tiles);
+					pTileMapDest[x] = Pix;
+				}
+			}
+		}
+	} else {
+		if (System16ColScroll) {
+			for (y = 0; y < nScreenHeight; y++) {
+				pTileMapDest = pTransDraw + (y * nScreenWidth);
+				
+				xEffScroll = xScroll;
+		
+				for (x = 0; x < nScreenWidth; x++) {
+					yEffScroll = TextRam[0xf30/2 + (x/16) * 2 + Page] & 0xff;
+		
+					ySrcOff = (y + yEffScroll) & 0x1ff;
+					if (Page == 0 && PriorityDraw == 0) pTileMapSrc = pSys16FgTileMapPri0 + (ySrcOff * 1024);
+					if (Page == 0 && PriorityDraw == 1) pTileMapSrc = pSys16FgTileMapPri1 + (ySrcOff * 1024);
+					if (Page == 1 && PriorityDraw == 0 && Transparent == 1) pTileMapSrc = pSys16BgTileMapPri0 + (ySrcOff * 1024);
+					if (Page == 1 && PriorityDraw == 1 && Transparent == 1) pTileMapSrc = pSys16BgTileMapPri1 + (ySrcOff * 1024);
+					if (Page == 1 && Transparent == 0) pTileMapSrc = pSys16BgTileMapOpaque + (ySrcOff * 1024);
+							
+					xSrcOff = (x - xEffScroll + 200) & 0x3ff;
+					Pix = pTileMapSrc[xSrcOff];
+
+					if (Transparent) {
+						if (Pix) pTileMapDest[x] = Pix;
 					} else {
-						Render8x8Tile_Clip(pTransDraw, Code, x, y, Colour, 3, ColourOff, System16Tiles);
+						pTileMapDest[x] = Pix;
+					}
+				}
+			}
+		} else {
+			if (System16RowScroll) {
+				for (y = 0; y < nScreenHeight; y++) {
+					pTileMapDest = pTransDraw + (y * nScreenWidth);
+		
+					RowScrollIndex = y / 8;
+		
+					xEffScroll = TextRam[0xf80/2 + RowScrollIndex * 2 + Page] & 0x1ff;
+			
+					for (x = 0; x < nScreenWidth; x++) {
+						yEffScroll = yScroll;
+		
+						ySrcOff = (y + yEffScroll) & 0x1ff;
+						if (Page == 0 && PriorityDraw == 0) pTileMapSrc = pSys16FgTileMapPri0 + (ySrcOff * 1024);
+						if (Page == 0 && PriorityDraw == 1) pTileMapSrc = pSys16FgTileMapPri1 + (ySrcOff * 1024);
+						if (Page == 1 && PriorityDraw == 0 && Transparent == 1) pTileMapSrc = pSys16BgTileMapPri0 + (ySrcOff * 1024);
+						if (Page == 1 && PriorityDraw == 1 && Transparent == 1) pTileMapSrc = pSys16BgTileMapPri1 + (ySrcOff * 1024);
+						if (Page == 1 && Transparent == 0) pTileMapSrc = pSys16BgTileMapOpaque + (ySrcOff * 1024);
+							
+						xSrcOff = (x - xEffScroll + 200) & 0x3ff;
+						Pix = pTileMapSrc[xSrcOff];
+
+						if (Transparent) {
+							if (Pix) pTileMapDest[x] = Pix;
+						} else {
+							pTileMapDest[x] = Pix;
+						}
+					}
+				}	
+			} else {
+				for (y = 0; y < nScreenHeight; y++) {
+					pTileMapDest = pTransDraw + (y * nScreenWidth);
+			
+					ySrcOff = (y + yScroll) & 0x1ff;
+					if (Page == 0 && PriorityDraw == 0) pTileMapSrc = pSys16FgTileMapPri0 + (ySrcOff * 1024);
+					if (Page == 0 && PriorityDraw == 1) pTileMapSrc = pSys16FgTileMapPri1 + (ySrcOff * 1024);
+					if (Page == 1 && PriorityDraw == 0) pTileMapSrc = pSys16BgTileMapPri0 + (ySrcOff * 1024);
+					if (Page == 1 && PriorityDraw == 1) pTileMapSrc = pSys16BgTileMapPri1 + (ySrcOff * 1024);
+					if (Page == 1 && Transparent == 0) pTileMapSrc = pSys16BgTileMapOpaque + (ySrcOff * 1024);
+		
+					for (x = 0; x < nScreenWidth; x++) {	
+						xSrcOff = (x - xScroll + 200) & 0x3ff;
+						Pix = pTileMapSrc[xSrcOff];
+
+						if (Transparent) {
+							if (Pix) pTileMapDest[x] = Pix;
+						} else {
+							pTileMapDest[x] = Pix;
+						}
 					}
 				}
 			}
@@ -153,68 +1057,102 @@ static void System16ARenderTileLayer(int Page, int PriorityDraw, int Transparent
 
 static void System16BRenderTileLayer(int Page, int PriorityDraw, int Transparent)
 {
-	int mx, my, Code, Colour, x, y, Priority, TileIndex, ColourOff;
+	int xScroll, yScroll, x, y;
+	UINT16 *TextRam = (UINT16*)System16TextRam;
 	
-	UINT16 EffPage, ActPage = 0, xScroll, yScroll;
-	
-	EffPage = System16Page[Page];
 	xScroll = System16ScrollX[Page];
 	yScroll = System16ScrollY[Page];
+	UINT16 Pix;
 	
-	// Need to support this at each row/column
-	if (xScroll & 0x8000) xScroll = (System16TextRam[0xf80 + (0x40 * Page) + 1] << 8) | System16TextRam[0xf80 + (0x40 * Page) + 0];
-	if (yScroll & 0x8000) yScroll = (System16TextRam[0xf16 + (0x40 * Page) + 1] << 8) | System16TextRam[0xf16 + (0x40 * Page) + 0];
+	unsigned short *pTileMapSrc = NULL;
+	unsigned short *pTileMapDest = NULL;
+	int xSrcOff, ySrcOff, RowScrollIndex, RowScroll, xEffScroll, yEffScroll;
 	
-	for (my = 0; my < 64; my++) {
-		for (mx = 0; mx < 128; mx++) {
-			if (my < 32 && mx < 64) ActPage = (EffPage >> 0) & 0x0f;
-			if (my < 32 && mx >= 64) ActPage = (EffPage >> 4) & 0x0f;
-			if (my >= 32 && mx < 64) ActPage = (EffPage >> 8) & 0x0f;
-			if (my >= 32 && mx >= 64) ActPage = (EffPage >> 12) & 0x0f;			
-			TileIndex = 64 * 32 * 2 * ActPage + ((2 * 64 * my) & 0xfff) + ((2 * mx) & 0x7f);
-			int Data = (System16TileRam[TileIndex + 1] << 8) | System16TileRam[TileIndex + 0];
+	if (yScroll & 0x8000) {
+		for (y = 0; y < nScreenHeight; y++) {
+			pTileMapDest = pTransDraw + (y * nScreenWidth);
+		
+			RowScrollIndex = y / 8;
+		
+			RowScroll = TextRam[0xf80/2 + 0x40/2 * Page + RowScrollIndex];
+			xEffScroll = (xScroll & 0x8000) ? RowScroll : xScroll;
 			
-			Priority = (Data >> 15) & 1;
-			
-			if (Priority == PriorityDraw) {
-				Code = Data & 0x1fff;
-				Code = System16TileBanks[Code / 0x1000] * 0x1000 + Code % 0x1000;
-				Code &= (System16NumTiles - 1);
-				Colour = (Data >> 6) & 0x7f;
-			
-				x = 8 * mx;
-				y = 8 * my;
-				
-				x -= (192 - xScroll) & 0x3ff;
-				y -= yScroll & 0x1ff;
-				
-				if (x < -192) x += 1024;
-				if (y < -288) y += 512;
-				
-				ColourOff = System16TilemapColorOffset;
-				if (Colour >= 0x20) ColourOff = 0x100 | System16TilemapColorOffset;
-				if (Colour >= 0x40) ColourOff = 0x200 | System16TilemapColorOffset;
-				if (Colour >= 0x60) ColourOff = 0x300 | System16TilemapColorOffset;
-			
-				if (Transparent) {
-					if (x > 7 && x < 312 && y > 7 && y < 216) {
-						Render8x8Tile_Mask(pTransDraw, Code, x, y, Colour, 3, 0, ColourOff, System16Tiles);
-					} else {
-						Render8x8Tile_Mask_Clip(pTransDraw, Code, x, y, Colour, 3, 0, ColourOff, System16Tiles);
-					}
+			for (x = 0; x < nScreenWidth; x++) {
+				yEffScroll = TextRam[0xf16/2 + 0x40/2 * Page + (x+9)/16];
+		
+				if (RowScroll & 0x8000) {
+					xEffScroll = System16ScrollX[Page + 2];
+					yEffScroll = System16ScrollY[Page + 2];
+					
+					ySrcOff = (y + yEffScroll) & 0x1ff;	
+					if (Page == 0 && PriorityDraw == 0) pTileMapSrc = pSys16FgAltTileMapPri0 + (ySrcOff * 1024);
+					if (Page == 0 && PriorityDraw == 1) pTileMapSrc = pSys16FgAltTileMapPri1 + (ySrcOff * 1024);
+					if (Page == 1 && PriorityDraw == 0) pTileMapSrc = pSys16BgAltTileMapPri0 + (ySrcOff * 1024);
+					if (Page == 1 && PriorityDraw == 1) pTileMapSrc = pSys16BgAltTileMapPri1 + (ySrcOff * 1024);
+					if (Page == 1 && Transparent == 0) pTileMapSrc = pSys16BgAltTileMapOpaque + (ySrcOff * 1024);
 				} else {
-					if (x > 7 && x < 312 && y > 7 && y < 216) {
-						Render8x8Tile(pTransDraw, Code, x, y, Colour, 3, ColourOff, System16Tiles);
-					} else {
-						Render8x8Tile_Clip(pTransDraw, Code, x, y, Colour, 3, ColourOff, System16Tiles);
-					}
+					ySrcOff = (y + yEffScroll) & 0x1ff;	
+					if (Page == 0 && PriorityDraw == 0) pTileMapSrc = pSys16FgTileMapPri0 + (ySrcOff * 1024);
+					if (Page == 0 && PriorityDraw == 1) pTileMapSrc = pSys16FgTileMapPri1 + (ySrcOff * 1024);
+					if (Page == 1 && PriorityDraw == 0 && Transparent == 1) pTileMapSrc = pSys16BgTileMapPri0 + (ySrcOff * 1024);
+					if (Page == 1 && PriorityDraw == 1 && Transparent == 1) pTileMapSrc = pSys16BgTileMapPri1 + (ySrcOff * 1024);
+					if (Page == 1 && Transparent == 0) pTileMapSrc = pSys16BgTileMapOpaque + (ySrcOff * 1024);
+				}
+							
+				xSrcOff = (x - xEffScroll + 192) & 0x3ff;
+				Pix = pTileMapSrc[xSrcOff];
+
+				if (Transparent) {
+					if (Pix) pTileMapDest[x] = Pix;
+				} else {
+					pTileMapDest[x] = Pix;
+				}
+			}
+		}
+	} else {
+		for (y = 0; y < nScreenHeight; y++) {
+			pTileMapDest = pTransDraw + (y * nScreenWidth);
+		
+			RowScrollIndex = y / 8;
+		
+			RowScroll = TextRam[0xf80/2 + 0x40/2 * Page + RowScrollIndex];
+			xEffScroll = (xScroll & 0x8000) ? RowScroll : xScroll;
+			yEffScroll = yScroll;
+		
+			if (RowScroll & 0x8000) {
+				xEffScroll = System16ScrollX[Page + 2];
+				yEffScroll = System16ScrollY[Page + 2];
+				
+				ySrcOff = (y + yEffScroll) & 0x1ff;	
+				if (Page == 0 && PriorityDraw == 0) pTileMapSrc = pSys16FgAltTileMapPri0 + (ySrcOff * 1024);
+				if (Page == 0 && PriorityDraw == 1) pTileMapSrc = pSys16FgAltTileMapPri1 + (ySrcOff * 1024);
+				if (Page == 1 && PriorityDraw == 0) pTileMapSrc = pSys16BgAltTileMapPri0 + (ySrcOff * 1024);
+				if (Page == 1 && PriorityDraw == 1) pTileMapSrc = pSys16BgAltTileMapPri1 + (ySrcOff * 1024);
+				if (Page == 1 && Transparent == 0) pTileMapSrc = pSys16BgAltTileMapOpaque + (ySrcOff * 1024);
+			} else {
+				ySrcOff = (y + yEffScroll) & 0x1ff;		
+				if (Page == 0 && PriorityDraw == 0) pTileMapSrc = pSys16FgTileMapPri0 + (ySrcOff * 1024);
+				if (Page == 0 && PriorityDraw == 1) pTileMapSrc = pSys16FgTileMapPri1 + (ySrcOff * 1024);
+				if (Page == 1 && PriorityDraw == 0) pTileMapSrc = pSys16BgTileMapPri0 + (ySrcOff * 1024);
+				if (Page == 1 && PriorityDraw == 1) pTileMapSrc = pSys16BgTileMapPri1 + (ySrcOff * 1024);
+				if (Page == 1 && Transparent == 0) pTileMapSrc = pSys16BgTileMapOpaque + (ySrcOff * 1024);
+			}
+		
+			for (x = 0; x < nScreenWidth; x++) {
+				xSrcOff = (x - xEffScroll + 192) & 0x3ff;
+				Pix = pTileMapSrc[xSrcOff];
+
+				if (Transparent) {
+					if (Pix) pTileMapDest[x] = Pix;
+				} else {
+					pTileMapDest[x] = Pix;
 				}
 			}
 		}
 	}
 }
 
-static void System16BAltRenderTileLayer(int Page, int PriorityDraw, int Transparent)
+static void BootlegRenderTileLayer(int Page, int PriorityDraw, int Transparent)
 {
 	int mx, my, Code, Colour, x, y, Priority, TileIndex, ColourOff;
 	
@@ -224,52 +1162,205 @@ static void System16BAltRenderTileLayer(int Page, int PriorityDraw, int Transpar
 	xScroll = System16ScrollX[Page];
 	yScroll = System16ScrollY[Page];
 	
-	// Need to support this at each row/column
-	if (xScroll & 0x8000) xScroll = (System16TextRam[0xf80 + (0x40 * Page) + 1] << 8) | System16TextRam[0xf80 + (0x40 * Page) + 0];
-	if (yScroll & 0x8000) yScroll = (System16TextRam[0xf16 + (0x40 * Page) + 1] << 8) | System16TextRam[0xf16 + (0x40 * Page) + 0];
+	int yStartPosArray[28 * 21];
 	
-	for (my = 0; my < 64; my++) {
-		for (mx = 0; mx < 128; mx++) {
-			if (my < 32 && mx < 64) ActPage = (EffPage >> 0) & 0x0f;
-			if (my < 32 && mx >= 64) ActPage = (EffPage >> 4) & 0x0f;
-			if (my >= 32 && mx < 64) ActPage = (EffPage >> 8) & 0x0f;
-			if (my >= 32 && mx >= 64) ActPage = (EffPage >> 12) & 0x0f;
-			TileIndex = 64 * 32 * 2 * ActPage + ((2 * 64 * my) & 0xfff) + ((2 * mx) & 0x7f);
-			int Data = (System16TileRam[TileIndex + 1] << 8) | System16TileRam[TileIndex + 0];
+	float yPos = float(yScroll % 8);
+	int yStartPos = int(yPos) * -1;
+
+	if (yScroll & 0x8000) {
+		for (y = 0; y < 224; y += 8) {
+			for (x = -8; x < 320; x += 16) {
+				int yColScrollTemp = (System16TextRam[0xf16 + (0x40 * Page) +  (2 * (x + 8) / 16) + 1] << 8) | System16TextRam[0xf16 + (0x40 * Page) +  (2 * (x + 8) / 16) + 0];
+				float yTempPos = float(yColScrollTemp % 8);
+				int yTempStartPos = int(yTempPos) * -1;
+				yStartPosArray[(y / 8) + (28 * ((x + 8) / 16))] = yTempStartPos + y;
+			}
+		}
+		
+		for (int ny = 0; ny < 28; ny++) {
+			int RowScrollIndex = ny;
 			
-			Priority = (Data >> 15) & 1;
+			int RowScroll = (System16TextRam[0xf80 + (0x40 * Page) +  (2 * RowScrollIndex) + 1] << 8) | System16TextRam[0xf80 + (0x40 * Page) +  (2 * RowScrollIndex) + 0];
 			
-			if (Priority == PriorityDraw) {
-				Code = Data & 0x1fff;
-				Code = System16TileBanks[Code / 0x1000] * 0x1000 + Code % 0x1000;
-				Code &= (System16NumTiles - 1);
-				Colour = (Data >> 5) & 0x7f;
-						
-				x = 8 * mx;
-				y = 8 * my;
-				
-				x -= (192 - xScroll) & 0x3ff;
-				y -= yScroll & 0x1ff;
-				
-				if (x < -192) x += 1024;
-				if (y < -288) y += 512;
-				
-				ColourOff = System16TilemapColorOffset;
-				if (Colour >= 0x20) ColourOff = 0x100 | System16TilemapColorOffset;
-				if (Colour >= 0x40) ColourOff = 0x200 | System16TilemapColorOffset;
-				if (Colour >= 0x60) ColourOff = 0x300 | System16TilemapColorOffset;
+			int xScrollRow = ((xScroll & 0x8000) ? RowScroll : xScroll);
 			
-				if (Transparent) {
-					if (x > 7 && x < 312 && y > 7 && y < 216) {
-						Render8x8Tile_Mask(pTransDraw, Code, x, y, Colour, 3, 0, ColourOff, System16Tiles);
+			int yScrollCol;
+			
+			if (RowScroll & 0x8000) {
+				EffPage = System16Page[Page + 2];
+				xScrollRow = System16ScrollX[Page + 2];
+				yScrollCol = System16ScrollY[Page + 2];
+			}
+				
+			float xPos = float(xScrollRow % 8);
+			int xStartPos = (int)xPos;
+			
+			if (xStartPos == 1) xStartPos = -7;
+			if (xStartPos == 2) xStartPos = -6;
+			if (xStartPos == 3) xStartPos = -5;
+			if (xStartPos == 4) xStartPos = -4;
+			if (xStartPos == 5) xStartPos = -3;
+			if (xStartPos == 6) xStartPos = -2;
+			if (xStartPos == 7) xStartPos = -1;
+			if (xStartPos == 0) xStartPos = 0;
+			
+			for (x = -8; x < 320; x += 16) {
+				int x2 = xStartPos + x;
+				
+				yScrollCol = (System16TextRam[0xf16 + (0x40 * Page) +  (2 * (x + 8) / 16) + 1] << 8) | System16TextRam[0xf16 + (0x40 * Page) +  (2 * (x + 8) / 16) + 0];
+				
+				my = ((ny * 8) + (yScrollCol & 0x1ff)) / 8;
+		
+				if (my > 63) my -= 64;
+	
+				y = yStartPosArray[ny + (28 * ((x + 8) / 16))];
+					
+				mx = (x2 - (xScrollRow & 0x3ff) + 192) / 8;
+				if (mx < 0) mx += 128;
+				if (Page == 1) {
+					if (my < 32 && mx < 64) ActPage = BootlegBgPage[0];
+					if (my < 32 && mx >= 64) ActPage = BootlegBgPage[1];
+					if (my >= 32 && mx < 64) ActPage = BootlegBgPage[2];
+					if (my >= 32 && mx >= 64) ActPage = BootlegBgPage[3];
+				}
+				if (Page == 0) {
+					if (my < 32 && mx < 64) ActPage = BootlegFgPage[0];
+					if (my < 32 && mx >= 64) ActPage = BootlegFgPage[1];
+					if (my >= 32 && mx < 64) ActPage = BootlegFgPage[2];
+					if (my >= 32 && mx >= 64) ActPage = BootlegFgPage[3];
+				}
+				
+				TileIndex = 64 * 32 * 2 * ActPage + ((2 * 64 * my) & 0xfff) + ((2 * mx) & 0x7f);
+				int Data = (System16TileRam[TileIndex + 1] << 8) | System16TileRam[TileIndex + 0];
+				int Data2 = (System16TileRam[TileIndex + 3] << 8) | System16TileRam[TileIndex + 2];
+				
+				Priority = (Data >> 15) & 1;
+				
+				if (Priority == PriorityDraw) {
+					Code = Data & 0x1fff;
+					Code = System16TileBanks[Code / System16TileBankSize] * System16TileBankSize + Code % System16TileBankSize;
+					Code &= (System16NumTiles - 1);
+					Colour = (Data >> 6) & 0x7f;
+			
+					ColourOff = System16TilemapColorOffset;
+					if (Colour >= 0x20) ColourOff = 0x100 | System16TilemapColorOffset;
+					if (Colour >= 0x40) ColourOff = 0x200 | System16TilemapColorOffset;
+					if (Colour >= 0x60) ColourOff = 0x300 | System16TilemapColorOffset;
+			
+					if (Transparent) {
+						if (x2 > 7 && x2 < 312 && y > 7 && y < 216) {
+							Render8x8Tile_Mask(pTransDraw, Code, x2, y, Colour, 3, 0, ColourOff, System16Tiles);
+						} else {
+							Render8x8Tile_Mask_Clip(pTransDraw, Code, x2, y, Colour, 3, 0, ColourOff, System16Tiles);
+						}
 					} else {
-						Render8x8Tile_Mask_Clip(pTransDraw, Code, x, y, Colour, 3, 0, ColourOff, System16Tiles);
+						if (x2 > 7 && x2 < 312 && y > 7 && y < 216) {
+							Render8x8Tile(pTransDraw, Code, x2, y, Colour, 3, ColourOff, System16Tiles);
+						} else {
+							Render8x8Tile_Clip(pTransDraw, Code, x2, y, Colour, 3, ColourOff, System16Tiles);
+						}
 					}
-				} else {
-					if (x > 7 && x < 312 && y > 7 && y < 216) {
-						Render8x8Tile(pTransDraw, Code, x, y, Colour, 3, ColourOff, System16Tiles);
+					
+					Code = Data2 & 0x1fff;
+					Code = System16TileBanks[Code / System16TileBankSize] * System16TileBankSize + Code % System16TileBankSize;
+					Code &= (System16NumTiles - 1);
+					Colour = (Data2 >> 6) & 0x7f;
+			
+					ColourOff = System16TilemapColorOffset;
+					if (Colour >= 0x20) ColourOff = 0x100 | System16TilemapColorOffset;
+					if (Colour >= 0x40) ColourOff = 0x200 | System16TilemapColorOffset;
+					if (Colour >= 0x60) ColourOff = 0x300 | System16TilemapColorOffset;
+					
+					int x1 = x2 + 8;
+					
+					if (Transparent) {
+						if (x1 > 7 && x1 < 312 && y > 7 && y < 216) {
+							Render8x8Tile_Mask(pTransDraw, Code, x1, y, Colour, 3, 0, ColourOff, System16Tiles);
+						} else {
+							Render8x8Tile_Mask_Clip(pTransDraw, Code, x1, y, Colour, 3, 0, ColourOff, System16Tiles);
+						}
 					} else {
-						Render8x8Tile_Clip(pTransDraw, Code, x, y, Colour, 3, ColourOff, System16Tiles);
+						if (x1 > 7 && x1 < 312 && y > 7 && y < 216) {
+							Render8x8Tile(pTransDraw, Code, x1, y, Colour, 3, ColourOff, System16Tiles);
+						} else {
+							Render8x8Tile_Clip(pTransDraw, Code, x1, y, Colour, 3, ColourOff, System16Tiles);
+						}
+					}
+				}
+			}
+		}		
+	} else {
+		for (y = yStartPos; y < 224; y += 8) {
+			int RowScrollIndex = y / 8;
+			int RowScroll = (System16TextRam[0xf80 + (0x40 * Page) +  (2 * RowScrollIndex) + 1] << 8) | System16TextRam[0xf80 + (0x40 * Page) +  (2 * RowScrollIndex) + 0];
+		
+			int xScrollRow = ((xScroll & 0x8000) ? RowScroll : xScroll);
+		
+			if (RowScroll & 0x8000) {
+				EffPage = System16Page[Page + 2];
+				xScrollRow = System16ScrollX[Page + 2];
+				yScroll = System16ScrollY[Page + 2];
+			}
+		
+			float xPos = float(xScrollRow % 8);
+			int xStartPos = (int)xPos;
+		
+			if (xStartPos == 1) xStartPos = -7;
+			if (xStartPos == 2) xStartPos = -6;
+			if (xStartPos == 3) xStartPos = -5;
+			if (xStartPos == 4) xStartPos = -4;
+			if (xStartPos == 5) xStartPos = -3;
+			if (xStartPos == 6) xStartPos = -2;
+			if (xStartPos == 7) xStartPos = -1;
+			
+			my = (y + (yScroll & 0x1ff)) / 8;
+			
+			if (my > 63) my -= 64;
+		
+			for (x = xStartPos; x < 320; x += 8) {
+				mx = (x - (xScrollRow & 0x3ff) + 192) / 8;
+				if (mx < 0) mx += 128;
+				if (Page == 1) {
+					if (my < 32 && mx < 64) ActPage = BootlegBgPage[0];
+					if (my < 32 && mx >= 64) ActPage = BootlegBgPage[1];
+					if (my >= 32 && mx < 64) ActPage = BootlegBgPage[2];
+					if (my >= 32 && mx >= 64) ActPage = BootlegBgPage[3];
+				}
+				if (Page == 0) {
+					if (my < 32 && mx < 64) ActPage = BootlegFgPage[0];
+					if (my < 32 && mx >= 64) ActPage = BootlegFgPage[1];
+					if (my >= 32 && mx < 64) ActPage = BootlegFgPage[2];
+					if (my >= 32 && mx >= 64) ActPage = BootlegFgPage[3];
+				}
+				
+				TileIndex = 64 * 32 * 2 * ActPage + ((2 * 64 * my) & 0xfff) + ((2 * mx) & 0x7f);
+				int Data = (System16TileRam[TileIndex + 1] << 8) | System16TileRam[TileIndex + 0];
+			
+				Priority = (Data >> 15) & 1;
+			
+				if (Priority == PriorityDraw) {
+					Code = Data & 0x1fff;
+					Code = System16TileBanks[Code / System16TileBankSize] * System16TileBankSize + Code % System16TileBankSize;
+					Code &= (System16NumTiles - 1);
+					Colour = (Data >> 6) & 0x7f;
+			
+					ColourOff = System16TilemapColorOffset;
+					if (Colour >= 0x20) ColourOff = 0x100 | System16TilemapColorOffset;
+					if (Colour >= 0x40) ColourOff = 0x200 | System16TilemapColorOffset;
+					if (Colour >= 0x60) ColourOff = 0x300 | System16TilemapColorOffset;
+			
+					if (Transparent) {
+						if (x > 7 && x < 312 && y > 7 && y < 216) {
+							Render8x8Tile_Mask(pTransDraw, Code, x, y, Colour, 3, 0, ColourOff, System16Tiles);
+						} else {
+							Render8x8Tile_Mask_Clip(pTransDraw, Code, x, y, Colour, 3, 0, ColourOff, System16Tiles);
+						}
+					} else {
+						if (x > 7 && x < 312 && y > 7 && y < 216) {
+							Render8x8Tile(pTransDraw, Code, x, y, Colour, 3, ColourOff, System16Tiles);
+						} else {
+							Render8x8Tile_Clip(pTransDraw, Code, x, y, Colour, 3, ColourOff, System16Tiles);
+						}
 					}
 				}
 			}
@@ -303,7 +1394,7 @@ static void System16ARenderTextLayer(int PriorityDraw)
 				}
 			}
 
-			TileIndex +=2 ;
+			TileIndex +=2;
 		}
 	}
 }
@@ -382,6 +1473,7 @@ Sprite Rendering
 
 inline static void System16DrawPixel(int x, int pix, int colour, unsigned short* pPixel)
 {
+	x += System16SpriteXOffset;
 	if (x >= 0 && x <= 319 && pix != 0 && pix != 15) {
 		if (colour == (0x3f << 4)) {
 			pPixel[x] &= (System16PaletteEntries - 1);
@@ -565,7 +1657,7 @@ static void System16BRenderSpriteLayer(int Priority)
 					addr += pitch;
 					data[5] &= ~0x8000;
 				}
-
+				
 				/* skip drawing if not within the cliprect */
 				if (y >= 0 && y <= 223) {
 					unsigned short* pPixel = pTransDraw + (y * 320);
@@ -1746,9 +2838,9 @@ static void HangonRenderRoadLayer(int priority)
 	}
 }
 
-
-
-
+/*====================================================
+Rotation Layer Rendering
+====================================================*/
 
 void System16RotateDraw()
 {
@@ -1803,6 +2895,37 @@ void System16RotateDraw()
 	}
 }
 
+/*====================================================
+Genesis VDP Rendering
+====================================================*/
+
+static void System18DrawVDP()
+{
+	int x, y;
+
+	for (y = 0; y < 224; y++)
+	{
+		UINT16 *src = pTempDraw + (y * 320);
+		UINT16 *dst = pTransDraw + (y * 320);
+
+		for (x = 0; x < 320; x++)
+		{
+			UINT16 pix = src[x];
+			if (pix != 0xffff)
+			{
+				dst[x] = pix;
+			}
+		}
+	}
+}
+
+void UpdateSystem18VDP()
+{
+	for (int y = 0; y < 224; y++) {
+		unsigned short* pPixel = pTempDraw + (y * 320);
+		vdp_drawline(pPixel, y, 0xffff);
+	}
+}
 
 /*====================================================
 Palette Generation
@@ -1846,6 +2969,27 @@ inline static int System16CalcPalette()
 Frame Rendering
 ====================================================*/
 
+inline static void System16AUpdateTileValues()
+{
+	UINT16 *TextRam = (UINT16*)System16TextRam;
+	int i;
+	
+	for (i = 0; i < 2; i++) {
+		System16OldPage[i] = System16Page[i];
+		System16Page[i] = (System16ScreenFlip) ? TextRam[0xe8e/2 - i] : TextRam[0xe9e/2 - i];
+		System16ScrollX[i] = TextRam[0xff8/2 + i] & 0x1ff;
+		System16ScrollY[i] = TextRam[0xf24/2 + i] & 0x0ff;
+	}
+	
+	if (System16OldPage[0] != System16Page[0]) {
+		System16RecalcFgTileMap = 1;
+	}
+	
+	if (System16OldPage[1] != System16Page[1]) {
+		System16RecalcBgTileMap = 1;
+	}
+}
+
 void System16ARender()
 {
 	if (!System16VideoEnable) {
@@ -1853,9 +2997,11 @@ void System16ARender()
 		return;
 	}
 	
+	System16AUpdateTileValues();
+	System16ACreateTileMaps();
+	
 	System16CalcPalette();
 	System16ARenderTileLayer(1, 0, 0);
-	System16ARenderTileLayer(1, 1, 0);
 	System16ARenderSpriteLayer(1);
 	System16ARenderTileLayer(1, 0, 1);
 	System16ARenderSpriteLayer(2);
@@ -1869,12 +3015,54 @@ void System16ARender()
 	BurnTransferCopy(System16Palette);
 }
 
+void System16BootlegRender()
+{
+	if (!System16VideoEnable) {
+		BurnTransferClear();
+		return;
+	}
+	
+	System16CalcPalette();
+	BootlegRenderTileLayer(1, 0, 0);
+	BootlegRenderTileLayer(1, 1, 0);
+	System16BRenderSpriteLayer(1);
+	BootlegRenderTileLayer(1, 0, 1);
+	System16BRenderSpriteLayer(2);
+	BootlegRenderTileLayer(1, 1, 1);
+	BootlegRenderTileLayer(0, 0, 1);
+	System16BRenderSpriteLayer(4);
+	BootlegRenderTileLayer(0, 1, 1);
+	System16BRenderTextLayer(0);
+	System16BRenderSpriteLayer(8);
+	System16BRenderTextLayer(1);
+	BurnTransferCopy(System16Palette);
+}
+
 inline static void System16BUpdateTileValues()
 {
+	UINT16 *TextRam = (UINT16*)System16TextRam;
+	
 	for (int i = 0; i < 4; i++) {
-		System16Page[i] = ((System16TextRam[0xe80 + (i * 2) + 1] << 8) | System16TextRam[0xe80 + (i * 2) + 0]);
-		System16ScrollX[i] = ((System16TextRam[0xe98 + (i * 2) + 1] << 8) | System16TextRam[0xe98 + (i * 2) + 0]);
-		System16ScrollY[i] = ((System16TextRam[0xe90 + (i * 2) + 1] << 8) | System16TextRam[0xe90 + (i * 2) + 0]);
+		System16OldPage[i] = System16Page[i];
+		System16Page[i] = TextRam[(0xe80 >> 1) + i];
+		System16ScrollX[i] = TextRam[(0xe98 >> 1) + i];
+		System16ScrollY[i] = TextRam[(0xe90 >> 1) + i];
+	}
+	
+	if (System16OldPage[0] != System16Page[0]) {
+		System16RecalcFgTileMap = 1;
+	}
+	
+	if (System16OldPage[1] != System16Page[1]) {
+		System16RecalcBgTileMap = 1;
+	}
+	
+	if (System16OldPage[2] != System16Page[2]) {
+		System16RecalcFgAltTileMap = 1;
+	}
+	
+	if (System16OldPage[3] != System16Page[3]) {
+		System16RecalcBgAltTileMap = 1;
 	}
 }
 
@@ -1884,12 +3072,12 @@ void System16BRender()
 		BurnTransferClear();
 		return;
 	}
-
-	System16BUpdateTileValues();
 	
-	System16CalcPalette();
+	System16BUpdateTileValues();
+	System16BCreateTileMaps();
+	
+	System16CalcPalette();	
 	System16BRenderTileLayer(1, 0, 0);
-	System16BRenderTileLayer(1, 1, 0);
 	System16BRenderSpriteLayer(1);
 	System16BRenderTileLayer(1, 0, 1);
 	System16BRenderSpriteLayer(2);
@@ -1911,21 +3099,64 @@ void System16BAltRender()
 	}
 
 	System16BUpdateTileValues();
+	System16BAltCreateTileMaps();
 	
 	System16CalcPalette();
-	System16BAltRenderTileLayer(1, 0, 0);
-	System16BAltRenderTileLayer(1, 1, 0);
+	System16BRenderTileLayer(1, 0, 0);
 	System16BRenderSpriteLayer(1);
-	System16BAltRenderTileLayer(1, 0, 1);
+	System16BRenderTileLayer(1, 0, 1);
 	System16BRenderSpriteLayer(2);
-	System16BAltRenderTileLayer(1, 1, 1);
-	System16BAltRenderTileLayer(0, 0, 1);
+	System16BRenderTileLayer(1, 1, 1);
+	System16BRenderTileLayer(0, 0, 1);
 	System16BRenderSpriteLayer(4);
-	System16BAltRenderTileLayer(0, 1, 1);
+	System16BRenderTileLayer(0, 1, 1);
 	System16BAltRenderTextLayer(0);
 	System16BRenderSpriteLayer(8);
 	System16BAltRenderTextLayer(1);
 	BurnTransferCopy(System16Palette);
+}
+
+void System18Render()
+{
+	if (!System16VideoEnable) {
+		BurnTransferClear();
+		return;
+	}
+	
+	int VDPLayer = (System18VdpMixing >> 1) & 3;
+	int VDPPri = (System18VdpMixing & 1) ? (1 << VDPLayer) : 0;
+	
+	System16BUpdateTileValues();
+	System16BCreateTileMaps();
+	
+	System16CalcPalette();
+	
+	if (System18VdpEnable) UpdateSystem18VDP();
+	
+	System16BRenderTileLayer(1, 0, 0);
+	if (System18VdpEnable && VDPLayer == 0 && !VDPPri) System18DrawVDP();
+	System16BRenderSpriteLayer(1);
+	if (System18VdpEnable && VDPLayer == 0 && VDPPri) System18DrawVDP();
+	System16BRenderTileLayer(1, 0, 1);
+	if (System18VdpEnable && VDPLayer == 1 && !VDPPri) System18DrawVDP();
+	System16BRenderSpriteLayer(2);
+	if (System18VdpEnable && VDPLayer == 1 && VDPPri) System18DrawVDP();
+	System16BRenderTileLayer(1, 1, 1);
+	System16BRenderTileLayer(0, 0, 1);
+	if (System18VdpEnable && VDPLayer == 2 && !VDPPri) System18DrawVDP();
+	System16BRenderSpriteLayer(4);
+	if (System18VdpEnable && VDPLayer == 2 && VDPPri) System18DrawVDP();
+	System16BRenderTileLayer(0, 1, 1);
+	System16BRenderTextLayer(0);
+	if (System18VdpEnable && VDPLayer == 3 && !VDPPri) System18DrawVDP();
+	System16BRenderSpriteLayer(8);
+	if (System18VdpEnable && VDPLayer == 3 && VDPPri) System18DrawVDP();
+	System16BRenderTextLayer(1);
+	BurnTransferCopy(System16Palette);
+
+	for (int i = 0; i < nBurnGunNumPlayers; i++) {
+		BurnGunDrawTarget(i, BurnGunX[i] >> 8, BurnGunY[i] >> 8);
+	}
 }
 
 void HangonRender()
@@ -1936,6 +3167,9 @@ void HangonRender()
 	}
 	
 	System16CalcPalette();
+	
+	System16AUpdateTileValues();
+	System16ACreateTileMaps();
 	
 	HangonRenderRoadLayer(0);
 	HangonRenderSpriteLayer(1);
@@ -1961,6 +3195,9 @@ void HangonAltRender()
 	
 	System16CalcPalette();
 	
+	System16AUpdateTileValues();
+	System16ACreateTileMaps();
+	
 	HangonRenderRoadLayer(0);
 	HangonAltRenderSpriteLayer(1);
 	System16ARenderTileLayer(1, 0, 1);
@@ -1984,6 +3221,7 @@ void OutrunRender()
 	}
 
 	System16BUpdateTileValues();
+	System16BCreateTileMaps();
 	
 	System16CalcPalette();
 	OutrunRenderRoadBackgroundLayer();
@@ -2009,101 +3247,23 @@ void ShangonRender()
 	}
 
 	System16BUpdateTileValues();
+	System16BAltCreateTileMaps();
 	
 	System16CalcPalette();
 	OutrunRenderRoadBackgroundLayer();
 	System16BRenderSpriteLayer(1);
-	System16BAltRenderTileLayer(1, 0, 1);
+	System16BRenderTileLayer(1, 0, 1);
 	System16BRenderSpriteLayer(2);
-	System16BAltRenderTileLayer(1, 1, 1);
-	System16BAltRenderTileLayer(0, 0, 1);
+	System16BRenderTileLayer(1, 1, 1);
+	System16BRenderTileLayer(0, 0, 1);
 	System16BRenderSpriteLayer(4);
-	System16BAltRenderTileLayer(0, 1, 1);
+	System16BRenderTileLayer(0, 1, 1);
 	OutrunRenderRoadForegroundLayer();
 	System16BRenderSpriteLayer(8);
 	System16BAltRenderTextLayer(0);
 	System16BAltRenderTextLayer(1);
 	BurnTransferCopy(System16Palette);
 }
-
-static void draw_gun(int x, int y)
-{
-	unsigned char gun_data[18][18] = {
-
-#define a 0,
-#define b 1,
-#define c 2,
-#define d 3,
-#define e 4,
-#define f 5,
-
-		{ a a a a  a a a a  d a a a  a a a a  a a },
-		{ a a a a  a a e e  e e e a  a a a a  a a },
-		{ a a a a  e e a a  e a a e  e a a a  a a },
-		{ a a a e  a a a a  d a a a  a e a a  a a },
-		{ a a e a  a a a a  c a a a  a a e a  a a },
-		{ a a e a  a a a f  f f a a  a a e a  a a },
-		{ a e a a  a a f b  c b f a  a a a e  a a },
-		{ a e a a  a f b a  a a a f  a a a e  a a },
-		{ d e e d  c f c a  a a c f  c d e e  d a },
-		{ a e a a  a f b a  a a a f  b a a e  a a },
-		{ a e a a  a a f a  c a f b  a a a e  a a },
-		{ a a e a  a a a f  f f b a  a a e a  a a },
-		{ a a e a  a a a a  c b a a  a a e a  a a },
-		{ a a a e  a a a a  d a a a  a e a a  a a },
-		{ a a a a  e e a a  e a a e  e a a a  a a },
-		{ a a a a  a a e e  e e e a  a a a a  a a },
-		{ a a a a  a a a a  d a a a  a a a a  a a },
-		{ a a a a  a a a a  a a a a  a a a a  a a },
-
-#undef f
-#undef e
-#undef d
-#undef c
-#undef b
-#undef a
-
-	};
-
-	unsigned int gun_palette[] = {
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0x00404040, 0x00808080, 0x00C0C0C0, 0x00FFFFFF, 0, 0
-	};
-
-	for (int c = 2; c < 6; c++) {
-		gun_palette[c] = BurnHighCol((gun_palette[8 + c] >> 16) & 255,(gun_palette[8 + c] >> 8) & 255,(gun_palette[8 + c] >> 0) & 255, 0);
-	}
-
-//	x -= 29;
-//	y += 21;
-
-	unsigned char* pTile = pBurnDraw + 320 * nBurnBpp * (y - 1) + nBurnBpp * x;
-
-	for (int y2 = 0; y2 < 17; y2++) {
-
-		pTile += 320 * nBurnBpp;
-
-		if ((y + y2) < 0 || (y + y2) > 223) {
-			continue;
-		}
-
-		for (int x2 = 0; x2 < 17; x2++) {
-
-			if ((x + x2) < 0 || (x + x2) > 319) {
-				continue;
-			}
-
-			if (gun_data[y2][x2]) {
-				if (nBurnBpp == 2) {
-					((unsigned short*)pTile)[x2] = (unsigned short)gun_palette[gun_data[y2][x2]];
-				} else {
-					((unsigned int*)pTile)[x2] = gun_palette[gun_data[y2][x2]];
-				}
-			}
-		}
-	}
-}
-
 
 void XBoardRender()
 {
@@ -2113,6 +3273,7 @@ void XBoardRender()
 	}
 
 	System16BUpdateTileValues();
+	System16BCreateTileMaps();
 	
 	System16CalcPalette();
 	OutrunRenderRoadBackgroundLayer();
@@ -2129,9 +3290,9 @@ void XBoardRender()
 	XBoardRenderSpriteLayer(8);
 	System16BRenderTextLayer(1);
 	BurnTransferCopy(System16Palette);
-	if (System16Gun) {
-		draw_gun(System16Gun1X >> 8, System16Gun1Y >> 8);
-		draw_gun(System16Gun2X >> 8, System16Gun2Y >> 8);
+	
+	for (int i = 0; i < nBurnGunNumPlayers; i++) {
+		BurnGunDrawTarget(i, BurnGunX[i] >> 8, BurnGunY[i] >> 8);
 	}
 }
 
@@ -2147,4 +3308,8 @@ void YBoardRender()
 	System16RotateDraw();
 	YBoardSystem16BRenderSpriteLayer();
 	BurnTransferCopy(System16Palette);
+	
+	for (int i = 0; i < nBurnGunNumPlayers; i++) {
+		BurnGunDrawTarget(i, BurnGunX[i] >> 8, BurnGunY[i] >> 8);
+	}
 }

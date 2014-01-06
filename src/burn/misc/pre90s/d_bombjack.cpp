@@ -5,9 +5,9 @@ extern "C" {
 #include "ay8910.h"
 }
 
-unsigned char DrvJoy1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-unsigned char DrvJoy2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-unsigned char BjDip[2]   = {0, 0};
+unsigned char DrvJoy1[7] = {0, 0, 0, 0, 0, 0, 0};
+unsigned char DrvJoy2[7] = {0, 0, 0, 0, 0, 0, 0};
+unsigned char BjDip[2] = {0, 0};
 static unsigned char DrvReset = 0;
 static int bombjackIRQ = 0;
 static int latch;
@@ -15,34 +15,34 @@ static int latch;
 static int nCyclesDone[2], nCyclesTotal[2];
 static int nCyclesSegment;
 
-static unsigned char *Mem    = NULL;
+static unsigned char *Mem = NULL;
 static unsigned char *MemEnd = NULL;
-static unsigned char *RamStart= NULL;
+static unsigned char *RamStart = NULL;
 static unsigned char *RamEnd = NULL;
-static unsigned char *BjGfx =NULL;
-static unsigned char *BjMap =NULL;
-static unsigned char *BjRom =NULL;
-static unsigned char *BjRam =NULL;
-static unsigned char *BjColRam =NULL;
-static unsigned char *BjVidRam =NULL;
-static unsigned char *BjSprRam =NULL;
+static unsigned char *BjGfx = NULL;
+static unsigned char *BjMap = NULL;
+static unsigned char *BjRom = NULL;
+static unsigned char *BjRam = NULL;
+static unsigned char *BjColRam = NULL;
+static unsigned char *BjVidRam = NULL;
+static unsigned char *BjSprRam = NULL;
+
 // sound cpu
-static unsigned char *SndRom =NULL;
-static unsigned char *SndRam =NULL;
+static unsigned char *SndRom = NULL;
+static unsigned char *SndRam = NULL;
 
-//graphics tiles
-static unsigned char *text=NULL;
-static unsigned char *sprites=NULL;
-static unsigned char *tiles=NULL;
-//pallete
-static unsigned char *BjPalSrc=NULL;
-static unsigned int *BjPalReal=NULL;
+// graphics tiles
+static unsigned char *text = NULL;
+static unsigned char *sprites = NULL;
+static unsigned char *tiles = NULL;
 
-//static unsigned char* pTileData;
-
+// pallete
+static unsigned char *BjPalSrc = NULL;
+static unsigned int *BjPalReal = NULL;
 
 static short* pFMBuffer;
 static short* pAY8910Buffer[9];
+
 // Dip Switch and Input Definitions
 static struct BurnInputInfo DrvInputList[] = {
 	{"P1 Coin"      , BIT_DIGITAL  , DrvJoy1 + 0,	  "p1 coin"  },
@@ -73,38 +73,38 @@ STDINPUTINFO(Drv);
 static struct BurnDIPInfo BjDIPList[]=
 {
 	// Default Values
-	{0x0f, 0xff, 0xff, 0x00, NULL},
+	{0x0f, 0xff, 0xff, 0xc0, NULL},
 	{0x10, 0xff, 0xff, 0x00, NULL},
 
 	// Dip Sw(1)
-	{0   , 0xfe, 0   , 4   , "Coin A"},
+	{0,		0xfe, 0,	4,	  "Coin A"},
 	{0x0f, 0x01, 0x03, 0x00, "1 coin 1 credit"},
 	{0x0f, 0x01, 0x03, 0x01, "1 coin 2 credits"},
 	{0x0f, 0x01, 0x03, 0x02, "1 coin 3 credits"},
 	{0x0f, 0x01, 0x03, 0x03, "1 coin 6 credits"},
 
-	{0   , 0xfe, 0   , 4   , "Coin B"},
-	{0x0f, 0x01, 0x0c, 0x00, "1 coin 1 credit"},
+	{0,		0xfe, 0,	4,	  "Coin B"},
 	{0x0f, 0x01, 0x0c, 0x04, "2 coins 1 credit"},
+	{0x0f, 0x01, 0x0c, 0x00, "1 coin 1 credit"},
 	{0x0f, 0x01, 0x0c, 0x08, "1 coin 2 credits"},
 	{0x0f, 0x01, 0x0c, 0x0c, "1 coin 3 credits"},
 
-	{0   , 0xfe, 0   , 4   , "Lives"},
+	{0,		0xfe, 0,	4,	  "Lives"},
+	{0x0f, 0x01, 0x30, 0x30, "2"},
 	{0x0f, 0x01, 0x30, 0x00, "3"},
 	{0x0f, 0x01, 0x30, 0x10, "4"},
 	{0x0f, 0x01, 0x30, 0x20, "5"},
-	{0x0f, 0x01, 0x30, 0x30, "2"},	
 
-	{0   , 0xfe, 0   , 2   , "Cabinet"},
-	{0x0f, 0x01, 0x40, 0x00, "Cocktail"},
+	{0,		0xfe, 0,	2,	  "Cabinet"},
 	{0x0f, 0x01, 0x40, 0x40, "Upright"},
+	{0x0f, 0x01, 0x40, 0x00, "Cocktail"},
 
-	{0   , 0xfe, 0   , 2   , "Demo sounds"},
+	{0,		0xfe, 0,	2,	  "Demo sounds"},
 	{0x0f, 0x01, 0x80, 0x00, "Off"},
 	{0x0f, 0x01, 0x80, 0x80, "On"},
 
 	// Dip Sw(2)
-	{0   , 0xfe, 0   , 4   , "Initial high score"},
+	{0,		0xfe, 0,	4,	  "Initial high score"},
 	{0x10, 0x01, 0x07, 0x00, "10000"},
 	{0x10, 0x01, 0x07, 0x01, "100000"},
 	{0x10, 0x01, 0x07, 0x02, "30000"},
@@ -114,32 +114,32 @@ static struct BurnDIPInfo BjDIPList[]=
 	{0x10, 0x01, 0x07, 0x06, "100000"},
 	{0x10, 0x01, 0x07, 0x07, "50000"},
 
-	{0   , 0xfe, 0   , 4   , "Bird speed"},
+	{0,		0xfe, 0,	4,	  "Bird speed"},
 	{0x10, 0x01, 0x18, 0x00, "Easy"},
 	{0x10, 0x01, 0x18, 0x08, "Medium"},
 	{0x10, 0x01, 0x18, 0x10, "Hard"},
 	{0x10, 0x01, 0x18, 0x18, "Hardest"},
 
-	{0   , 0xfe, 0   , 4   , "Enemies number & speed"},
-	{0x10, 0x01, 0x60, 0x00, "Medium"},
+	{0,		0xfe, 0,	4,	  "Enemies number & speed"},
 	{0x10, 0x01, 0x60, 0x20, "Easy"},
+	{0x10, 0x01, 0x60, 0x00, "Medium"},
 	{0x10, 0x01, 0x60, 0x40, "Hard"},
 	{0x10, 0x01, 0x60, 0x60, "Hardest"},
 
-	{0   , 0xfe, 0   , 2   , "Special coin"},
+	{0,		0xfe, 0,	2,	  "Special coin"},
 	{0x10, 0x01, 0x80, 0x00, "Easy"},
 	{0x10, 0x01, 0x80, 0x80, "Hard"},
 };
 
 STDDIPINFO(Bj);
 
-// Bomb Jack
+// Bomb Jack (set 1)
 static struct BurnRomInfo BombjackRomDesc[] = {
-	{ "09_j01b.bin",    0x2000, 0xc668dc30, BRF_ESS | BRF_PRG },			 //  0 Z80 code
-	{ "10_l01b.bin",    0x2000, 0x52a1e5fb, BRF_ESS | BRF_PRG },			 //  1
-	{ "11_m01b.bin",    0x2000, 0xb68a062a, BRF_ESS | BRF_PRG },			 //  2
-	{ "12_n01b.bin",    0x2000, 0x1d3ecee5, BRF_ESS | BRF_PRG },			 //  3
-	{ "13.1r",          0x2000, 0x70e0244d, BRF_ESS | BRF_PRG },			 //  4
+	{ "09_j01b.bin",    0x2000, 0xc668dc30, BRF_ESS | BRF_PRG },		//  0 Z80 code
+	{ "10_l01b.bin",    0x2000, 0x52a1e5fb, BRF_ESS | BRF_PRG },		//  1
+	{ "11_m01b.bin",    0x2000, 0xb68a062a, BRF_ESS | BRF_PRG },		//  2
+	{ "12_n01b.bin",    0x2000, 0x1d3ecee5, BRF_ESS | BRF_PRG },		//  3
+	{ "13.1r",          0x2000, 0x70e0244d, BRF_ESS | BRF_PRG },		//  4
 
 	// graphics 3 bit planes:
 	{ "03_e08t.bin",    0x1000, 0x9f0470d5, BRF_GRA },			 // chars
@@ -156,7 +156,7 @@ static struct BurnRomInfo BombjackRomDesc[] = {
 
 	{ "02_p04t.bin",    0x1000, 0x398d4a02, BRF_GRA },			 // background tilemaps
 
-	{ "01_h03t.bin",    0x2000, 0x8407917d, BRF_ESS | BRF_SND },			 //Sound CPU
+	{ "01_h03t.bin",    0x2000, 0x8407917d, BRF_ESS | BRF_SND },		// sound CPU
 };
 
 STD_ROM_PICK(Bombjack);
@@ -165,11 +165,11 @@ STD_ROM_FN(Bombjack);
 
 // Bomb Jack (set 2)
 static struct BurnRomInfo Bombjac2RomDesc[] = {
-	{ "09_j01b.bin",    0x2000, 0xc668dc30, BRF_ESS | BRF_PRG },			 //  0 Z80 code
-	{ "10_l01b.bin",    0x2000, 0x52a1e5fb, BRF_ESS | BRF_PRG },			 //  1
-	{ "11_m01b.bin",    0x2000, 0xb68a062a, BRF_ESS | BRF_PRG },			 //  2
-	{ "12_n01b.bin",    0x2000, 0x1d3ecee5, BRF_ESS | BRF_PRG },			 //  3
-	{ "13_r01b.bin",    0x2000, 0xbcafdd29, BRF_ESS | BRF_PRG },			 //  4
+	{ "09_j01b.bin",    0x2000, 0xc668dc30, BRF_ESS | BRF_PRG },		//  0 Z80 code
+	{ "10_l01b.bin",    0x2000, 0x52a1e5fb, BRF_ESS | BRF_PRG },		//  1
+	{ "11_m01b.bin",    0x2000, 0xb68a062a, BRF_ESS | BRF_PRG },		//  2
+	{ "12_n01b.bin",    0x2000, 0x1d3ecee5, BRF_ESS | BRF_PRG },		//  3
+	{ "13_r01b.bin",    0x2000, 0xbcafdd29, BRF_ESS | BRF_PRG },		//  4
 
 	// graphics 3 bit planes:
 	{ "03_e08t.bin",    0x1000, 0x9f0470d5, BRF_GRA },			 // chars
@@ -186,12 +186,11 @@ static struct BurnRomInfo Bombjac2RomDesc[] = {
 
 	{ "02_p04t.bin",    0x1000, 0x398d4a02, BRF_GRA },			 // background tilemaps
 
-	{ "01_h03t.bin",    0x2000, 0x8407917d, BRF_ESS | BRF_SND },			 //Sound CPU
+	{ "01_h03t.bin",    0x2000, 0x8407917d, BRF_ESS | BRF_SND },		// sound CPU
 };
 
 STD_ROM_PICK(Bombjac2);
 STD_ROM_FN(Bombjac2);
-
 
 
 static int DrvDoReset()
@@ -253,17 +252,17 @@ unsigned char __fastcall BjMemRead(unsigned short addr)
 		return inputs;
 	}
 	if (addr==0xb004) {
-		return BjDip[0]; //Dip Sw(1)
+		return BjDip[0]; // Dip Sw(1)
 	}
 	if (addr==0xb005) {
-		return BjDip[1]; //Dip Sw(2)
+		return BjDip[1]; // Dip Sw(2)
 	}
 	return 0;
 }
 
 void __fastcall BjMemWrite(unsigned short addr,unsigned char val)
 {
-	if (addr== 0xb000)
+	if (addr==0xb000)
 	{
 		bombjackIRQ = val;
 	}
@@ -354,8 +353,8 @@ int BjZInit()
 	ZetMapArea    (0x9e00,0x9e00,0,BjRam+0x9e00);
 	ZetMapArea    (0x9e00,0x9e00,1,BjRam+0x9e00);
 
-//	ZetMapArea    (0xb000,0xb000,0,BjRam+0xb000);
-	//ZetMapArea    (0xb000,0xb000,1,BjRam+0xb000);
+	//	ZetMapArea    (0xb000,0xb000,0,BjRam+0xb000);
+	//	ZetMapArea    (0xb000,0xb000,1,BjRam+0xb000);
 
 	//	ZetMapArea    (0xb800,0xb800,0,BjRam+0xb800);
 	//	ZetMapArea    (0xb800,0xb800,1,BjRam+0xb800);
@@ -371,9 +370,9 @@ int BjZInit()
 	ZetMapArea    (0x4000,0x43ff,0,SndRam);
 	ZetMapArea    (0x4000,0x43ff,1,SndRam);
 	ZetMapArea    (0x4000,0x43ff,2,SndRam); // fetch from ram?
-	ZetMapArea    (0xFF00,0xFFFF,0,SndRam);
-	ZetMapArea    (0xFF00,0xFFFF,1,SndRam);
-	ZetMapArea    (0xFF00,0xFFFF,2,SndRam); // more fetch from ram? What the hell . .
+	ZetMapArea    (0xff00,0xffff,0,SndRam);
+	ZetMapArea    (0xff00,0xffff,1,SndRam);
+	ZetMapArea    (0xff00,0xffff,2,SndRam); // more fetch from ram? What the hell . .
 
 	//	ZetMapArea    (0x6000,0x6000,0,BjRam+0xb800);
 	//	ZetMapArea    (0x6000,0x6000,1,BjRam+0xb800);
@@ -434,24 +433,24 @@ static int MemIndex()
 {
 	unsigned char *Next; Next = Mem;
 
-	BjRom		= Next; Next += (0x2000*5);
-	SndRom		= Next; Next += 0x2000;
-	RamStart	= Next;
-	BjRam		= Next; Next += 0xffff;
-	SndRam		= Next; Next += 0xffff;
-	BjMap		= Next; Next += 0x1000;
-	BjGfx		= Next; Next += 0x15000;
-	BjPalSrc	= Next; Next += 0x00200;
-	BjVidRam =Next; Next +=0x400;
-	BjColRam =Next;Next += 0x400;
-	BjSprRam =Next;Next +=0x100;
+	BjRom		  = Next; Next += 0x10000;
+	BjGfx		  = Next; Next += 0x0f000;
+	BjMap		  = Next; Next += 0x01000;
+	SndRom	  = Next; Next += 0x02000;
+	RamStart  = Next;
+	BjRam		  = Next; Next += 0x10000;
+	SndRam	  = Next; Next += 0x01000;
+	BjPalSrc  = Next; Next += 0x00100;
+	BjVidRam  = Next; Next += 0x00400;
+	BjColRam  = Next; Next += 0x00400;
+	BjSprRam  = Next; Next += 0x00060;
+	RamEnd	  = Next;
+	text		  = Next; Next += 512 * 8 * 8;
+	sprites	  = Next; Next += 1024 * 8 * 8;
+	tiles		  = Next; Next += 1024 * 8 * 8;
 	pFMBuffer	= (short*)Next; Next += nBurnSoundLen * 9 * sizeof(short);
-	RamEnd		= Next;
-	BjPalReal	= (unsigned int*)Next; Next += 0x00100 * sizeof(unsigned int);
-	text		=Next; Next+=0x8000;
-	sprites		=Next; Next+=0x10000;
-	tiles		=Next; Next+=0x10000;
-	MemEnd		= Next;
+	BjPalReal	= (unsigned int*)Next; Next += 0x0080 * sizeof(unsigned int);
+	MemEnd	  = Next;
 
 	return 0;
 }
@@ -477,11 +476,6 @@ int BjInit()
 		BurnLoadRom(BjGfx+(0x1000*i),i+5,1);
 	}
 
-	//	for (int i=0;i<5;i++)
-	//	{
-	//		BurnLoadRom(BjGfx+0x3000+(0x2000*i),i+8,1);
-	//	}
-
 	BurnLoadRom(BjGfx+0x3000,8,1);
 	BurnLoadRom(BjGfx+0x5000,9,1);
 	BurnLoadRom(BjGfx+0x7000,10,1);
@@ -491,7 +485,7 @@ int BjInit()
 	BurnLoadRom(BjGfx+0xD000,13,1);
 
 	BurnLoadRom(BjMap,14,1); // load Background tile maps
-	BurnLoadRom(SndRom,15,1); // load Background tile maps
+	BurnLoadRom(SndRom,15,1); // load Sound CPU
 
 	// Set memory access & Init
 	BjZInit();
@@ -545,217 +539,252 @@ int CalcAll()
 	return 0;
 }
 
-static int BjDraw()
+void BjRenderFgLayer()
 {
-	int x,y;
-	int c;
-	int tile;
-	int colour;
-	int BgSel=BjRam[0x9e00];
-	int pos=0,pos2=0,pos3=0x200*(BgSel&7),pos4;
-	pos4=pos3+0x100;
-	int attrib;
-
-	BurnTransferClear();
-	CalcAll();
-
-	if (BgSel&0x10)
+	for (int tileCount = 0; tileCount < 1024 ;tileCount++) 
 	{
-		for (x=15;x>-1;x--)
-		{
-			for (y=0;y<16;y++)
-			{
-				attrib=BjMap[pos4];
-				if (attrib&0x80)
-				{
-					Render8x8Tile_Mask(pTransDraw, (BjMap[pos3]<<2), (x<<4)+8,(y<<4), attrib, 3, 0, 0, tiles);
-					Render8x8Tile_Mask(pTransDraw, (BjMap[pos3]<<2)+1, (x<<4)+8,(y<<4)+8, attrib, 3, 0, 0, tiles);
-					Render8x8Tile_Mask(pTransDraw, (BjMap[pos3]<<2)+2,(x<<4),(y<<4), attrib, 3, 0, 0, tiles);
-					Render8x8Tile_Mask(pTransDraw, (BjMap[pos3]<<2)+3,(x<<4),(y<<4)+8, attrib, 3, 0, 0, tiles);
+		int code = BjVidRam[tileCount] + 16 * (BjColRam[tileCount] & 0x10);
+		int color = BjColRam[tileCount] & 0x0f;
+		int sy = (tileCount % 32);
+		int sx = 31 - (tileCount / 32);
 
-				}
-				else
-				{
-					Render8x8Tile_Mask(pTransDraw, (BjMap[pos3]<<2),(x<<4)+8,(y<<4), attrib, 3, 0, 0, tiles);
-					Render8x8Tile_Mask(pTransDraw, (BjMap[pos3]<<2)+1,(x<<4)+8,(y<<4)+8, attrib, 3, 0, 0, tiles);
-					Render8x8Tile_Mask(pTransDraw, (BjMap[pos3]<<2)+2,(x<<4),(y<<4), attrib, 3, 0, 0, tiles);
-					Render8x8Tile_Mask(pTransDraw, (BjMap[pos3]<<2)+3,(x<<4),(y<<4)+8, attrib, 3, 0, 0, tiles);
-				}
-				pos3++;
-				pos4++;
-			}
+		sx<<=3;
+		sx-=16;
+		sy<<=3;
+		if (sx >= 0 && sx < 215 && sy >= 0 && sy < 246)
+		{
+			Render8x8Tile_Mask(pTransDraw, code,sx,sy,color, 3, 0, 0, text);
+		}
+		else
+		{
+			Render8x8Tile_Mask_Clip(pTransDraw, code,sx,sy,color, 3, 0, 0, text);
 		}
 	}
-	for (x=0;x<32;x++)
-	{
-		for (y=0;y<32;y++)
-		{
-			if (BgSel&0x10)
+}
+
+
+void BjRenderBgLayer()
+{
+	for (int tileCount = 0; tileCount < 256;tileCount++) {
+		int FlipX;
+
+		int BgSel=BjRam[0x9e00];
+
+		int offs = (BgSel & 0x07) * 0x200 + tileCount;
+		int Code = (BgSel & 0x10) ? BjMap[offs] : 0;
+
+		int attr = BjMap[offs + 0x100];
+		int Colour = attr & 0x0f;
+		//int flags = (attr & 0x80) ? TILE_FLIPY : 0;
+
+
+		int sy = (tileCount % 16);
+		int sx = 15 - (tileCount / 16);
+		FlipX = attr & 0x80;
+
+		/*if (SolomonFlipScreen) {
+		sx = 31 - sx;
+		sy = 31 - sy;
+		FlipX = !FlipX;
+		FlipY = !FlipY;
+		}*/
+
+		sx <<= 4;
+		sx -=16;
+		sy <<= 4;
+		Code <<= 2;
+		if (sx >= 0 && sx < 215 && sy >= 0 && sy < 246) {
+
+			if (FlipX&0x80)
 			{
-				if (BjColRam[pos2]&0x10)
-				{
-					Render8x8Tile_Mask(pTransDraw, BjVidRam[pos++]+256,(31-x)<<3,y<<3,BjColRam[pos2++]&15, 3, 0, 0, text);
+				Render8x8Tile_Mask(pTransDraw, Code+0,sx+8,sy+0, Colour, 3, 0, 0, tiles);
+				Render8x8Tile_Mask(pTransDraw, Code+1,sx+8,sy+8, Colour, 3, 0, 0, tiles);
+				Render8x8Tile_Mask(pTransDraw, Code+2,sx+0,sy+0, Colour, 3, 0, 0, tiles);
+				Render8x8Tile_Mask(pTransDraw, Code+3,sx+0,sy+8, Colour, 3, 0, 0, tiles);
+
+			}
+			else
+			{
+				Render8x8Tile_Mask(pTransDraw, Code+0,sx+8,sy+0, Colour, 3, 0, 0, tiles);
+				Render8x8Tile_Mask(pTransDraw, Code+1,sx+8,sy+8, Colour, 3, 0, 0, tiles);
+				Render8x8Tile_Mask(pTransDraw, Code+2,sx+0,sy+0, Colour, 3, 0, 0, tiles);
+				Render8x8Tile_Mask(pTransDraw, Code+3,sx+0,sy+8, Colour, 3, 0, 0, tiles);
+			}
+
+		} else {
+
+			if (FlipX&0x80)
+			{
+				Render8x8Tile_Mask_Clip(pTransDraw, Code+0,sx+8,sy+0, Colour, 3, 0, 0, tiles);
+				Render8x8Tile_Mask_Clip(pTransDraw, Code+1,sx+8,sy+8, Colour, 3, 0, 0, tiles);
+				Render8x8Tile_Mask_Clip(pTransDraw, Code+2,sx+0,sy+0, Colour, 3, 0, 0, tiles);
+				Render8x8Tile_Mask_Clip(pTransDraw, Code+3,sx+0,sy+8, Colour, 3, 0, 0, tiles);
+
+			}
+			else
+			{
+				Render8x8Tile_Mask_Clip(pTransDraw, Code+0,sx+8,sy+0, Colour, 3, 0, 0, tiles);
+				Render8x8Tile_Mask_Clip(pTransDraw, Code+1,sx+8,sy+8, Colour, 3, 0, 0, tiles);
+				Render8x8Tile_Mask_Clip(pTransDraw, Code+2,sx+0,sy+0, Colour, 3, 0, 0, tiles);
+				Render8x8Tile_Mask_Clip(pTransDraw, Code+3,sx+0,sy+8, Colour, 3, 0, 0, tiles);
+			}
+
+		}
+	}
+}
+
+
+static void BjDrawSprites()
+{
+	int offs;
+
+	for (offs = 0x60 - 4; offs >= 0; offs -= 4)
+	{
+
+		/*
+		abbbbbbb cdefgggg hhhhhhhh iiiiiiii
+
+		a        use big sprites (32x32 instead of 16x16)
+		bbbbbbb  sprite code
+		c        x flip
+		d        y flip (used only in death sequence?)
+		e        ? (set when big sprites are selected)
+		f        ? (set only when the bonus (B) materializes?)
+		gggg     color
+		hhhhhhhh x position
+		iiiiiiii y position
+		*/
+		int sx,sy,flipx,flipy, code, colour, big;
+
+
+		sy = BjSprRam[offs+3];
+		if (BjSprRam[offs] & 0x80)
+			sx = BjSprRam[offs+2];
+		else
+			sx = BjSprRam[offs+2];
+		flipx = BjSprRam[offs+1] & 0x80;
+		flipy =	BjSprRam[offs+1] & 0x40;
+
+		code = BjSprRam[offs] & 0x7f;
+		colour = (BjSprRam[offs+1] & 0x0f);
+		big = (BjSprRam[offs] & 0x80);
+
+		//sy -= 32;
+
+		sx -=16;
+		if (!big)
+		{
+			code <<= 2;
+			if (sx >= 0 && sx < 215 && sy >= 0 && sy < 246) {
+				if (!flipy) {
+					if (!flipx) {
+						Render8x8Tile_Mask(pTransDraw, code + 0, sx + 8, sy + 0, colour, 3, 0, 0, sprites);
+						Render8x8Tile_Mask(pTransDraw, code + 1, sx + 8, sy + 8, colour, 3, 0, 0, sprites);					
+						Render8x8Tile_Mask(pTransDraw, code + 2, sx + 0, sy + 0, colour, 3, 0, 0, sprites);		
+						Render8x8Tile_Mask(pTransDraw, code + 3, sx + 0, sy + 8, colour, 3, 0, 0, sprites);	
+					} else {
+						Render8x8Tile_Mask_FlipX(pTransDraw, code + 2, sx + 8, sy + 0, colour, 3, 0, 0, sprites);
+						Render8x8Tile_Mask_FlipX(pTransDraw, code + 3, sx + 8, sy + 8, colour, 3, 0, 0, sprites);
+						Render8x8Tile_Mask_FlipX(pTransDraw, code + 0, sx + 0, sy + 0, colour, 3, 0, 0, sprites);
+						Render8x8Tile_Mask_FlipX(pTransDraw, code + 1, sx + 0, sy + 8, colour, 3, 0, 0, sprites);
+					}
+				} else {
+					if (!flipx) {
+						Render8x8Tile_Mask_FlipY(pTransDraw, code + 1, sx + 8, sy + 0, colour, 3, 0, 0, sprites);
+						Render8x8Tile_Mask_FlipY(pTransDraw, code + 0, sx + 8, sy + 8, colour, 3, 0, 0, sprites);
+						Render8x8Tile_Mask_FlipY(pTransDraw, code + 3, sx + 0, sy + 0, colour, 3, 0, 0, sprites);
+						Render8x8Tile_Mask_FlipY(pTransDraw, code + 2, sx + 0, sy + 8, colour, 3, 0, 0, sprites);
+					} else {
+						Render8x8Tile_Mask_FlipXY(pTransDraw, code + 3, sx + 8, sy + 0, colour, 3, 0, 0, sprites);
+						Render8x8Tile_Mask_FlipXY(pTransDraw, code + 2, sx + 8, sy + 8, colour, 3, 0, 0, sprites);
+						Render8x8Tile_Mask_FlipXY(pTransDraw, code + 1, sx + 0, sy + 0, colour, 3, 0, 0, sprites);
+						Render8x8Tile_Mask_FlipXY(pTransDraw, code + 0, sx + 0, sy + 8, colour, 3, 0, 0, sprites);
+					}
 				}
-				else
+			} else {
+				if (!flipy) {
+					if (!flipx) {
+						Render8x8Tile_Mask_Clip(pTransDraw, code + 0, sx + 8, sy + 0, colour, 3, 0, 0, sprites);
+						Render8x8Tile_Mask_Clip(pTransDraw, code + 1, sx + 8, sy + 8, colour, 3, 0, 0, sprites);					
+						Render8x8Tile_Mask_Clip(pTransDraw, code + 2, sx + 0, sy + 0, colour, 3, 0, 0, sprites);		
+						Render8x8Tile_Mask_Clip(pTransDraw, code + 3, sx + 0, sy + 8, colour, 3, 0, 0, sprites);	
+					} else {
+						Render8x8Tile_Mask_FlipX_Clip(pTransDraw, code + 2, sx + 8, sy + 0, colour, 3, 0, 0, sprites);
+						Render8x8Tile_Mask_FlipX_Clip(pTransDraw, code + 3, sx + 8, sy + 8, colour, 3, 0, 0, sprites);
+						Render8x8Tile_Mask_FlipX_Clip(pTransDraw, code + 0, sx + 0, sy + 0, colour, 3, 0, 0, sprites);
+						Render8x8Tile_Mask_FlipX_Clip(pTransDraw, code + 1, sx + 0, sy + 8, colour, 3, 0, 0, sprites);
+					}
+				} else {
+					if (!flipx) {
+						Render8x8Tile_Mask_FlipY_Clip(pTransDraw, code + 1, sx + 0, sy + 0, colour, 4, 0, 0, sprites);
+						Render8x8Tile_Mask_FlipY_Clip(pTransDraw, code + 0, sx + 0, sy + 8, colour, 4, 0, 0, sprites);
+						Render8x8Tile_Mask_FlipY_Clip(pTransDraw, code + 3, sx + 8, sy + 0, colour, 4, 0, 0, sprites);
+						Render8x8Tile_Mask_FlipY_Clip(pTransDraw, code + 2, sx + 8, sy + 8, colour, 4, 0, 0, sprites);
+					} else {
+						Render8x8Tile_Mask_FlipXY_Clip(pTransDraw, code + 3, sx + 8, sy + 0, colour, 4, 0, 0, sprites);
+						Render8x8Tile_Mask_FlipXY_Clip(pTransDraw, code + 2, sx + 8, sy + 8, colour, 4, 0, 0, sprites);
+						Render8x8Tile_Mask_FlipXY_Clip(pTransDraw, code + 1, sx + 0, sy + 0, colour, 4, 0, 0, sprites);
+						Render8x8Tile_Mask_FlipXY_Clip(pTransDraw, code + 0, sx + 0, sy + 8, colour, 4, 0, 0, sprites);
+					}
+				}
+			}
+		}
+		else
+		{	
+			code&=31;
+			code <<= 4;
+			sx-=1;
+			if (sx >= 0 && sx < 215 && sy >= 0 && sy < 246) 
+			{
+				if (!flipy) 
 				{
-					Render8x8Tile_Mask(pTransDraw, BjVidRam[pos++],(31-x)<<3,y<<3,BjColRam[pos2++]&15, 3, 0, 0, text);
+					if (!flipx) {
+						Render8x8Tile_Mask(pTransDraw, code+512,sx+8+16,sy,colour, 3, 0, 0, sprites);
+						Render8x8Tile_Mask(pTransDraw, code+513,sx+8+16,sy+8,colour, 3, 0, 0, sprites);
+						Render8x8Tile_Mask(pTransDraw, code+514,sx+16,sy,colour, 3, 0, 0, sprites);
+						Render8x8Tile_Mask(pTransDraw, code+515,sx+16,sy+8,colour, 3, 0, 0, sprites);
+						Render8x8Tile_Mask(pTransDraw, code+516,sx+8+16,sy+16,colour, 3, 0, 0, sprites);
+						Render8x8Tile_Mask(pTransDraw, code+517,sx+8+16,sy+8+16,colour, 3, 0, 0, sprites);
+						Render8x8Tile_Mask(pTransDraw, code+518,sx+16,sy+16,colour, 3, 0, 0, sprites);
+						Render8x8Tile_Mask(pTransDraw, code+519,sx+16,sy+8+16,colour, 3, 0, 0, sprites);
+						Render8x8Tile_Mask(pTransDraw, code+520,sx+8,sy,colour, 3, 0, 0, sprites);
+						Render8x8Tile_Mask(pTransDraw, code+521,sx+8,sy+8,colour, 3, 0, 0, sprites);
+						Render8x8Tile_Mask(pTransDraw, code+522,sx,sy,colour, 3, 0, 0, sprites);
+						Render8x8Tile_Mask(pTransDraw, code+523,sx,sy+8,colour, 3, 0, 0, sprites);
+						Render8x8Tile_Mask(pTransDraw, code+524,sx+8,sy+16,colour, 3, 0, 0, sprites);
+						Render8x8Tile_Mask(pTransDraw, code+525,sx+8,sy+8+16,colour, 3, 0, 0, sprites);
+						Render8x8Tile_Mask(pTransDraw, code+526,sx,sy+16,colour, 3, 0, 0, sprites);
+						Render8x8Tile_Mask(pTransDraw, code+527,sx,sy+8+16,colour, 3, 0, 0, sprites);
+					}
 				}
 			}
 			else
 			{
-				if (BjColRam[pos2]&0x10)
+				if (!flipy) 
 				{
-					Render8x8Tile_Mask(pTransDraw, BjVidRam[pos++]+256,(31-x)<<3,y<<3,BjColRam[pos2++]&15, 3, 0, 0, text);
-				}
-				else
-				{
-					Render8x8Tile_Mask(pTransDraw, BjVidRam[pos++],(31-x)<<3,y<<3,BjColRam[pos2++]&15, 3, 0, 0, text);
+					if (!flipx) {
+						Render8x8Tile_Mask_Clip(pTransDraw, code+512,sx+8+16,sy,colour, 3, 0, 0, sprites);
+						Render8x8Tile_Mask_Clip(pTransDraw, code+513,sx+8+16,sy+8,colour, 3, 0, 0, sprites);
+						Render8x8Tile_Mask_Clip(pTransDraw, code+514,sx+16,sy,colour, 3, 0, 0, sprites);
+						Render8x8Tile_Mask_Clip(pTransDraw, code+515,sx+16,sy+8,colour, 3, 0, 0, sprites);
+						Render8x8Tile_Mask_Clip(pTransDraw, code+516,sx+8+16,sy+16,colour, 3, 0, 0, sprites);
+						Render8x8Tile_Mask_Clip(pTransDraw, code+517,sx+8+16,sy+8+16,colour, 3, 0, 0, sprites);
+						Render8x8Tile_Mask_Clip(pTransDraw, code+518,sx+16,sy+16,colour, 3, 0, 0, sprites);
+						Render8x8Tile_Mask_Clip(pTransDraw, code+519,sx+16,sy+8+16,colour, 3, 0, 0, sprites);
+						Render8x8Tile_Mask_Clip(pTransDraw, code+520,sx+8,sy,colour, 3, 0, 0, sprites);
+						Render8x8Tile_Mask_Clip(pTransDraw, code+521,sx+8,sy+8,colour, 3, 0, 0, sprites);
+						Render8x8Tile_Mask_Clip(pTransDraw, code+522,sx,sy,colour, 3, 0, 0, sprites);
+						Render8x8Tile_Mask_Clip(pTransDraw, code+523,sx,sy+8,colour, 3, 0, 0, sprites);
+						Render8x8Tile_Mask_Clip(pTransDraw, code+524,sx+8,sy+16,colour, 3, 0, 0, sprites);
+						Render8x8Tile_Mask_Clip(pTransDraw, code+525,sx+8,sy+8+16,colour, 3, 0, 0, sprites);
+						Render8x8Tile_Mask_Clip(pTransDraw, code+526,sx,sy+16,colour, 3, 0, 0, sprites);
+						Render8x8Tile_Mask_Clip(pTransDraw, code+527,sx,sy+8+16,colour, 3, 0, 0, sprites);
+					}
 				}
 			}
 		}
 	}
-	pos=0;
-	for (c=0;c<24;c++)
-	{
-		//	flipx = spriteram[offs+1] & 0x40;
-		//	flipy =	spriteram[offs+1] & 0x80;
-		x=BjSprRam[pos+2]-1;
-		y=BjSprRam[pos+3];
-		if (x>8&&y>8)
-		{
-			tile=BjSprRam[pos]&0x7F;
-			colour=BjSprRam[pos+1]&0x0F;
-			attrib=BjSprRam[pos+1]&0xc0;
-
-			switch (attrib){
-			case 0:
-				if (!(BjSprRam[pos]&0x80))
-				{
-					Render8x8Tile_Mask(pTransDraw, (tile<<2)  , x+8, y   ,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask(pTransDraw, (tile<<2)+1, x+8, y+8 ,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask(pTransDraw, (tile<<2)+2, x,y,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask(pTransDraw, (tile<<2)+3, x,y+8,colour, 3, 0, 0, sprites);
-				}
-				else
-				{
-					tile&=31;
-
-					Render8x8Tile_Mask(pTransDraw, (tile<<4)+512,x+8+16,y,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask(pTransDraw, (tile<<4)+513,x+8+16,y+8,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask(pTransDraw, (tile<<4)+514,x+16,y,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask(pTransDraw, (tile<<4)+515,x+16,y+8,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask(pTransDraw, (tile<<4)+516,x+8+16,y+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask(pTransDraw, (tile<<4)+517,x+8+16,y+8+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask(pTransDraw, (tile<<4)+518,x+16,y+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask(pTransDraw, (tile<<4)+519,x+16,y+8+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask(pTransDraw, (tile<<4)+520,x+8,y,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask(pTransDraw, (tile<<4)+521,x+8,y+8,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask(pTransDraw, (tile<<4)+522,x,y,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask(pTransDraw, (tile<<4)+523,x,y+8,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask(pTransDraw, (tile<<4)+524,x+8,y+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask(pTransDraw, (tile<<4)+525,x+8,y+8+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask(pTransDraw, (tile<<4)+526,x,y+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask(pTransDraw, (tile<<4)+527,x,y+8+16,colour, 3, 0, 0, sprites);
-				}
-				break;
-			case 0x80:
-				if (!(BjSprRam[pos]&0x80))
-				{
-					Render8x8Tile_Mask_FlipX(pTransDraw, (tile<<2)+2, x+8,y   ,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipX(pTransDraw, (tile<<2)+3, x+8,y+8 ,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipX(pTransDraw, (tile<<2), x,y,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipX(pTransDraw, (tile<<2)+1, x,y+8,colour, 3, 0, 0, sprites);
-				}
-				else
-				{
-					tile&=31;
-					Render8x8Tile_Mask_FlipX(pTransDraw, (tile<<4)+512,x+8+16,y,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipX(pTransDraw, (tile<<4)+513,x+8+16,y+8,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipX(pTransDraw, (tile<<4)+514,x+16,y,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipX(pTransDraw, (tile<<4)+515,x+16,y+8,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipX(pTransDraw, (tile<<4)+516,x+8+16,y+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipX(pTransDraw, (tile<<4)+517,x+8+16,y+8+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipX(pTransDraw, (tile<<4)+518,x+16,y+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipX(pTransDraw, (tile<<4)+519,x+16,y+8+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipX(pTransDraw, (tile<<4)+520,x+8,y,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipX(pTransDraw, (tile<<4)+521,x+8,y+8,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipX(pTransDraw, (tile<<4)+522,x,y,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipX(pTransDraw, (tile<<4)+523,x,y+8,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipX(pTransDraw, (tile<<4)+524,x+8,y+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipX(pTransDraw, (tile<<4)+525,x+8,y+8+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipX(pTransDraw, (tile<<4)+526,x,y+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipX(pTransDraw, (tile<<4)+527,x,y+8+16,colour, 3, 0, 0, sprites);
-				}
-				break;
-			case 0x40:
-				if (!(BjSprRam[pos]&0x80))
-				{
-					Render8x8Tile_Mask_FlipY(pTransDraw, (tile<<2)+1, x+8,y   ,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipY(pTransDraw, (tile<<2), x+8,y+8 ,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipY(pTransDraw, (tile<<2)+3, x,y, 3,colour, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipY(pTransDraw, (tile<<2)+2, x,y+8,colour, 3, 0, 0, sprites);
-				}
-				else
-				{
-					tile&=31;
-					Render8x8Tile_Mask_FlipY(pTransDraw, (tile<<4)+512,x+8+16,y,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipY(pTransDraw, (tile<<4)+513,x+8+16,y+8,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipY(pTransDraw, (tile<<4)+514,x+16,y,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipY(pTransDraw, (tile<<4)+515,x+16,y+8,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipY(pTransDraw, (tile<<4)+516,x+8+16,y+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipY(pTransDraw, (tile<<4)+517,x+8+16,y+8+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipY(pTransDraw, (tile<<4)+518,x+16,y+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipY(pTransDraw, (tile<<4)+519,x+16,y+8+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipY(pTransDraw, (tile<<4)+520,x+8,y,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipY(pTransDraw, (tile<<4)+521,x+8,y+8,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipY(pTransDraw, (tile<<4)+522,x,y,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipY(pTransDraw, (tile<<4)+523,x,y+8,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipY(pTransDraw, (tile<<4)+524,x+8,y+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipY(pTransDraw, (tile<<4)+525,x+8,y+8+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipY(pTransDraw, (tile<<4)+526,x,y+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipY(pTransDraw, (tile<<4)+527,x,y+8+16,colour, 3, 0, 0, sprites);
-				}
-				break;
-			case 0xc0:
-				if (!(BjSprRam[pos]&0x80))
-				{
-					Render8x8Tile_Mask_FlipXY(pTransDraw, (tile<<2)+3, x+8,y   ,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipXY(pTransDraw, (tile<<2)+2, x+8,y+8 ,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipXY(pTransDraw, (tile<<2)+1, x,y,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipXY(pTransDraw, (tile<<2), x,y+8,colour, 3, 0, 0, sprites);
-				}
-				else
-				{
-					tile&=31;
-					Render8x8Tile_Mask_FlipXY(pTransDraw, (tile<<4)+512,x+8+16,y,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipXY(pTransDraw, (tile<<4)+513,x+8+16,y+8,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipXY(pTransDraw, (tile<<4)+514,x+16,y,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipXY(pTransDraw, (tile<<4)+515,x+16,y+8,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipXY(pTransDraw, (tile<<4)+516,x+8+16,y+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipXY(pTransDraw, (tile<<4)+517,x+8+16,y+8+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipXY(pTransDraw, (tile<<4)+518,x+16,y+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipXY(pTransDraw, (tile<<4)+519,x+16,y+8+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipXY(pTransDraw, (tile<<4)+520,x+8,y,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipXY(pTransDraw, (tile<<4)+521,x+8,y+8,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipXY(pTransDraw, (tile<<4)+522,x,y,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipXY(pTransDraw, (tile<<4)+523,x,y+8,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipXY(pTransDraw, (tile<<4)+524,x+8,y+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipXY(pTransDraw, (tile<<4)+525,x+8,y+8+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipXY(pTransDraw, (tile<<4)+526,x,y+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipXY(pTransDraw, (tile<<4)+527,x,y+8+16,colour, 3, 0, 0, sprites);
-				}
-				break;
-			default:
-				bprintf(PRINT_NORMAL, PRINT_NORMAL, PRINT_NORMAL, "attrib %x\n",attrib);
-				break;
-			}
-		}
-		pos+=4;
-	}
-	BurnTransferCopy(BjPalReal);
-	return 0;
 }
-// end
 
 int BjFrame()
 {
@@ -806,15 +835,15 @@ int BjFrame()
 			AY8910Update(1, &pAY8910Buffer[3], nSegmentLength);
 			AY8910Update(2, &pAY8910Buffer[6], nSegmentLength);
 			for (int n = 0; n < nSegmentLength; n++) {
-				nSample  = pAY8910Buffer[0][n];
-				nSample += pAY8910Buffer[1][n];
-				nSample += pAY8910Buffer[2][n];
-				nSample += pAY8910Buffer[3][n];
-				nSample += pAY8910Buffer[4][n];
-				nSample += pAY8910Buffer[5][n];
-				nSample += pAY8910Buffer[6][n];
-				nSample += pAY8910Buffer[7][n];
-				nSample += pAY8910Buffer[8][n];
+				nSample  = pAY8910Buffer[0][n] >> 2;
+				nSample += pAY8910Buffer[1][n] >> 2;
+				nSample += pAY8910Buffer[2][n] >> 2;
+				nSample += pAY8910Buffer[3][n] >> 2;
+				nSample += pAY8910Buffer[4][n] >> 2;
+				nSample += pAY8910Buffer[5][n] >> 2;
+				nSample += pAY8910Buffer[6][n] >> 2;
+				nSample += pAY8910Buffer[7][n] >> 2;
+				nSample += pAY8910Buffer[8][n] >> 2;
 
 				nSample /= 4;
 
@@ -843,15 +872,15 @@ int BjFrame()
 			AY8910Update(1, &pAY8910Buffer[3], nSegmentLength);
 			AY8910Update(2, &pAY8910Buffer[6], nSegmentLength);
 			for (int n = 0; n < nSegmentLength; n++) {
-				nSample  = pAY8910Buffer[0][n];
-				nSample += pAY8910Buffer[1][n];
-				nSample += pAY8910Buffer[2][n];
-				nSample += pAY8910Buffer[3][n];
-				nSample += pAY8910Buffer[4][n];
-				nSample += pAY8910Buffer[5][n];
-				nSample += pAY8910Buffer[6][n];
-				nSample += pAY8910Buffer[7][n];
-				nSample += pAY8910Buffer[8][n];
+				nSample  = pAY8910Buffer[0][n] >> 2;
+				nSample += pAY8910Buffer[1][n] >> 2;
+				nSample += pAY8910Buffer[2][n] >> 2;
+				nSample += pAY8910Buffer[3][n] >> 2;
+				nSample += pAY8910Buffer[4][n] >> 2;
+				nSample += pAY8910Buffer[5][n] >> 2;
+				nSample += pAY8910Buffer[6][n] >> 2;
+				nSample += pAY8910Buffer[7][n] >> 2;
+				nSample += pAY8910Buffer[8][n] >> 2;
 
 				nSample /= 4;
 
@@ -870,7 +899,7 @@ int BjFrame()
 	}
 	/*ZetOpen(0);
 	if (BjRam[0xb000])
-		ZetNmi();
+	ZetNmi();
 	ZetClose();*/
 
 	ZetOpen(1);
@@ -880,9 +909,13 @@ int BjFrame()
 
 	if (pBurnDraw != NULL)
 	{
+		BurnTransferClear();
+		CalcAll();
 
-		BjDraw();	// Draw screen if needed
-
+		BjRenderBgLayer();
+		BjRenderFgLayer();
+		BjDrawSprites();
+		BurnTransferCopy(BjPalReal);
 	}
 	return 0;
 }
@@ -895,7 +928,7 @@ static int BjScan(int nAction,int *pnMin)
 		*pnMin = 0x029521;
 	}
 
-	if (nAction & ACB_VOLATILE) {		// Scan volatile ram		
+	if (nAction & ACB_VOLATILE) {		// Scan volatile ram
 		memset(&ba, 0, sizeof(ba));
 		ba.Data	  = RamStart;
 		ba.nLen	  = RamEnd-RamStart;
@@ -905,9 +938,10 @@ static int BjScan(int nAction,int *pnMin)
 		ZetScan(nAction);			// Scan Z80
 
 		// Scan critical driver variables
+		SCAN_VAR(bombjackIRQ);
 		SCAN_VAR(latch);
 		SCAN_VAR(DrvJoy1);
-		SCAN_VAR(DrvJoy2);		
+		SCAN_VAR(DrvJoy2);
 		SCAN_VAR(BjDip);
 	}
 
@@ -918,18 +952,18 @@ struct BurnDriver BurnDrvBombjack = {
 	"bombjack", NULL, NULL, "1984",
 	"Bomb Jack (set 1)\0", NULL, "Tehkan", "Bomb Jack",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING,2,HARDWARE_MISC_PRE90S,
 	NULL,BombjackRomInfo,BombjackRomName,DrvInputInfo,BjDIPInfo,
 	BjInit,BjExit,BjFrame,NULL,BjScan,
-	NULL,256,256,3,4
+	0, NULL, NULL, NULL, NULL,224,256,3,4
 };
 
-struct BurnDriver BurnDrvbombjac2 = {
+struct BurnDriver BurnDrvBombjac2 = {
 	"bombjac2", "bombjack", NULL, "1984",
 	"Bomb Jack (set 2)\0", NULL, "Tehkan", "Bomb Jack",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE,2,HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_CLONE,2,HARDWARE_MISC_PRE90S,
 	NULL,Bombjac2RomInfo,Bombjac2RomName,DrvInputInfo,BjDIPInfo,
 	BjInit,BjExit,BjFrame,NULL,BjScan,
-	NULL,256,256,3,4
+	0, NULL, NULL, NULL, NULL,224,256,3,4
 };

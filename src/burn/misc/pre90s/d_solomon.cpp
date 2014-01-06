@@ -812,18 +812,18 @@ struct BurnDriver BurnDrvSolomon = {
 	"solomon", NULL, NULL, "1986",
 	"Solomon's Key (US)\0", NULL, "Tecmo", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S,
 	NULL, SolomonRomInfo, SolomonRomName, SolomonInputInfo, SolomonDIPInfo,
 	SolomonInit, SolomonExit, SolomonFrame, NULL, SolomonScan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvSolomonj = {
 	"solomonj", "solomon", NULL, "1986",
 	"Solomon's Key (Japan)\0", NULL, "Tecmo", "Miscellaneous",
 	L"Solomon's Key (Japan)\0Solomon's Key \u30BD\u30ED\u30E2\u30F3\u306E\u9375\0", NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S,
 	NULL, SolomonjRomInfo, SolomonjRomName, SolomonInputInfo, SolomonDIPInfo,
 	SolomonInit, SolomonExit, SolomonFrame, NULL, SolomonScan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 256, 224, 4, 3
 };

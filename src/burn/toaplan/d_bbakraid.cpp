@@ -978,7 +978,7 @@ struct BurnDriver BurnDrvBattleBakraid = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_RAIZING,
 	NULL, bbakraidRomInfo, bbakraidRomName, bbakraidInputInfo, bbakraidDIPInfo,
-	bbakraidInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &ToaRecalcPalette,
+	bbakraidInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &ToaRecalcPalette,
 	240, 320, 3, 4
 };
 
@@ -988,6 +988,6 @@ struct BurnDriver BurnDrvBattleBakraidU = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_RAIZING,
 	NULL, bbakraduRomInfo, bbakraduRomName, bbakraidInputInfo, bbakraidDIPInfo,
-	bbakraidInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &ToaRecalcPalette,
+	bbakraidInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &ToaRecalcPalette,
 	240, 320, 3, 4
 };

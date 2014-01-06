@@ -662,7 +662,7 @@ struct BurnDriver BurnDrvMahouDai = {
 	L"\u9B54\u6CD5\u5927\u4F5C\u6226 (Japan)\0Mahou Daisakusen (Japan)\0", NULL, NULL, NULL,
 	BDF_GAME_WORKING | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_RAIZING,
 	NULL, mahoudaiRomInfo, mahoudaiRomName, mahoudaiInputInfo, mahoudaiDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &ToaRecalcPalette,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &ToaRecalcPalette,
 	240, 320, 3, 4
 };
 
@@ -672,7 +672,7 @@ struct BurnDriver BurnDrvSStriker = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_RAIZING,
 	NULL, sstrikerRomInfo, sstrikerRomName, mahoudaiInputInfo, sstrikerDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &ToaRecalcPalette,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &ToaRecalcPalette,
 	240, 320, 3, 4
 };
 
@@ -682,7 +682,7 @@ struct BurnDriver BurnDrvSStrikrA = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_RAIZING,
 	NULL, sstrikraRomInfo, sstrikraRomName, mahoudaiInputInfo, sstrikerDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &ToaRecalcPalette,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &ToaRecalcPalette,
 	240, 320, 3, 4
 };
 

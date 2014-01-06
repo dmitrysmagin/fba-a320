@@ -116,7 +116,7 @@ static void MSM6295Render_Linear(int nChip, int* pBuf, int nSegmentLength)
 						if (pChannelInfo->nPosition & 1) {
 							nDelta = pChannelInfo->nDelta & 0x0F;
 						} else {
-							pChannelInfo->nDelta = MSM6295SampleData[nChip][pChannelInfo->nPosition >> 17][(pChannelInfo->nPosition >> 1) & 0xFFFF];
+							pChannelInfo->nDelta = MSM6295SampleData[nChip][(pChannelInfo->nPosition >> 17) & 3][(pChannelInfo->nPosition >> 1) & 0xFFFF];
 							nDelta = pChannelInfo->nDelta >> 4;
 						}
 
@@ -294,7 +294,7 @@ int MSM6295Render(int nChip, short* pSoundBuf, int nSegmentLength)
 	}
 
 	if (nChip == nLastChip)	{
-#ifndef OOPSWARE_FIX
+#ifdef BUILD_X86_ASM
 		if (bBurnUseMMX) {
 			if (bAdd) {
 				BurnSoundCopyClamp_Mono_Add_A(pBuffer, pSoundBuf, nSegmentLength);
@@ -308,7 +308,7 @@ int MSM6295Render(int nChip, short* pSoundBuf, int nSegmentLength)
 			} else {
 				BurnSoundCopyClamp_Mono_C(pBuffer, pSoundBuf, nSegmentLength);
 			}
-#ifndef OOPSWARE_FIX
+#ifdef BUILD_X86_ASM
 		}
 #endif
 	}

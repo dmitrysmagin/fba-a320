@@ -508,11 +508,11 @@ unsigned char __fastcall cps3ReadByte(unsigned int addr)
 {
 	addr &= 0xc7ffffff;
 	
-	switch (addr) {
-
-	default:
-		bprintf(PRINT_NORMAL, _T("Attempt to read byte value of location %8x\n"), addr);
-	}
+//	switch (addr) {
+//
+//	default:
+//		bprintf(PRINT_NORMAL, _T("Attempt to read byte value of location %8x\n"), addr);
+//	}
 	return 0;
 }
 

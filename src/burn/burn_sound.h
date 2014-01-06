@@ -1,6 +1,7 @@
 // burn_sound.h - General sound support functions
 // based on code by Daniel Moreno (ComaC) < comac2k@teleline.es >
 
+#ifdef BUILD_X86_ASM
 extern "C" {
 	int __cdecl ChannelMix_QS_A(int* Dest, int nLen,
 								char* Sample, int LoopEnd,
@@ -21,14 +22,14 @@ extern "C" {
 
 	/* SrcOPN should have left channel data at SrcOPN, right channel at SrcOPN + 4096, SrcPSG should have all summed channels */
 	void __cdecl BurnSoundCopy_FM_OPN_A(short* SrcOPN, int* SrcPSG, short* Dest, int Len, int VolPSGL, int VolPSGR);
+	void __cdecl BurnSoundCopy_FM_OPN_Add_A(short* SrcOPN, int* SrcPSG, short* Dest, int Len, int VolPSGL, int VolPSGR);
 }
+#endif
 
 void BurnSoundCopyClamp_C(int* Src, short* Dest, int Len);
 void BurnSoundCopyClamp_Add_C(int* Src, short* Dest, int Len);
 void BurnSoundCopyClamp_Mono_C(int* Src, short* Dest, int Len);
 void BurnSoundCopyClamp_Mono_Add_C(int* Src, short* Dest, int Len);
-void BurnSoundCopyClamp_MonoMono_C(int* Src, short* Dest, int Len);
-void BurnSoundCopyClamp_MonoMono_Add_C(int* Src, short* Dest, int Len);
 
 extern int cmc_4p_Precalc();
 
@@ -45,20 +46,3 @@ extern "C" short Precalc[];
 #define INTERPOLATE4PU_8BIT(fp, sN, s0, s1, s2)      (((unsigned int)((sN) * Precalc[(int)(fp) * 4 + 0]) + (unsigned int)((s0) * Precalc[(int)(fp) * 4 + 1]) + (unsigned int)((s1) * Precalc[(int)(fp) * 4 + 2]) + (unsigned int)((s2) * Precalc[(int)(fp) * 4 + 3])) / 64)
 #define INTERPOLATE4PU_16BIT(fp, sN, s0, s1, s2)     (((unsigned int)((sN) * Precalc[(int)(fp) * 4 + 0]) + (unsigned int)((s0) * Precalc[(int)(fp) * 4 + 1]) + (unsigned int)((s1) * Precalc[(int)(fp) * 4 + 2]) + (unsigned int)((s2) * Precalc[(int)(fp) * 4 + 3])) / 16384)
 #define INTERPOLATE4PU_CUSTOM(fp, sN, s0, s1, s2, v) (((unsigned int)((sN) * Precalc[(int)(fp) * 4 + 0]) + (unsigned int)((s0) * Precalc[(int)(fp) * 4 + 1]) + (unsigned int)((s1) * Precalc[(int)(fp) * 4 + 2]) + (unsigned int)((s2) * Precalc[(int)(fp) * 4 + 3])) / (unsigned int)(v))
-
-#ifdef USE_IWMMXT
-// ----- Intel xScale iwMMXt optimize by OopsWare -------
-extern "C" {
-	void BurnSoundCopyClamp_iwMMXt(int* Src, short* Dest, int Len);
-	void BurnSoundCopyClamp_Add_iwMMXt(int* Src, short* Dest, int Len);
-
-	void BurnSoundCopyClamp_Mono_iwMMXt(int* Src, short* Dest, int Len);
-	void BurnSoundCopyClamp_Mono_Add_iwMMXt(int* Src, short* Dest, int Len);
-	
-	void BurnSoundCopy_FM_iwMMXt(short ** Src, short* Dest, int Len, int Vol);
-	
-	void BurnSoundCopy_FM_OPN_iwMMXt(short* SrcOPN, short* Dest, int Len);
-
-};
-#endif
-

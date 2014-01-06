@@ -457,14 +457,15 @@ int YMZ280BRender(short* pSoundBuf, int nSegmentLength)
 			break;
 		}
 		case 3: {									// Use both output channels
-#ifndef OOPSWARE_FIX			
+#ifdef BUILD_X86_ASM
 			if (bBurnUseMMX) {
 				BurnSoundCopyClamp_A(pBuffer, pSoundBuf, nSegmentLength);
-			} else 
+			} else {
 #endif
-			{
 				BurnSoundCopyClamp_C(pBuffer, pSoundBuf, nSegmentLength);
+#ifdef BUILD_X86_ASM
 			}
+#endif
 			break;
 		}
 	}

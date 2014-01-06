@@ -437,6 +437,11 @@ void Sh2Close()
 {
 }
 
+int Sh2GetActive()
+{
+	return 0;
+}
+
 void Sh2Reset(unsigned int pc, unsigned r15)
 {
 	memset(sh2, 0, sizeof(SH2) - 4);
@@ -3211,8 +3216,6 @@ int Sh2Run(int cycles)
 		default: op1111(opcode); break;
 		}
 
-#endif
-
 		if(sh2->test_irq && !sh2->delay)
 		{
 			CHECK_PENDING_IRQ(/*"mame_sh2_execute"*/);
@@ -3249,6 +3252,8 @@ int Sh2Run(int cycles)
 
 	return cycles - sh2->sh2_icount;
 }
+
+#endif
 
 void Sh2SetIRQLine(const int line, const int state)
 {

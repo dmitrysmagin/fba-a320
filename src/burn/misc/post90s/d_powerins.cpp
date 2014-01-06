@@ -17,7 +17,7 @@ static unsigned char *Rom68K;
 static unsigned char *RomZ80;
 static unsigned char *RomBg;
 static unsigned char *RomFg;
-static unsigned char *RomSpr = NULL;
+static unsigned char *RomSpr;
 
 static unsigned char *RamZ80;
 static unsigned short *RamPal;
@@ -330,6 +330,7 @@ static int MemIndex()
 	RomZ80		= Next; Next += 0x0020000;			// Z80 ROM
 	RomBg		= Next; Next += 0x0500000;
 	RomFg		= Next; Next += 0x0100000;
+	RomSpr		= Next; Next += 0x1000000;
 	MSM6295ROM	= Next; Next += m6295size;
 
 	RamStart	= Next;
@@ -347,9 +348,6 @@ static int MemIndex()
 	RamCurPal	= (unsigned int *) Next; Next += 0x000800 * sizeof(unsigned int);
 
 	MemEnd		= Next;
-	if (RomSpr == NULL)
-		RomSpr = (unsigned char*)malloc(0x1000000);
-
 	return 0;
 }
 
@@ -467,18 +465,19 @@ unsigned char __fastcall powerinsZ80Read(unsigned short a)
 	return 0;
 }
 
+#if 1 && defined FBA_DEBUG
 void __fastcall powerinsZ80Write(unsigned short a,unsigned char v)
 {
 	switch (a) {
 		case 0xE000:
 		case 0xE001:
 			break;
-#if 1 && defined FBA_DEBUG
+
 		default:
 			bprintf(PRINT_NORMAL, _T("Z80 Attempt to write value %x to location %x\n"), v, a);
-#endif
 	}
 }
+#endif
 
 unsigned char __fastcall powerinsZ80In(unsigned short p)
 {
@@ -491,7 +490,7 @@ unsigned char __fastcall powerinsZ80In(unsigned short p)
 
 		case 0x01:
 			if ( game_drv == GAME_POWERINS )
-				return BurnYM2203Read(0,0);
+				return BurnYM2203Read(0, 0);
 			else
 				return 0;
 
@@ -511,7 +510,7 @@ void __fastcall powerinsZ80Out(unsigned short p, unsigned char v)
 	switch (p & 0x0FF) {
 		case 0x00:
 			if ( game_drv == GAME_POWERINS )
-				YM2203Read(0, v);
+				BurnYM2203Read(0, v);
 			break;
 		case 0x01:
 			if ( game_drv == GAME_POWERINS )
@@ -802,7 +801,9 @@ static int powerinsInit()
 		ZetOpen(0);
 
 		ZetSetReadHandler(powerinsZ80Read);
+#if 1 && defined FBA_DEBUG
 		ZetSetWriteHandler(powerinsZ80Write);
+#endif
 		ZetSetInHandler(powerinsZ80In);
 		ZetSetOutHandler(powerinsZ80Out);
 
@@ -854,11 +855,6 @@ static int powerinsExit()
 
 	free(Mem);
 	Mem = NULL;
-	if (RomSpr != NULL)
-	{
-		free(RomSpr);
-		RomSpr = NULL;
-	}
 	return 0;
 }
 
@@ -1266,9 +1262,9 @@ struct BurnDriver BurnDrvPowerins = {
 	"powerins", NULL, NULL, "1993",
 	"Gouketsuji Ichizoku (Japan)\0", NULL, "Atlus", "Miscellaneous",
 	L"\u8C6A\u8840\u5BFA\u4E00\u65CF (Japan)\0Gouketsuji Ichizoku\0", NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_16BIT_ONLY, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_16BIT_ONLY, 2, HARDWARE_MISC_POST90S,
 	NULL, powerinsRomInfo, powerinsRomName, powerinsInputInfo, powerinjDIPInfo,
-	powerinsInit, powerinsExit, powerinsFrame, NULL, powerinsScan, &bRecalcPalette,
+	powerinsInit, powerinsExit, powerinsFrame, NULL, powerinsScan, 0, NULL, NULL, NULL, &bRecalcPalette,
 	320, 224, 4, 3
 };
 
@@ -1276,9 +1272,9 @@ struct BurnDriver BurnDrvPowerina = {
 	"powerina", "powerins", NULL, "1993",
 	"Power Instinct (USA, bootleg set 1)\0", NULL, "Atlus", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_16BIT_ONLY | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_16BIT_ONLY | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_MISC_POST90S,
 	NULL, powerinaRomInfo, powerinaRomName, powerinsInputInfo, powerinsDIPInfo,
-	powerinsInit, powerinsExit, powerinsFrame, NULL, powerinsScan, &bRecalcPalette,
+	powerinsInit, powerinsExit, powerinsFrame, NULL, powerinsScan, 0, NULL, NULL, NULL, &bRecalcPalette,
 	320, 224, 4, 3
 };
 
@@ -1286,8 +1282,8 @@ struct BurnDriver BurnDrvPowerinb = {
 	"powerinb", "powerins", NULL, "1993",
 	"Power Instinct (USA, bootleg set 2)\0", NULL, "Atlus", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_16BIT_ONLY | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_16BIT_ONLY | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_MISC_POST90S,
 	NULL, powerinbRomInfo, powerinbRomName, powerinsInputInfo, powerinsDIPInfo,
-	powerinsInit, powerinsExit, powerinsFrame, NULL, powerinsScan, &bRecalcPalette,
+	powerinsInit, powerinsExit, powerinsFrame, NULL, powerinsScan, 0, NULL, NULL, NULL, &bRecalcPalette,
 	320, 224, 4, 3
 };

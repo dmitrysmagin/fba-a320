@@ -69,6 +69,35 @@ inline void NewsMakeInputs()
 	NewsClearOpposites(&NewsInput[0]);
 }
 
+static struct BurnDIPInfo NewsDIPList[]=
+{
+	// Default Values
+	{0x09, 0xff, 0xff, 0xdf, NULL                     },
+
+	// Dip 1
+	{0   , 0xfe, 0   , 4   , "Coinage"                },
+	{0x09, 0x01, 0x03, 0x00, "3 Coins 1 Credit"       },
+	{0x09, 0x01, 0x03, 0x01, "2 Coins 1 Credit"       },
+	{0x09, 0x01, 0x03, 0x03, "1 Coin  1 Credit"       },
+	{0x09, 0x01, 0x03, 0x02, "1 Coin  2 Credits"      },
+
+	{0   , 0xfe, 0   , 4   , "Difficulty"             },
+	{0x09, 0x01, 0x0c, 0x0c, "Easy"                   },
+	{0x09, 0x01, 0x0c, 0x08, "Medium"                 },
+	{0x09, 0x01, 0x0c, 0x04, "Hard"                   },
+	{0x09, 0x01, 0x0c, 0x00, "Hardest"                },
+
+	{0   , 0xfe, 0   , 2   , "Helps"                  },
+	{0x09, 0x01, 0x10, 0x10, "1"                      },
+	{0x09, 0x01, 0x10, 0x00, "2"                      },
+
+	{0   , 0xfe, 0   , 2   , "Copyright"              },
+	{0x09, 0x01, 0x20, 0x00, "Poby"                   },
+	{0x09, 0x01, 0x20, 0x20, "Virus"                  },
+};
+
+STDDIPINFO(News);
+
 static struct BurnDIPInfo NewsaDIPList[]=
 {
 	// Default Values
@@ -92,16 +121,7 @@ static struct BurnDIPInfo NewsaDIPList[]=
 	{0x09, 0x01, 0x10, 0x00, "2"                      },
 };
 
-static struct BurnDIPInfo NewsCopyrightDIPList[] =
-{
-	// Copyright
-	{0   , 0xfe, 0   , 2   , "Copyright"              },
-	{0x09, 0x01, 0x20, 0x00, "Poby"                   },
-	{0x09, 0x01, 0x20, 0x20, "Virus"                  },
-};
-
 STDDIPINFO(Newsa);
-STDDIPINFOEXT(News, Newsa, NewsCopyright);
 
 // Rom Definitions
 static struct BurnRomInfo NewsRomDesc[] = {
@@ -135,7 +155,9 @@ int NewsDoReset()
 {
 	BgPic = 0;
 
+	ZetOpen(0);
 	ZetReset();
+	ZetClose();
 
 	MSM6295Reset(0);
 
@@ -199,6 +221,8 @@ void __fastcall NewsWrite(unsigned short a, unsigned char d)
 	}
 }
 
+
+
 // Function to Allocate and Index required memory
 static int MemIndex()
 {
@@ -223,10 +247,14 @@ static int MemIndex()
 	return 0;
 }
 
+static int TilePlaneOffsets[4]   = { 0, 1, 2, 3 };
+static int TileXOffsets[8]       = { 0, 4, 8, 12, 16, 20, 24, 28 };
+static int TileYOffsets[8]       = { 0, 32, 64, 96, 128, 160, 192, 224 };
+
 // Driver Init and Exit Functions
 int NewsInit()
 {
-	int nRet = 0, nLen, c, y;
+	int nRet = 0, nLen;
 
 	// Allocate and Blank all required memory
 	Mem = NULL;
@@ -244,19 +272,7 @@ int NewsInit()
 	// Load, byte-swap and decode Tile Roms
 	nRet = BurnLoadRom(NewsTempGfx + 0x00000, 1, 2); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(NewsTempGfx + 0x00001, 2, 2); if (nRet != 0) return 1;
-	for (c= 0; c < 16384; c++) {
-		for (y = 0; y < 8; y++) {
-			NewsTiles[(c * 64) + (y * 8) + 0] = NewsTempGfx[0x00000 + (y * 4) + (c * 32)] >> 4;
-			NewsTiles[(c * 64) + (y * 8) + 1] = NewsTempGfx[0x00000 + (y * 4) + (c * 32)] & 0x0f;
-			NewsTiles[(c * 64) + (y * 8) + 2] = NewsTempGfx[0x00001 + (y * 4) + (c * 32)] >> 4;
-			NewsTiles[(c * 64) + (y * 8) + 3] = NewsTempGfx[0x00001 + (y * 4) + (c * 32)] & 0x0f;
-			NewsTiles[(c * 64) + (y * 8) + 4] = NewsTempGfx[0x00002 + (y * 4) + (c * 32)] >> 4;
-			NewsTiles[(c * 64) + (y * 8) + 5] = NewsTempGfx[0x00002 + (y * 4) + (c * 32)] & 0x0f;
-			NewsTiles[(c * 64) + (y * 8) + 6] = NewsTempGfx[0x00003 + (y * 4) + (c * 32)] >> 4;
-			NewsTiles[(c * 64) + (y * 8) + 7] = NewsTempGfx[0x00003 + (y * 4) + (c * 32)] & 0x0f;
-		}
-	}
-
+	GfxDecode(16384, 4, 8, 8, TilePlaneOffsets, TileXOffsets, TileYOffsets, 0x100, NewsTempGfx, NewsTiles);
 	free(NewsTempGfx);
 
 	// Load Sample Rom
@@ -264,6 +280,7 @@ int NewsInit()
 
 	// Setup the Z80 emulation
 	ZetInit(1);
+	ZetOpen(0);
 	ZetMapArea(0x0000, 0x7fff, 0, NewsRom        );
 	ZetMapArea(0x0000, 0x7fff, 2, NewsRom        );
 	ZetMapArea(0x8000, 0x87ff, 0, NewsFgVideoRam );
@@ -278,6 +295,7 @@ int NewsInit()
 	ZetMemEnd();
 	ZetSetReadHandler(NewsRead);
 	ZetSetWriteHandler(NewsWrite);
+	ZetClose();
 
 	// Setup the OKIM6295 emulation
 	MSM6295Init(0, 8000, 100, 0);
@@ -369,8 +387,10 @@ int NewsFrame()
 
 	NewsMakeInputs();
 
+	ZetOpen(0);
 	ZetRun(8000000 / 60);
 	ZetRaiseIrq(0);
+	ZetClose();
 
 	if (pBurnDraw) NewsDraw();
 	if (pBurnSoundOut) MSM6295Render(0, pBurnSoundOut, nBurnSoundLen);
@@ -384,24 +404,26 @@ static int NewsScan(int nAction,int *pnMin)
 	struct BurnArea ba;
 
 	if (pnMin != NULL) {			// Return minimum compatible version
-		*pnMin = 0x029521;
+		*pnMin = 0x02942;
 	}
 
-	if (nAction & ACB_VOLATILE) {		// Scan volatile ram
+	if (nAction & ACB_MEMORY_RAM) {
 		memset(&ba, 0, sizeof(ba));
 		ba.Data	  = RamStart;
 		ba.nLen	  = RamEnd-RamStart;
 		ba.szName = "All Ram";
 		BurnAcb(&ba);
+	}
 
+	if (nAction & ACB_DRIVER_DATA) {
 		ZetScan(nAction);			// Scan Z80
 
 		MSM6295Scan(0, nAction);	// Scan OKIM6295
 
 		// Scan critical driver variables
-		SCAN_VAR(BgPic);
 		SCAN_VAR(NewsInput);
 		SCAN_VAR(NewsDip);
+		SCAN_VAR(BgPic);
 	}
 
 	return 0;
@@ -412,18 +434,18 @@ struct BurnDriver BurnDrvNews = {
 	"news", NULL, NULL, "1993",
 	"News (set 1)\0", NULL, "Poby / Virus", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 1, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING, 1, HARDWARE_MISC_POST90S,
 	NULL, NewsRomInfo, NewsRomName, NewsInputInfo, NewsDIPInfo,
 	NewsInit, NewsExit, NewsFrame, NULL, NewsScan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvNewsa = {
 	"newsa", "news", NULL, "1993",
 	"News (set 2)\0", NULL, "Poby / Jeansole", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 1, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_CLONE, 1, HARDWARE_MISC_POST90S,
 	NULL, NewsaRomInfo, NewsaRomName, NewsInputInfo, NewsaDIPInfo,
 	NewsInit, NewsExit, NewsFrame, NULL, NewsScan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 256, 224, 4, 3
 };

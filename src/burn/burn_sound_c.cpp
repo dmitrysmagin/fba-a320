@@ -16,7 +16,7 @@ void BurnSoundCopyClamp_C(int *Src, short *Dest, int Len)
 void BurnSoundCopyClamp_Add_C(int *Src, short *Dest, int Len)
 {
 	Len *= 2;
-	while (Len--) {
+		while (Len--) {
 		*Dest = CLIP((*Src >> 8) + *Dest);
 		Src++;
 		Dest++;

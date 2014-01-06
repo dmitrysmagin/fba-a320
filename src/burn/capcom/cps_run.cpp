@@ -14,9 +14,9 @@ static const int nVBlank = 0x0106 - 0x0C;					// The scanline at which the vblan
 
 static int nCpsCyclesExtra;
 
-int nIrqLine50, nIrqLine52;
+int CpsDrawSpritesInReverse = 0;
 
-int nGigawing;
+int nIrqLine50, nIrqLine52;
 
 static int DrvReset()
 {
@@ -27,9 +27,11 @@ static int DrvReset()
 	SekReset();
 	SekClose();
 
-	ZetOpen(0);
-	ZetReset();
-	ZetClose();
+	if (!Cps1Pic) {
+		ZetOpen(0);
+		ZetReset();
+		ZetClose();
+	}
 
 	if (Cps == 2) {
 		// Disable beam-synchronized interrupts
@@ -51,14 +53,9 @@ static int DrvReset()
 
 int CpsRunInit()
 {
-	nGigawing = 0;
 	nLagObjectPalettes = 0;
 
-	if (strcmp(BurnDrvGetTextA(DRV_NAME), "gigawing") == 0 || strcmp(BurnDrvGetTextA(DRV_NAME), "gwingj") == 0) {
-
-		nGigawing = 1;
-		nLagObjectPalettes = 1;
-	}
+	if (Cps == 2) nLagObjectPalettes = 1;
 
 	SekInit(0, 0x68000);					// Allocate 68000
 
@@ -83,7 +80,7 @@ int CpsRunInit()
 		return 1;
 	}
 
-	if ((Cps & 1) && Cps1Qs == 0) {			// Sound init (MSM6295 + YM2151)
+	if ((Cps & 1) && Cps1Qs == 0 && Cps1Pic == 0) {			// Sound init (MSM6295 + YM2151)
 		if (PsndInit()) {
 			return 1;
 		}
@@ -243,8 +240,10 @@ int Cps1Frame()
 	if (Cps1Qs == 1) {
 		QsndNewFrame();
 	} else {
-		ZetOpen(0);
-		PsndNewFrame();
+		if (!Cps1Pic) {
+			ZetOpen(0);
+			PsndNewFrame();
+		}
 	}
 
 	nCpsCycles = (int)((long long)nCPS68KClockspeed * nBurnCPUSpeedAdjust >> 8);
@@ -258,7 +257,7 @@ int Cps1Frame()
 
 	SekRun(nCpsCycles * nFirstLine / 0x0106);					// run 68K for the first few lines
 
-	if (!Sf2Hack) {
+	if (!CpsDrawSpritesInReverse) {
 		CpsObjGet();											// Get objects
 	}
 
@@ -271,13 +270,13 @@ int Cps1Frame()
 
 			memcpy(CpsSaveReg[0], CpsReg, 0x100);				// Registers correct now
 
-			GetPalette(0, 4);									// Get palette
+			GetPalette(0, 6);									// Get palette
 			if (CpsStar) {
 				GetStarPalette();
 			}
 
-			if (Sf2Hack) {
-				CpsObjGet();   									// Get objects
+			if (CpsDrawSpritesInReverse) {
+				if (i == 3) CpsObjGet();   									// Get objects
 			}
 
 			if (pBurnDraw) {
@@ -293,9 +292,11 @@ int Cps1Frame()
 	if (Cps1Qs == 1) {
 		QsndEndFrame();
 	} else {
-		PsndSyncZ80(nCpsZ80Cycles);
-		PsmUpdate(nBurnSoundLen);
-		ZetClose();
+		if (!Cps1Pic) {
+			PsndSyncZ80(nCpsZ80Cycles);
+			PsmUpdate(nBurnSoundLen);
+			ZetClose();
+		}
 	}
 
 	nCpsCyclesExtra = SekTotalCycles() - nCpsCycles;
@@ -352,11 +353,6 @@ int Cps2Frame()
 	SekOpen(0);
 	SekIdle(nCpsCyclesExtra);
 
-//	if (nGigawing) {
-//		GetPalette(0, 1);								// Get object palettes
-//		CpsObjGet();									// Get objects
-//	}
-
 	if (nIrqCycles < nCpsCycles * nFirstLine / 0x0106) {
 		SekRun(nIrqCycles);
 		DoIRQ();
@@ -394,10 +390,6 @@ int Cps2Frame()
 
 //	nCpsCyclesSegment[0] = (nCpsCycles * nVBlank) / 0x0106;
 //	nDone += SekRun(nCpsCyclesSegment[0] - nDone);
-
-//	if (!nGigawing) {
-//		GetPalette(0, 1);								// Get object palettes
-//	}
 
 	SekSetIRQLine(2, SEK_IRQSTATUS_AUTO);				// VBlank
 	SekRun(nCpsCycles - SekTotalCycles());

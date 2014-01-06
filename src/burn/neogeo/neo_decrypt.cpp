@@ -9,8 +9,7 @@ to that, the data for the front text layer, which was previously stored in
 a separate ROM, is stored at the end of the tile data.
 
 The encryption is one of the nastiest implementation of a XOR scheme ever
-seen, involving 9 seemingly uncorrelated 256-byte tables. All known games use
-the same tables except KOF2000 and MS4 which use a different set.
+seen, involving 9 seemingly uncorrelated 256-byte tables.
 
 The 32 data bits of every longword are decrypted in a single step (one byte at
 a time), but the values to use for the xor are determined in a convoluted way.
@@ -469,7 +468,13 @@ void NeoExtractSData(unsigned char* rom, unsigned char* sdata, int rom_size, int
 	}
 }
 
-inline static void decrypt(unsigned char *r0, unsigned char *r1, const unsigned char *table0hi, const unsigned char *table0lo, const unsigned char *table1, int base, int invert)
+inline static void decrypt(unsigned char *r0, unsigned char *r1,
+		    const unsigned char *table0hi,
+		    const unsigned char *table0lo,
+		    const unsigned char *table1,
+		    int base,
+		    int invert)
+
 {
 	unsigned char c0, c1, tmp, xor0, xor1;
 
@@ -480,7 +485,7 @@ inline static void decrypt(unsigned char *r0, unsigned char *r1, const unsigned 
 	c0 = *r0;
 	c1 = *r1;
 
-	if (invert) {
+	if (invert)	{
 		*r0 = c1 ^ xor0;
 		*r1 = c0 ^ xor1;
 	} else {
@@ -498,46 +503,45 @@ void NeoGfxDecryptDoBlock(int extra_xor, unsigned char* buf, int offset, int blo
 	offset >>= 2;
 
 	// Data xor
-	for (rpos = 0; rpos < block_size; rpos++) {
+	for (rpos = 0; rpos < block_size; rpos++)
+	{
 		decrypt(buf+4*rpos+0, buf+4*rpos+3, type0_t03, type0_t12, type1_t03, rpos, (rpos>>8) & 1);
 		decrypt(buf+4*rpos+1, buf+4*rpos+2, type0_t12, type0_t03, type1_t12, rpos, (((rpos + offset)>>16) ^ address_16_23_xor2[(rpos>>8) & 0xff]) & 1);
 	}
 
 	// Address xor
-	for (rpos = 0; rpos < block_size; rpos++) {
-		int baser = rpos + offset;
+	for (rpos = 0;rpos < rom_size/4;rpos++)
+	{
+		int baser;
 
-		baser ^= address_0_7_xor[(baser >> 8) & 0xff];
-		baser ^= address_16_23_xor2[(baser >> 8) & 0xff] << 16;
-		baser ^= address_16_23_xor1[baser & 0xff] << 16;
-		baser ^= address_8_15_xor2[baser & 0xff] << 8;
-
-		// special handling for games with 6 C ROMs
-		if (rom_size == 0x3000000) {
-			if (rpos + offset < 0x2000000 / 4) {
-				baser &= (0x2000000 / 4) - 1;
-			} else {
-				baser = 0x2000000 / 4 + (baser & ((0x1000000 / 4) - 1));
-			}
-
-		// special handling for kf2k3pcb
-		} else if (rom_size == 0x6000000) {
-			if (rpos + offset < 0x4000000 / 4) {
-				baser &= (0x4000000 / 4) - 1;
-			} else {
-				baser = 0x4000000 / 4 + (baser & ((0x1000000 / 4) - 1));
-			}
-
-		// Clamp to the real rom size
-		} else {
-			baser &= (rom_size/4) - 1;
-		}
-
-		baser ^= address_8_15_xor1[(baser >> 16) & 0xff] << 8;
-
+		baser = rpos;
 		baser ^= extra_xor;
 
-		((UINT32*)rom)[baser] = ((UINT32*)buf)[rpos];
+		baser ^= address_8_15_xor1[(baser >> 16) & 0xff] << 8;
+		baser ^= address_8_15_xor2[baser & 0xff] << 8;
+		baser ^= address_16_23_xor1[baser & 0xff] << 16;
+		baser ^= address_16_23_xor2[(baser >> 8) & 0xff] << 16;
+		baser ^= address_0_7_xor[(baser >> 8) & 0xff];
+
+		if (rom_size == 0x3000000) // special handling for preisle2
+		{
+			if (rpos < 0x2000000/4)
+				baser &= (0x2000000/4)-1;
+			else
+				baser = 0x2000000/4 + (baser & ((0x1000000/4)-1));
+		}
+		else if (rom_size == 0x6000000) // special handling for kf2k3pcb
+		{
+			if (rpos < 0x4000000/4)
+				baser &= (0x4000000/4)-1;
+			else
+				baser = 0x4000000/4 + (baser & ((0x1000000/4)-1));
+		}
+		else // clamp to the real rom size
+			baser &= (rom_size/4)-1;
+
+		if (baser >= offset && baser < (offset + block_size))
+			((UINT32*)rom)[rpos] = ((UINT32*)buf)[baser-offset];
 	}
 }
 
@@ -569,76 +573,45 @@ void NeoGfxDecryptCMC50Init()
 	address_0_7_xor =    kof2000_address_0_7_xor;
 }
 
-void svcpcb_gfx_decrypt(unsigned char* rom)
+// Jamma PCB decryption
+void pcb_gfx_crypt(unsigned char *src, int nType)
 {
-	const unsigned char xor1[4] = {0x34, 0x21, 0xc4, 0xe9};
-	unsigned char *buf = (unsigned char*)malloc(0x800000);
+	static unsigned char xor1[ 4 ] = { 0x34, 0x21, 0xc4, 0xe9 };
 
-	for (int i = 0; i < 4; i++) {
-		int ofst;
-		unsigned char *gfxrom = rom+i*0x800000;
+	int i, j, k;
+	unsigned char *dst = (unsigned char*)malloc( 0x800000 );
+	if (dst == NULL) return;
 
-		for(int j = 0; j < 0x800000; j++) {
-			gfxrom[j] ^= xor1[(j % 4)];
-		}
-
-		for(int j = 0; j < 0x800000; j += 4) {
-			UINT32 *rom32 = (UINT32*)&gfxrom[j];
-			*rom32 = BITSWAP32(*rom32, 0x09, 0x0d, 0x13, 0x00, 0x17, 0x0f, 0x03, 0x05, 0x04, 0x0c, 0x11, 0x1e, 0x12, 0x15, 0x0b, 0x06, 0x1b, 0x0a, 0x1a, 0x1c, 0x14, 0x02, 0x0e, 0x1d, 0x18, 0x08, 0x01, 0x10, 0x19, 0x1f, 0x07, 0x16);
-		}
-
-		memcpy(buf, gfxrom, 0x800000);
-
-		for(int j = 0; j < 0x800000 / 4; j++ ) {
-			ofst =  BITSWAP24((j & 0x1fffff), 0x17, 0x16, 0x15, 0x04, 0x0b, 0x0e, 0x08, 0x0c, 0x10, 0x00, 0x0a, 0x13, 0x03, 0x06, 0x02, 0x07, 0x0d, 0x01, 0x11, 0x09, 0x14, 0x0f, 0x12, 0x05);
-			ofst ^= 0x0c8923;
-			ofst += (j & 0xffe00000);
-			memcpy(&gfxrom[j * 4], &buf[ofst * 4], 0x04);
-		}
+	for (i = 0; i < 0x800000 * 4; i++)
+	{
+		src[i] ^= xor1[i & 3];
 	}
-	free(buf);
+
+	for (i = 0; i < 0x800000 * 4; i+=4)
+	{
+		unsigned int *tmp = (unsigned int*)&src[i];
+		*tmp = BITSWAP32(*tmp, 9,13,19,0,23,15,3,5,4,12,17,30,18,21,11,6,27,10,26,28,20,2,14,29,24,8,1,16,25,31,7,22);
+	}
+
+	for (i = 0; i < 0x800000 * 4; i+= 0x800000)
+	{
+		for (j = 0; j < 0x800000; j+=4)
+		{
+			if (nType) {
+				k = BITSWAP24(j, 23,18,22,20,19,17,16,15,14,13,12,11,10,21,9,8,7,6,5,4,3,2,1,0);
+			} else {
+				k = BITSWAP24(j, 23,6,13,16,10,14,18,2,12,21,5,8,4,9,15,3,19,11,22,17,20,7,1,0);
+				k ^= 0x32248c;
+			}
+			k |= j & 0xff000000;
+
+			memcpy (dst + j, src + i + k, 4);
+		}
+
+		memcpy (src + i, dst, 0x800000);
+	}
+
+	free (dst);
 }
 
-void kf2k3pcb_gfx_decrypt(unsigned char *rom)
-{
-	NeoGfxDecryptCMC50Init();
 
-	int i;
-	unsigned char *buf = (unsigned char*)malloc(0x6000000);
-	
-	// PCB protection
-	for (i = 0; i < 0x6000000; i+=4) {
-		int ofst = (i & 0xff800000) + BITSWAP24( (i & 0x7fffff), 0x17, 0x15, 0x0a, 0x14, 0x13, 0x16, 0x12, 0x11, 0x10, 0x0f, 0x0e, 0x0d, 0x0c, 0x0b, 0x09, 0x08, 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00 );
-		BurnByteswap(rom + i + 1, 2);
-		UINT32 *rom32 = (UINT32*)&rom[ i ], *buf32 = (UINT32*)&buf[ ofst ];
-		*buf32 = BITSWAP32( *rom32^0xe9c42134, 0x09, 0x0d, 0x13, 0x00, 0x17, 0x0f, 0x03, 0x05, 0x04, 0x0c, 0x11, 0x1e, 0x12, 0x15, 0x0b, 0x06, 0x1b, 0x0a, 0x1a, 0x1c, 0x14, 0x02, 0x0e, 0x1d, 0x18, 0x08, 0x01, 0x10, 0x19, 0x1f, 0x07, 0x16 );
-	}
-
-	memcpy(rom, buf, 0x6000000);
-
-	// Data xor
-	for (i = 0; i < 0x6000000 / 4; i++) {
-		decrypt(buf+4*i+0, buf+4*i+3, type0_t03, type0_t12, type1_t03, i, (i>>8) & 1);
-		decrypt(buf+4*i+1, buf+4*i+2, type0_t12, type0_t03, type1_t12, i, ((i>>16) ^ address_16_23_xor2[(i>>8) & 0xff]) & 1);
-	}
-
-	// Address xor
-	for (i = 0; i < 0x6000000 / 4; i++) {
-		int baser = i^0x9D;
-		baser ^= address_8_15_xor1[(baser >> 16) & 0xff] << 8;
-		baser ^= address_8_15_xor2[baser & 0xff] << 8;
-		baser ^= address_16_23_xor1[baser & 0xff] << 16;
-		baser ^= address_16_23_xor2[(baser >> 8) & 0xff] << 16;
-		baser ^= address_0_7_xor[(baser >> 8) & 0xff];
-
-		if (i < 0x4000000 / 4) {
-			baser &= (0x4000000 / 4) - 1;
-		} else {
-			baser = 0x4000000 / 4 + (baser & ((0x1000000 / 4) - 1));
-		}
-
-		memcpy(rom + i * 4, buf + baser * 4, 4);
-	}
-
-	free(buf);
-}

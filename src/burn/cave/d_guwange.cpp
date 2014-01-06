@@ -658,8 +658,9 @@ struct BurnDriver BurnDrvGuwange = {
 	L"\u3050\u308F\u3093\u3052 (1999 6/24 master ver.)\0Guwange\0", NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_ONLY,
 	NULL, guwangeRomInfo, guwangeRomName, guwangeInputInfo, NULL,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &CaveRecalcPalette,
-	240, 320, 3, 4
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 240, 320, 3, 4
 };
 
 

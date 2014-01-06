@@ -2,7 +2,7 @@
 
 #include "psikyo.h"
 
-unsigned char* PsikyoTileROM = NULL;
+unsigned char* PsikyoTileROM;
 unsigned char* PsikyoTileRAM[3] = { NULL, };
 
 bool bPsikyoClearBackground;

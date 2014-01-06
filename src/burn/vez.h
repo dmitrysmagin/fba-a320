@@ -7,6 +7,8 @@ struct VezContext {
 	
 	unsigned char * ppMemRead[512];
 	unsigned char * ppMemWrite[512];
+	unsigned char * ppMemFetch[512];
+	unsigned char * ppMemFetchData[512];
 
 	// Handlers
  #ifdef FASTCALL
@@ -22,19 +24,29 @@ struct VezContext {
  #endif
 };
 
+extern struct VezContext * VezCurrentCPU;
+
+unsigned char cpu_readmem20(unsigned int a);
+void cpu_writemem20(unsigned int a, unsigned char d);
+
+extern int nVezCount;
+
 int VezInit(int nCount, unsigned int * typelist);
 void VezExit();
 void VezNewFrame();
 int VezOpen(int nCPU);
 void VezClose();
+int VezGetActive();
 
 int VezMemCallback(int nStart,int nEnd,int nMode);
 int VezMapArea(int nStart, int nEnd, int nMode, unsigned char *Mem);
+int VezMapArea(int nStart, int nEnd, int nMode, unsigned char *Mem1, unsigned char *Mem2);
 
 void VezSetReadHandler(unsigned char (__fastcall *)(unsigned int));
 void VezSetWriteHandler(void (__fastcall *)(unsigned int, unsigned char));
 void VezSetReadPort(unsigned char (__fastcall *)(unsigned int));
 void VezSetWritePort(void (__fastcall *)(unsigned int, unsigned char));
+void VezSetIrqCallBack(int (*cb)(int));
 
 int VezReset();
 int VezPc(int n);
@@ -47,4 +59,3 @@ int VezRun(int nCycles);
 #define VEZ_IRQSTATUS_ACK  2
 
 void VezSetIRQLine(const int line, const int status);
-

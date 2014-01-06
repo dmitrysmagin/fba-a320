@@ -669,10 +669,10 @@ STD_ROM_PICK(Shangnle);
 STD_ROM_FN(Shangnle);
 
 static struct BurnRomInfo ToutrunRomDesc[] = {
-	{ "epr-12513.133",    0x10000, 0xae8835a5, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
-	{ "epr-12512.118",    0x10000, 0xf90372ad, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
-	{ "epr-12515.132",    0x10000, 0x1f047df4, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
-	{ "epr-12514.117",    0x10000, 0x5539e9c3, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr-12289.133",    0x10000, 0x812fd035, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr-12288.118",    0x10000, 0x2f1151bb, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr-12291.132",    0x10000, 0x8ca284d2, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr-12290.117",    0x10000, 0x44dbf3cb, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
 	{ "epr-12293.131",    0x10000, 0xf4321eea, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
 	{ "epr-12292.116",    0x10000, 0x51d98af0, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
 	
@@ -685,14 +685,22 @@ static struct BurnRomInfo ToutrunRomDesc[] = {
 	{ "opr-12324.103",    0x10000, 0x24607a55, SYS16_ROM_TILES | BRF_GRA },
 	{ "opr-12325.104",    0x10000, 0x1405137a, SYS16_ROM_TILES | BRF_GRA },
 	
-	{ "mpr-12336.9",      0x20000, 0xdda465c7, SYS16_ROM_SPRITES | BRF_GRA },
-	{ "mpr-12337.10",     0x20000, 0x828233d1, SYS16_ROM_SPRITES | BRF_GRA },
-	{ "mpr-12338.11",     0x20000, 0x46b4b5f4, SYS16_ROM_SPRITES | BRF_GRA },
-	{ "mpr-12339.12",     0x20000, 0x0d7e3bab, SYS16_ROM_SPRITES | BRF_GRA },
-	{ "mpr-12364.13",     0x20000, 0xa4b83e65, SYS16_ROM_SPRITES | BRF_GRA },
-	{ "mpr-12365.14",     0x20000, 0x4a80b2a9, SYS16_ROM_SPRITES | BRF_GRA },
-	{ "mpr-12366.15",     0x20000, 0x385cb3ab, SYS16_ROM_SPRITES | BRF_GRA },
-	{ "mpr-12367.16",     0x20000, 0x4930254a, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "opr-12307.9",      0x10000, 0x437dcf09, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "opr-12308.10",     0x10000, 0x0de70cc2, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "opr-12309.11",     0x10000, 0xdeb8c242, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "opr-12310.12",     0x10000, 0x45cf157e, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "opr-12311.13",     0x10000, 0xae2bd639, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "opr-12312.14",     0x10000, 0x626000e7, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "opr-12313.15",     0x10000, 0x52870c37, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "opr-12314.16",     0x10000, 0x40c461ea, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "opr-12315.17",     0x10000, 0x3ff9a3a3, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "opr-12316.18",     0x10000, 0x8a1e6dc8, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "opr-12317.19",     0x10000, 0x77e382d4, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "opr-12318.20",     0x10000, 0xd1afdea9, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "opr-12319.25",     0x10000, 0xdf23baf9, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "opr-12320.22",     0x10000, 0x7931e446, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "opr-12321.23",     0x10000, 0x830bacd4, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "opr-12322.24",     0x10000, 0x8b812492, SYS16_ROM_SPRITES | BRF_GRA },
 	
 	{ "epr-12299.47",     0x08000, 0xfc9bc41b, SYS16_ROM_ROAD | BRF_GRA },
 	{ "epr-12298.11",     0x08000, 0xfc9bc41b, SYS16_ROM_ROAD | BRF_GRA },
@@ -706,7 +714,7 @@ static struct BurnRomInfo ToutrunRomDesc[] = {
 	{ "opr-12305.70",     0x10000, 0xba9ce677, SYS16_ROM_PCMDATA | BRF_SND },
 	{ "opr-12306.71",     0x10000, 0xe49249fd, SYS16_ROM_PCMDATA | BRF_SND },
 	
-	{ "317-0118.key",     0x02000, 0x083d7d56, SYS16_ROM_KEY | BRF_ESS | BRF_PRG },
+	{ "317-0109.key",     0x02000, 0xe12a6e78, SYS16_ROM_KEY | BRF_ESS | BRF_PRG },
 };
 
 
@@ -766,6 +774,51 @@ static struct BurnRomInfo Toutrun2RomDesc[] = {
 STD_ROM_PICK(Toutrun2);
 STD_ROM_FN(Toutrun2);
 
+static struct BurnRomInfo ToutrunuRomDesc[] = {
+	{ "epr-12513.133",    0x10000, 0xae8835a5, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr-12512.118",    0x10000, 0xf90372ad, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr-12515.132",    0x10000, 0x1f047df4, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr-12514.117",    0x10000, 0x5539e9c3, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr-12293.131",    0x10000, 0xf4321eea, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr-12292.116",    0x10000, 0x51d98af0, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	
+	{ "opr-12295.76",     0x10000, 0xd43a3a84, SYS16_ROM_PROG2 | BRF_ESS | BRF_PRG },
+	{ "opr-12294.58",     0x10000, 0x27cdcfd3, SYS16_ROM_PROG2 | BRF_ESS | BRF_PRG },
+	{ "opr-12297.75",     0x10000, 0x1d9b5677, SYS16_ROM_PROG2 | BRF_ESS | BRF_PRG },
+	{ "opr-12296.57",     0x10000, 0x0a513671, SYS16_ROM_PROG2 | BRF_ESS | BRF_PRG },
+
+	{ "opr-12323.102",    0x10000, 0x4de43a6f, SYS16_ROM_TILES | BRF_GRA },
+	{ "opr-12324.103",    0x10000, 0x24607a55, SYS16_ROM_TILES | BRF_GRA },
+	{ "opr-12325.104",    0x10000, 0x1405137a, SYS16_ROM_TILES | BRF_GRA },
+	
+	{ "mpr-12336.9",      0x20000, 0xdda465c7, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "mpr-12337.10",     0x20000, 0x828233d1, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "mpr-12338.11",     0x20000, 0x46b4b5f4, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "mpr-12339.12",     0x20000, 0x0d7e3bab, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "mpr-12364.13",     0x20000, 0xa4b83e65, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "mpr-12365.14",     0x20000, 0x4a80b2a9, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "mpr-12366.15",     0x20000, 0x385cb3ab, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "mpr-12367.16",     0x20000, 0x4930254a, SYS16_ROM_SPRITES | BRF_GRA },
+	
+	{ "epr-12299.47",     0x08000, 0xfc9bc41b, SYS16_ROM_ROAD | BRF_GRA },
+	{ "epr-12298.11",     0x08000, 0xfc9bc41b, SYS16_ROM_ROAD | BRF_GRA },
+
+	{ "epr-12300.88",     0x10000, 0xe8ff7011, SYS16_ROM_Z80PROG | BRF_ESS | BRF_PRG },
+	
+	{ "opr-12301.66",     0x10000, 0x6e78ad15, SYS16_ROM_PCMDATA | BRF_SND },
+	{ "opr-12302.67",     0x10000, 0xe72928af, SYS16_ROM_PCMDATA | BRF_SND },
+	{ "opr-12303.68",     0x10000, 0x8384205c, SYS16_ROM_PCMDATA | BRF_SND },
+	{ "opr-12304.69",     0x10000, 0xe1762ac3, SYS16_ROM_PCMDATA | BRF_SND },
+	{ "opr-12305.70",     0x10000, 0xba9ce677, SYS16_ROM_PCMDATA | BRF_SND },
+	{ "opr-12306.71",     0x10000, 0xe49249fd, SYS16_ROM_PCMDATA | BRF_SND },
+	
+	{ "317-0118.key",     0x02000, 0x083d7d56, SYS16_ROM_KEY | BRF_ESS | BRF_PRG },
+};
+
+
+STD_ROM_PICK(Toutrunu);
+STD_ROM_FN(Toutrunu);
+
 /*====================================================
 Memory Handlers
 ====================================================*/
@@ -775,7 +828,9 @@ void OutrunPPI0WritePortC(UINT8 data)
 	System16VideoEnable = data & 0x20;
 	
 	if (!(data & 0x01)) {
+		ZetOpen(0);
 		ZetReset();
+		ZetClose();
 	}
 }
 
@@ -783,7 +838,8 @@ unsigned short __fastcall OutrunReadWord(unsigned int a)
 {
 	switch (a) {
 		case 0x140060: {
-			return 0xffff;
+			// watchdog read
+			return 0;
 		}
 	}
 
@@ -797,6 +853,10 @@ unsigned short __fastcall OutrunReadWord(unsigned int a)
 unsigned char __fastcall OutrunReadByte(unsigned int a)
 {
 	switch (a) {
+		case 0x140001: {
+			ppi8255_r(0, a - (0x140000) >> 1);
+		}
+		
 		case 0x140011: {
 			return 0xff - System16Input[0];
 		}
@@ -823,6 +883,11 @@ unsigned char __fastcall OutrunReadByte(unsigned int a)
 
 void __fastcall OutrunWriteWord(unsigned int a, unsigned short d)
 {
+	if (a >= 0x100000 && a <= 0x10ffff) {
+		System16BTileWordWrite(a - 0x100000, d);
+		return;
+	}
+	
 	switch (a) {
 		case 0x140070: {
 			UINT32 *src = (UINT32 *)System16SpriteRam;
@@ -848,7 +913,13 @@ void __fastcall OutrunWriteWord(unsigned int a, unsigned short d)
 
 void __fastcall OutrunWriteByte(unsigned int a, unsigned char d)
 {
+	if (a >= 0x100000 && a <= 0x10ffff) {
+		System16BTileByteWrite((a - 0x100000) ^ 1, d);
+		return;
+	}
+	
 	switch (a) {
+		case 0x140003:
 		case 0x140005:
 		case 0x140007: {
 			ppi8255_w(0, a - (0x140000) >> 1, d & 0xff);
@@ -877,7 +948,9 @@ void __fastcall OutrunWriteByte(unsigned int a, unsigned char d)
 		
 		case 0xffff07: {
 			System16SoundLatch = d & 0xff;
+			ZetOpen(0);
 			ZetNmi();
+			ZetClose();
 			return;
 		}
 	}
@@ -885,15 +958,6 @@ void __fastcall OutrunWriteByte(unsigned int a, unsigned char d)
 #if 0 && defined FBA_DEBUG
 	bprintf(PRINT_NORMAL, _T("68000 Write Byte -> 0x%06X, 0x%02X\n"), a, d);
 #endif
-}
-
-unsigned short __fastcall Outrun2ReadWord(unsigned int a)
-{
-#if 0 && defined FBA_DEBUG
-	bprintf(PRINT_NORMAL, _T("68000 # 2 Read Word -> 0x%06X\n"), a);
-#endif
-
-	return 0;
 }
 
 unsigned char __fastcall Outrun2ReadByte(unsigned int a)
@@ -952,7 +1016,19 @@ void __fastcall Outrun2WriteByte(unsigned int a, unsigned char d)
 
 unsigned short __fastcall ShangonReadWord(unsigned int a)
 {
-	SEK_DEF_READ_WORD(0, a);
+	switch (a) {
+		case 0x141002: {
+			return 0xff - System16Input[0];
+		}
+		
+		case 0x141004: {
+			return System16Dip[0];
+		}
+		
+		case 0x141006: {
+			return System16Dip[1];
+		}
+	}
 
 #if 0 && defined FBA_DEBUG
 	bprintf(PRINT_NORMAL, _T("68000 Read Word -> 0x%06X\n"), a);
@@ -980,6 +1056,20 @@ unsigned char __fastcall ShangonReadByte(unsigned int a)
 			if (System16ProcessAnalogControlsDo) return System16ProcessAnalogControlsDo(System16AnalogSelect);
 		}
 		
+		case 0x290000: {
+			// swap the halves of the road RAM
+			memcpy(System16RoadRamBuff, System16RoadRam, 0x1000);
+			UINT32 *src = (UINT32 *)System16RoadRamBuff;
+			UINT32 *dst = (UINT32 *)System16RoadRam;
+			for (int i = 0; i < 0x1000/4; i++) {
+				UINT32 temp = *src;
+				*src++ = *dst;
+				*dst++ = temp;
+			}
+			
+			return System16RoadControl;
+		}
+		
 		case 0xffff05: {
 			return System16SoundLatch;
 		}
@@ -994,8 +1084,27 @@ unsigned char __fastcall ShangonReadByte(unsigned int a)
 
 void __fastcall ShangonWriteWord(unsigned int a, unsigned short d)
 {
-	SEK_DEF_WRITE_WORD(0, a, d);
-
+	if (a >= 0x100000 && a <= 0x10ffff) {
+		System16BTileWordWrite(a - 0x100000, d);
+		return;
+	}
+	
+	switch (a) {
+		case 0x290000: {
+			System16RoadControl = d & 3;
+			return;
+		}
+		
+		case 0xffff06: {
+			System16SoundLatch = d & 0xff;
+			ZetOpen(0);
+			ZetNmi();
+			nSystem16CyclesDone[2] += ZetRun(200);
+			ZetClose();
+			return;
+		}
+	}
+	
 #if 0 && defined FBA_DEBUG
 	bprintf(PRINT_NORMAL, _T("68000 Write Word -> 0x%06X, 0x%04X\n"), a, d);
 #endif
@@ -1003,6 +1112,11 @@ void __fastcall ShangonWriteWord(unsigned int a, unsigned short d)
 
 void __fastcall ShangonWriteByte(unsigned int a, unsigned char d)
 {
+	if (a >= 0x100000 && a <= 0x10ffff) {
+		System16BTileByteWrite((a - 0x100000) ^ 1, d);
+		return;
+	}
+	
 	switch (a) {
 		case 0x140001: {
 			System16AnalogSelect = (d >> 6) & 3;
@@ -1012,17 +1126,29 @@ void __fastcall ShangonWriteByte(unsigned int a, unsigned char d)
 		
 		case 0x140021: {
 			if (!(d & 1)) {
+				ZetOpen(0);
 				ZetReset();
+				ZetClose();
 			}
 			return;
 			
 		}
 		
+		case 0x143001: {
+			// watchdog write
+			return;
+		}
+		
+		case 0x143021: {
+			return;
+		}
+		
 		case 0xffff07: {
 			System16SoundLatch = d & 0xff;
+			ZetOpen(0);
 			ZetNmi();
-			ZetRun(200);
-			nSystem16CyclesDone[2] += 200;
+			nSystem16CyclesDone[2] += ZetRun(200);
+			ZetClose();
 			return;
 		}
 	}
@@ -1094,7 +1220,28 @@ static int OutrunInit()
 	
 	System16HasGears = true;
 	
+	System16PCMDataSizePreAllocate = 0x60000;
+	
 	int nRet = System16Init();
+	
+	if (!nRet) {
+		unsigned char *pTemp = (unsigned char*)malloc(0x30000);
+		memcpy(pTemp, System16PCMData, 0x30000);
+		memset(System16PCMData, 0, 0x60000);
+		memcpy(System16PCMData + 0x00000, pTemp + 0x00000, 0x8000);
+		memcpy(System16PCMData + 0x08000, pTemp + 0x00000, 0x8000);
+		memcpy(System16PCMData + 0x10000, pTemp + 0x08000, 0x8000);
+		memcpy(System16PCMData + 0x18000, pTemp + 0x08000, 0x8000);
+		memcpy(System16PCMData + 0x20000, pTemp + 0x10000, 0x8000);
+		memcpy(System16PCMData + 0x28000, pTemp + 0x10000, 0x8000);
+		memcpy(System16PCMData + 0x30000, pTemp + 0x18000, 0x8000);
+		memcpy(System16PCMData + 0x38000, pTemp + 0x18000, 0x8000);
+		memcpy(System16PCMData + 0x40000, pTemp + 0x20000, 0x8000);
+		memcpy(System16PCMData + 0x48000, pTemp + 0x20000, 0x8000);
+		memcpy(System16PCMData + 0x50000, pTemp + 0x28000, 0x8000);
+		memcpy(System16PCMData + 0x58000, pTemp + 0x28000, 0x8000);
+		free(pTemp);
+	}
 	
 	return nRet;
 }
@@ -1104,6 +1251,8 @@ static int OutrunbInit()
 	System16ProcessAnalogControlsDo = OutrunProcessAnalogControls;
 	
 	System16HasGears = true;
+	
+	System16PCMDataSizePreAllocate = 0x60000;
 	
 	int nRet = System16Init();
 	
@@ -1140,8 +1289,20 @@ static int OutrunbInit()
 		/* Z80 code: swap bits 5,6 */
 		byte = System16Z80Rom;
 		length = System16Z80RomSize;
-		for (i = 0; i < length; i++)
+		for (i = 0; i < length; i++) {
 			byte[i] = BITSWAP08(byte[i], 7,5,6,4,3,2,1,0);
+		}
+			
+		unsigned char *pTemp = (unsigned char*)malloc(0x30000);
+		memcpy(pTemp, System16PCMData, 0x30000);
+		memset(System16PCMData, 0, 0x60000);
+		memcpy(System16PCMData + 0x00000, pTemp + 0x00000, 0x8000);
+		memcpy(System16PCMData + 0x10000, pTemp + 0x08000, 0x8000);
+		memcpy(System16PCMData + 0x20000, pTemp + 0x10000, 0x8000);
+		memcpy(System16PCMData + 0x30000, pTemp + 0x18000, 0x8000);
+		memcpy(System16PCMData + 0x40000, pTemp + 0x20000, 0x8000);
+		memcpy(System16PCMData + 0x50000, pTemp + 0x28000, 0x8000);
+		free(pTemp);
 	}
 	
 	return nRet;
@@ -1152,6 +1313,8 @@ static int ShangonInit()
 	System16ProcessAnalogControlsDo = ShangonProcessAnalogControls;
 	
 	Shangon = true;
+	
+	System16PCMDataSizePreAllocate = 0x40000;
 
 	int nRet = System16Init();
 	
@@ -1166,6 +1329,18 @@ static int ShangonInit()
 		System16RoadColorOffset1 = 0x7f6;
 		System16RoadColorOffset2 = 0x7c0;
 		System16RoadColorOffset3 = 0x7c0;
+		
+		unsigned char *pTemp = (unsigned char*)malloc(0x20000);
+		memcpy(pTemp, System16PCMData, 0x20000);
+		memset(System16PCMData, 0, 0x40000);
+		memcpy(System16PCMData + 0x00000, pTemp + 0x00000, 0x8000);
+		memcpy(System16PCMData + 0x08000, pTemp + 0x00000, 0x8000);
+		memcpy(System16PCMData + 0x10000, pTemp + 0x08000, 0x8000);
+		memcpy(System16PCMData + 0x18000, pTemp + 0x08000, 0x8000);
+		memcpy(System16PCMData + 0x20000, pTemp + 0x10000, 0x8000);
+		memcpy(System16PCMData + 0x28000, pTemp + 0x10000, 0x8000);
+		memcpy(System16PCMData + 0x30000, pTemp + 0x18000, 0x8000);
+		memcpy(System16PCMData + 0x38000, pTemp + 0x18000, 0x8000);
 	}
 	
 	return nRet;
@@ -1177,7 +1352,22 @@ static int Shangon2Init()
 	
 	FD1089_Decrypt = fd1089_decrypt_0034;
 	
+	System16PCMDataSizePreAllocate = 0x40000;
+	
 	int nRet = ShangonInit();
+	
+	return nRet;
+}
+
+static int ToutrunInit()
+{
+	System16ProcessAnalogControlsDo = OutrunProcessAnalogControls;
+	
+	System16HasGears = true;
+	
+	System16PCMDataSizePreAllocate = 0x60000;
+	
+	int nRet = System16Init();
 	
 	return nRet;
 }
@@ -1193,7 +1383,7 @@ struct BurnDriver BurnDrvOutrun = {
 	BDF_GAME_WORKING, 2, HARDWARE_SEGA_OUTRUN | HARDWARE_SEGA_SPRITE_LOAD32,
 	NULL, OutrunRomInfo, OutrunRomName, OutrunInputInfo, OutrunDIPInfo,
 	OutrunInit, System16Exit, OutrunFrame, NULL, System16Scan,
-	NULL, 320, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 320, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvOutrun1 = {
@@ -1203,7 +1393,7 @@ struct BurnDriver BurnDrvOutrun1 = {
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_OUTRUN | HARDWARE_SEGA_SPRITE_LOAD32,
 	NULL, Outrun1RomInfo, Outrun1RomName, OutrunInputInfo, Outrun1DIPInfo,
 	OutrunInit, System16Exit, OutrunFrame, NULL, System16Scan,
-	NULL, 320, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 320, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvOutrun2 = {
@@ -1213,7 +1403,7 @@ struct BurnDriver BurnDrvOutrun2 = {
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_OUTRUN | HARDWARE_SEGA_SPRITE_LOAD32,
 	NULL, Outrun2RomInfo, Outrun2RomName, OutrunInputInfo, OutrunDIPInfo,
 	OutrunInit, System16Exit, OutrunFrame, NULL, System16Scan,
-	NULL, 320, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 320, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvOutrunb = {
@@ -1223,7 +1413,7 @@ struct BurnDriver BurnDrvOutrunb = {
 	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_SEGA_OUTRUN | HARDWARE_SEGA_SPRITE_LOAD32,
 	NULL, OutrunbRomInfo, OutrunbRomName, OutrunInputInfo, OutrunDIPInfo,
 	OutrunbInit, System16Exit, OutrunFrame, NULL, System16Scan,
-	NULL, 320, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 320, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvShangon = {
@@ -1233,7 +1423,7 @@ struct BurnDriver BurnDrvShangon = {
 	BDF_GAME_WORKING, 2, HARDWARE_SEGA_OUTRUN,
 	NULL, ShangonRomInfo, ShangonRomName, ShangonInputInfo, ShangonDIPInfo,
 	ShangonInit, System16Exit, OutrunFrame, NULL, System16Scan,
-	NULL, 320, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 320, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvShangon2 = {
@@ -1243,7 +1433,7 @@ struct BurnDriver BurnDrvShangon2 = {
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_OUTRUN | HARDWARE_SEGA_FD1089B_ENC,
 	NULL, Shangon2RomInfo, Shangon2RomName, ShangonInputInfo, ShangonDIPInfo,
 	Shangon2Init, System16Exit, OutrunFrame, NULL, System16Scan,
-	NULL, 320, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 320, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvShangon3 = {
@@ -1253,7 +1443,7 @@ struct BurnDriver BurnDrvShangon3 = {
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_OUTRUN | HARDWARE_SEGA_FD1089B_ENC,
 	NULL, Shangon3RomInfo, Shangon3RomName, ShangonInputInfo, ShangonDIPInfo,
 	Shangon2Init, System16Exit, OutrunFrame, NULL, System16Scan,
-	NULL, 320, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 320, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvShangnle = {
@@ -1263,17 +1453,17 @@ struct BurnDriver BurnDrvShangnle = {
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_OUTRUN,
 	NULL, ShangnleRomInfo, ShangnleRomName, ShangonInputInfo, ShangonDIPInfo,
 	ShangonInit, System16Exit, OutrunFrame, NULL, System16Scan,
-	NULL, 320, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 320, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvToutrun = {
 	"toutrun", NULL, NULL, "1989",
-	"Turbo Out Run (Out Run upgrade, FD1094 317-0118)\0", NULL, "Sega", "Out Run",
+	"Turbo Out Run (cockpit, FD1094 317-0109)\0", NULL, "Sega", "Out Run",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_SEGA_OUTRUN | HARDWARE_SEGA_FD1094_ENC | HARDWARE_SEGA_SPRITE_LOAD32,
-	NULL, ToutrunRomInfo, ToutrunRomName, ToutrunInputInfo, ToutrunDIPInfo,
-	OutrunInit, System16Exit, OutrunFrame, NULL, System16Scan,
-	NULL, 320, 224, 4, 3
+	NULL, ToutrunRomInfo, ToutrunRomName, ToutrunInputInfo, Toutrun2DIPInfo,
+	ToutrunInit, System16Exit, OutrunFrame, NULL, System16Scan,
+	0, NULL, NULL, NULL, NULL, 320, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvToutrun2 = {
@@ -1282,6 +1472,16 @@ struct BurnDriver BurnDrvToutrun2 = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_OUTRUN | HARDWARE_SEGA_FD1094_ENC | HARDWARE_SEGA_SPRITE_LOAD32,
 	NULL, Toutrun2RomInfo, Toutrun2RomName, ToutrunInputInfo, Toutrun2DIPInfo,
-	OutrunInit, System16Exit, OutrunFrame, NULL, System16Scan,
-	NULL, 320, 224, 4, 3
+	ToutrunInit, System16Exit, OutrunFrame, NULL, System16Scan,
+	0, NULL, NULL, NULL, NULL, 320, 224, 4, 3
+};
+
+struct BurnDriver BurnDrvToutrunu = {
+	"toutrunu", "toutrun", NULL, "1989",
+	"Turbo Out Run (Out Run upgrade, FD1094 317-0118)\0", NULL, "Sega", "Out Run",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_OUTRUN | HARDWARE_SEGA_FD1094_ENC | HARDWARE_SEGA_SPRITE_LOAD32,
+	NULL, ToutrunuRomInfo, ToutrunuRomName, ToutrunInputInfo, ToutrunDIPInfo,
+	ToutrunInit, System16Exit, OutrunFrame, NULL, System16Scan,
+	0, NULL, NULL, NULL, NULL, 320, 224, 4, 3
 };

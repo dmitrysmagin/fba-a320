@@ -4,7 +4,6 @@
 #include "burnint.h"
 #include "burn_sound.h"
 #include "driverlist.h"
-#include "snd.h"
 
 // filler function, used if the application is not printing debug messages
 static int __cdecl BurnbprintfFiller(int, TCHAR* , ...) { return 0; }
@@ -16,7 +15,7 @@ int nBurnVer = BURN_VERSION;		// Version number of the library
 unsigned int nBurnDrvCount = 0;		// Count of game drivers
 unsigned int nBurnDrvSelect = ~0U;	// Which game driver is selected
 
-#ifndef OOPSWARE_FIX
+#ifdef BUILD_X86_ASM
 bool bBurnUseMMX;
 #endif
 
@@ -51,7 +50,9 @@ unsigned char nSpriteEnable = 0xFF;	// Can be used externally to select which la
 
 int nMaxPlayers;
 
-#ifndef OOPSWARE_FIX	
+bool bSaveCRoms = 0;
+
+#ifdef BUILD_X86_ASM
 bool BurnCheckMMXSupport()
 {
 	unsigned int nSignatureEAX = 0, nSignatureEBX = 0, nSignatureECX = 0, nSignatureEDX = 0;
@@ -68,8 +69,7 @@ extern "C" int BurnLibInit()
 	nBurnDrvCount = sizeof(pDriver) / sizeof(pDriver[0]);	// count available drivers
 
 	cmc_4p_Precalc();
-	
-#ifndef OOPSWARE_FIX	
+#ifdef BUILD_X86_ASM
 	bBurnUseMMX = BurnCheckMMXSupport();
 #endif
 
@@ -80,15 +80,6 @@ extern "C" int BurnLibExit()
 {
 	nBurnDrvCount = 0;
 
-	return 0;
-}
-
-// New AVI (Get the screen size)
-extern "C" int BurnDrvGetScreen(int* pnWidth, int* pnHeight)
-{
-	*pnWidth =pDriver[nBurnDrvSelect]->nWidth;
-	*pnHeight=pDriver[nBurnDrvSelect]->nHeight;
-	
 	return 0;
 }
 
@@ -543,13 +534,11 @@ extern "C" int BurnDrvInit()
 
 	BurnSetRefreshRate(60.0);
 
-#ifndef OOPSWARE_FIX
 	CheatInit();
-#endif
-
 	BurnStateInit();
 
 	nReturnValue = pDriver[nBurnDrvSelect]->Init();	// Forward to drivers function
+
 	nMaxPlayers = pDriver[nBurnDrvSelect]->players;
 
 #if defined (FBA_DEBUG)
@@ -583,9 +572,8 @@ extern "C" int BurnDrvExit()
 	}
 #endif
 
-#ifndef OOPSWARE_FIX
 	CheatExit();
-#endif
+	CheatSearchExit();
 	BurnStateExit();
 
 	nBurnCPUSpeedAdjust = 0x0100;
@@ -596,10 +584,7 @@ extern "C" int BurnDrvExit()
 // Do one frame of game emulation
 extern "C" int BurnDrvFrame()
 {
-#ifndef OOPSWARE_FIX
 	CheatApply();									// Apply cheats (if any)
-#endif
-									
 	return pDriver[nBurnDrvSelect]->Frame();		// Forward to drivers function
 }
 
@@ -623,6 +608,103 @@ extern "C" int BurnRecalcPal()
 	}
 
 	return 0;
+}
+
+// Jukebox functions
+unsigned int JukeboxSoundCommand = 0;
+unsigned int JukeboxSoundLatch = 0;
+
+extern "C" int BurnJukeboxGetFlags()
+{
+	return pDriver[nBurnDrvSelect]->JukeboxFlags;
+}
+
+extern "C" int BurnJukeboxInit()
+{
+	int nReturnValue;
+
+	if (nBurnDrvSelect >= nBurnDrvCount) {
+		return 1;
+	}
+
+#if defined (FBA_DEBUG)
+	{
+		TCHAR szText[1024] = _T("");
+		TCHAR* pszPosition = szText;
+		TCHAR* pszName = BurnDrvGetText(DRV_FULLNAME);
+		int nName = 1;
+
+		while ((pszName = BurnDrvGetText(DRV_NEXTNAME | DRV_FULLNAME)) != NULL) {
+			nName++;
+		}
+
+		// Print the title
+
+		bprintf(PRINT_IMPORTANT, _T("*** Starting jukebox emulation of %s") _T(SEPERATOR_1) _T("%s.\n"), BurnDrvGetText(DRV_NAME), BurnDrvGetText(DRV_FULLNAME));
+
+		// Then print the alternative titles
+
+		if (nName > 1) {
+			bprintf(PRINT_IMPORTANT, _T("    Alternative %s "), (nName > 2) ? _T("titles are") : _T("title is"));
+			pszName = BurnDrvGetText(DRV_FULLNAME);
+			nName = 1;
+			while ((pszName = BurnDrvGetText(DRV_NEXTNAME | DRV_FULLNAME)) != NULL) {
+				if (pszPosition + _tcslen(pszName) - 1022 > szText) {
+					break;
+				}
+				if (nName > 1) {
+					bprintf(PRINT_IMPORTANT, _T(SEPERATOR_1));
+				}
+				bprintf(PRINT_IMPORTANT, _T("%s"), pszName);
+				nName++;
+			}
+			bprintf(PRINT_IMPORTANT, _T(".\n"));
+		}
+	}
+#endif
+
+	BurnSetRefreshRate(60.0);
+
+	nReturnValue = pDriver[nBurnDrvSelect]->JukeboxInit();	// Forward to drivers function
+
+#if defined (FBA_DEBUG)
+	if (!nReturnValue) {
+		starttime = clock();
+		nFramesEmulated = 0;
+		nFramesRendered = 0;
+		nCurrentFrame = 0;
+	} else {
+		starttime = 0;
+	}
+#endif
+
+	return nReturnValue;
+}
+
+extern "C" int BurnJukeboxExit()
+{
+#if defined (FBA_DEBUG)
+	if (starttime) {
+		clock_t endtime;
+		clock_t nElapsedSecs;
+
+		endtime = clock();
+		nElapsedSecs = (endtime - starttime);
+		bprintf(PRINT_IMPORTANT, _T(" ** Emulation ended (running for %.2f seconds).\n"), (float)nElapsedSecs / CLOCKS_PER_SEC);
+		bprintf(PRINT_IMPORTANT, _T("    %.2f%% of frames rendered (%d out of a total %d).\n"), (float)nFramesRendered / nFramesEmulated * 100, nFramesRendered, nFramesEmulated);
+		bprintf(PRINT_IMPORTANT, _T("    %.2f frames per second (average).\n"), (float)nFramesRendered / nFramesEmulated * nBurnFPS / 100);
+		bprintf(PRINT_NORMAL, _T("\n"));
+	}
+#endif
+	JukeboxSoundCommand = 0;
+	JukeboxSoundLatch = 0;
+
+	return pDriver[nBurnDrvSelect]->JukeboxExit();			// Forward to drivers function
+}
+
+extern "C" int BurnJukeboxFrame()
+{
+	return pDriver[nBurnDrvSelect]->JukeboxFrame();		// Forward to drivers function
 }
 
 // ----------------------------------------------------------------------------
@@ -726,21 +808,9 @@ int BurnTransferCopy(UINT32* pPalette)
 
 	switch (nBurnBpp) {
 		case 2: {
-/*			if (pDriver[nBurnDrvSelect]->flags & BDF_ORIENTATION_FLIPPED)
-			{
-				pSrc += (nTransWidth * nTransHeight)-1;
-				for (int y = 0; y < nTransHeight; y++, pDest += nBurnPitch) {
-					for (int x = 0; x < nTransWidth; x ++) {
-						((UINT16*)pDest)[x] = pPalette[*pSrc--];
-					}
-				}
-			}
-			else
-*/			{
-				for (int y = 0; y < nTransHeight; y++, pDest += nBurnPitch) {
-					for (int x = 0; x < nTransWidth; x ++) {
-						((UINT16*)pDest)[x] = pPalette[*pSrc++];
-					}
+			for (int y = 0; y < nTransHeight; y++, pSrc += nTransWidth, pDest += nBurnPitch) {
+				for (int x = 0; x < nTransWidth; x ++) {
+					((UINT16*)pDest)[x] = pPalette[pSrc[x]];
 				}
 			}
 			break;

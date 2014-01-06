@@ -434,15 +434,24 @@ static int MemIndex()
 
 	RamEnd = Next;
 
+	OhmygodChars            = Next; Next += (16384 * 8 * 8);
+	OhmygodSprites          = Next; Next += (4096 * 16 * 16);
 	OhmygodPalette          = (unsigned int*)Next; Next += 0x000800 * sizeof(unsigned int);
 	MemEnd = Next;
 
 	return 0;
 }
 
+static int TilePlaneOffsets[4]   = { 0, 1, 2, 3 };
+static int TileXOffsets[8]       = { 0, 4, 8, 12, 16, 20, 24, 28 };
+static int TileYOffsets[8]       = { 0, 32, 64, 96, 128, 160, 192, 224 };
+static int SpritePlaneOffsets[4] = { 0, 1, 2, 3 };
+static int SpriteXOffsets[16]    = { 0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60 };
+static int SpriteYOffsets[16]    = { 0, 64, 128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960 };
+
 int OhmygodInit()
 {
-	int nRet = 0, nLen, c, y;
+	int nRet = 0, nLen;
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	MemIndex();
@@ -455,47 +464,16 @@ int OhmygodInit()
 	nRet = BurnLoadRom(OhmygodRom, 0x00, 1); if (nRet != 0) return 1;
 
 	// malloc stuff
-	OhmygodChars=(unsigned char*)malloc(16384 * 8 * 8);
-	OhmygodSprites=(unsigned char*)malloc(4095 * 16 * 16);
 	unsigned char *TempGfx=(unsigned char*)malloc (0x80000);
+	
 	// Load and decode Character Rom
 	nRet = BurnLoadRom(TempGfx, 1, 1); if (nRet != 0) return 1;
-	for (c= 0; c < 16384; c++) {
-		for (y = 0; y < 8; y++) {
-			OhmygodChars[(c * 64) + (y * 8) + 0] = TempGfx[0x00000 + (y * 4) + (c * 32)] >> 4;
-			OhmygodChars[(c * 64) + (y * 8) + 1] = TempGfx[0x00000 + (y * 4) + (c * 32)] & 0x0f;
-			OhmygodChars[(c * 64) + (y * 8) + 2] = TempGfx[0x00001 + (y * 4) + (c * 32)] >> 4;
-			OhmygodChars[(c * 64) + (y * 8) + 3] = TempGfx[0x00001 + (y * 4) + (c * 32)] & 0x0f;
-			OhmygodChars[(c * 64) + (y * 8) + 4] = TempGfx[0x00002 + (y * 4) + (c * 32)] >> 4;
-			OhmygodChars[(c * 64) + (y * 8) + 5] = TempGfx[0x00002 + (y * 4) + (c * 32)] & 0x0f;
-			OhmygodChars[(c * 64) + (y * 8) + 6] = TempGfx[0x00003 + (y * 4) + (c * 32)] >> 4;
-			OhmygodChars[(c * 64) + (y * 8) + 7] = TempGfx[0x00003 + (y * 4) + (c * 32)] & 0x0f;
-		}
-	}
+	GfxDecode(16384, 4, 8, 8, TilePlaneOffsets, TileXOffsets, TileYOffsets, 0x100, TempGfx, OhmygodChars);
 
 	// Load and decode Sprite Rom
 	memset(TempGfx, 0, 0x80000);
 	nRet = BurnLoadRom(TempGfx, 2, 1); if (nRet != 0) return 1;
-	for (c = 0; c < 4095; c++) {
-		for (y = 0; y < 16; y++) {
-			OhmygodSprites[(c * 256) + (y * 16) +  0] = TempGfx[0x00000 + (y * 8) + (c * 128)] >> 4;
-			OhmygodSprites[(c * 256) + (y * 16) +  1] = TempGfx[0x00000 + (y * 8) + (c * 128)] & 0x0f;
-			OhmygodSprites[(c * 256) + (y * 16) +  2] = TempGfx[0x00001 + (y * 8) + (c * 128)] >> 4;
-			OhmygodSprites[(c * 256) + (y * 16) +  3] = TempGfx[0x00001 + (y * 8) + (c * 128)] & 0x0f;
-			OhmygodSprites[(c * 256) + (y * 16) +  4] = TempGfx[0x00002 + (y * 8) + (c * 128)] >> 4;
-			OhmygodSprites[(c * 256) + (y * 16) +  5] = TempGfx[0x00002 + (y * 8) + (c * 128)] & 0x0f;
-			OhmygodSprites[(c * 256) + (y * 16) +  6] = TempGfx[0x00003 + (y * 8) + (c * 128)] >> 4;
-			OhmygodSprites[(c * 256) + (y * 16) +  7] = TempGfx[0x00003 + (y * 8) + (c * 128)] & 0x0f;
-			OhmygodSprites[(c * 256) + (y * 16) +  8] = TempGfx[0x00004 + (y * 8) + (c * 128)] >> 4;
-			OhmygodSprites[(c * 256) + (y * 16) +  9] = TempGfx[0x00004 + (y * 8) + (c * 128)] & 0x0f;
-			OhmygodSprites[(c * 256) + (y * 16) + 10] = TempGfx[0x00005 + (y * 8) + (c * 128)] >> 4;
-			OhmygodSprites[(c * 256) + (y * 16) + 11] = TempGfx[0x00005 + (y * 8) + (c * 128)] & 0x0f;
-			OhmygodSprites[(c * 256) + (y * 16) + 12] = TempGfx[0x00006 + (y * 8) + (c * 128)] >> 4;
-			OhmygodSprites[(c * 256) + (y * 16) + 13] = TempGfx[0x00006 + (y * 8) + (c * 128)] & 0x0f;
-			OhmygodSprites[(c * 256) + (y * 16) + 14] = TempGfx[0x00007 + (y * 8) + (c * 128)] >> 4;
-			OhmygodSprites[(c * 256) + (y * 16) + 15] = TempGfx[0x00007 + (y * 8) + (c * 128)] & 0x0f;
-		}
-	}
+	GfxDecode(4096, 4, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x400, TempGfx, OhmygodSprites);
 	free(TempGfx);
 
 	// Load Sample Rom
@@ -668,7 +646,7 @@ static int OhmygodScan(int nAction,int *pnMin)
 
 	if (nAction & ACB_MEMORY_RAM) {
 		memset(&ba, 0, sizeof(ba));
-    		ba.Data	  = RamStart;
+		ba.Data	  = RamStart;
 		ba.nLen	  = RamEnd-RamStart;
 		ba.szName = "All Ram";
 		BurnAcb(&ba);
@@ -701,18 +679,18 @@ struct BurnDriver BurnDrvOhmygod = {
 	"ohmygod", NULL, NULL, "1993",
 	"Oh My God!\0", NULL, "Atlus", "Miscellaneous",
 	L"Oh my God! (Japan)\0Oh my god! \u30AA\u30FC\u30DE\u30A4\u30AC\u30A1\u30FC\uFF01\0", NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S,
 	NULL, OhmygodRomInfo, OhmygodRomName, OhmygodInputInfo, OhmygodDIPInfo,
 	OhmygodInit, OhmygodExit, OhmygodFrame, NULL, OhmygodScan,
-	NULL, 320, 240, 4, 3
+	0, NULL, NULL, NULL, NULL, 320, 240, 4, 3
 };
 
 struct BurnDriverD BurnDrvNaname = {
 	"naname", NULL, NULL, "1994",
 	"Naname de Magic!\0", NULL, "Atlus", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S,
 	NULL, NanameRomInfo, NanameRomName, OhmygodInputInfo, NanameDIPInfo,
 	OhmygodInit, OhmygodExit, OhmygodFrame, NULL, OhmygodScan,
-	NULL, 320, 240, 4, 3
+	0, NULL, NULL, NULL, NULL, 320, 240, 4, 3
 };

@@ -835,8 +835,9 @@ struct BurnDriver BurnDrvmetmqstr = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_Z80,
 	NULL, metmqstrRomInfo, metmqstrRomName, metmqstrInputInfo, NULL,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &CaveRecalcPalette,
-	384, 240, 4, 3
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 384, 240, 4, 3
 };
 
 struct BurnDriver BurnDrvnmaster = {
@@ -845,6 +846,7 @@ struct BurnDriver BurnDrvnmaster = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_16BIT_ONLY | BDF_CLONE, 2, HARDWARE_CAVE_68K_Z80,
 	NULL, nmasterRomInfo, nmasterRomName, metmqstrInputInfo, NULL,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &CaveRecalcPalette,
-	384, 240, 4, 3
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 384, 240, 4, 3
 };

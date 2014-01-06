@@ -65,11 +65,8 @@
 #define NEO_HREFRESH (15625.0)
 #define NEO_VREFRESH (NEO_HREFRESH / 264.0)
 
-// If defined, enable emulation of the watchdog timer (timing doesn't match real hardware 100%)
-#define EMULATE_WATCHDOG
-
 // If defined, reset the Z80 when switching between the Z80 BIOS/cartridge ROM
-//#define Z80_RESET_ON_BANKSWITCH
+// #define Z80_RESET_ON_BANKSWITCH
 
 // If defined, adjust the Z80 speed along with the 68000 when overclocking
 #define Z80_SPEED_ADJUST
@@ -183,14 +180,9 @@ static unsigned int nIRQ2Offset;
 #define NO_IRQ_PENDING (0x7FFFFFFF)
 static int nIRQCycles;
 
-#ifdef EMULATE_WATCHDOG
 static int nNeoWatchdog;
-#endif
 
 // ----------------------------------------------------------------------------
-
-static int nSRAMProtAddress;
-int nNeoSRAMProtection = -1;
 
 static bool bMemoryCardInserted, bMemoryCardWritable;
 
@@ -205,12 +197,10 @@ static int nCycles68KSync;
 
 static unsigned char *AllRAM = NULL, *RAMEnd = NULL, *AllROM = NULL, *ROMEnd = NULL;
 
-unsigned char *Neo68KROM;
-unsigned char *NeoZ80ROM;
-static unsigned char *Neo68KVectors, *NeoZ80BIOS;
-unsigned char *Neo68KRAM, *NeoZ80RAM, *NeoNVRAM, *NeoNVRAM2, *NeoMemoryCard, *CartRAM, *Neo68KBIOS, *kof10thExtraRAMA, *kof10thExtraRAMB;
+unsigned char *Neo68KROM, *NeoZ80ROM,  *Neo68KBIOS, *Neo68KRAM;
+static unsigned char *NeoZ80RAM, *NeoNVRAM, *NeoNVRAM2, *NeoMemoryCard, *Neo68KVectors, *NeoZ80BIOS;
 
-static unsigned int nSpriteSize;
+unsigned int nSpriteSize;
 static unsigned int nCodeSize;
 
 unsigned char* NeoGraphicsRAM;
@@ -253,7 +243,6 @@ static int RAMIndex()
 		NeoNVRAM2	= Next; Next += 0x002000;			// Extra SRAM for vliner/jockeygp
 	}
 	NeoMemoryCard	= Next; Next += 0x020000;			// Memory card
-	CartRAM		= Next; Next += 0x2000;
 
 	RAMEnd			= Next;
 
@@ -265,7 +254,7 @@ static int RAMIndex()
 static int ROMIndex()
 {
 	unsigned char* Next; Next = AllROM;
-	Neo68KBIOS		= Next; Next += 0x80000;			// 68K boardROM
+	Neo68KBIOS		= Next; Next += 0x080000;			// 68K boardROM
 	Neo68KROM		= Next; Next += nCodeSize;
 	Neo68KVectors	= Next; Next += 0x000400;			// Copy of 68K cartridge ROM with boardROM vector table
 
@@ -289,32 +278,6 @@ static inline bool NeoCheckAESBIOS()
 	}
 
 	return false;
-}
-
-void kof2003biosdecode()
-{
-	unsigned short *pTemp = (unsigned short*)Neo68KBIOS;
-	unsigned short *pData = (unsigned short*)malloc(0x80000);
-
-	for (int i = 0; i < 0x80000 / 2; i++) {
-		int j = (i ^ (0xA0 ^ ((i & 4) << 5)));
-		j ^= (((i & 0x10) ^ 0x10) << 2) | ((i & 0x20) >> 1);
-		j ^= (((j >> 13) & 1) << 15) | ((((i >> 16) & 1) ^ 1) << 12);
-		j ^= (((((j >> 13) & 1) ^ 1) << 10) | ((j >> 1) & 0x100));
-		if ((i & 0x70) == 0x00) j ^= ((i & 1) << 3) | (((i & 1) ^ 1) << 2) | ((i & 1) << 1);
-		if ((i & 0x70) == 0x10) j ^= (((i & 1) ^ 1) << 3) | ((i & 1) << 2) | (((i & 1) ^ 1) << 1);
-		if ((i & 0x70) == 0x20) j ^= (((i & 1) ^ 1) << 3) | ((i & 1) << 2) | ((i & 1) << 1) | 1;
-		if ((i & 0x70) == 0x30) j ^= (((i & 2) ^ 2) << 2) | ((i & 2) << 1) | (((i & 2) ^ 2) >> 1);
-		if ((i & 0x70) == 0x40) j ^= (((i & 4) ^ 4) << 1) | ((i & 1) << 2) | (((i & 1) ^ 1) << 1) | 1;
-		if ((i & 0x70) == 0x50) j ^= (((i & 2) ^ 2) << 2) | (((i & 2) ^ 2) << 1) | 2 | ((i & 2) >> 1);
-		if ((i & 0x70) == 0x60) j ^= ((i & 2) << 2) | ((i & 1) << 2) | (((i & 1) ^ 1) << 1) | 1;
-		if ((i & 0x70) == 0x70) j ^= ((i & 4) << 1) | (((i & 1) ^ 1) << 2) | ((i & 4) >> 1);
-		pData[i] = (pTemp[j] ^ (((pTemp[j] >> 3) & 2) | ((pTemp[j] >> 2) & 9)));
-	}
-
-	memcpy (pTemp, pData, 0x80000);
-
-	free(pData);
 }
 
 static int NeoLoad68KBIOS(int nNewBIOS)
@@ -349,10 +312,13 @@ static int NeoLoad68KBIOS(int nNewBIOS)
 		}
 	}
 
+	// Create copy of 68K with BIOS vector table
+	memcpy(Neo68KVectors + 0x80, Neo68KROM + 0x80, 0x0380);
+
 	if ((BurnDrvGetHardwareCode() & HARDWARE_SNK_CONTROLMASK) == HARDWARE_SNK_TRACKBALL) {
 		nNewBIOS = 9;
 	}
-	
+
 	if ((BurnDrvGetHardwareCode() & HARDWARE_SNK_CONTROLMASK) == HARDWARE_SNK_PCB) {
 		nNewBIOS = 10;
 	}
@@ -373,8 +339,8 @@ static int NeoLoad68KBIOS(int nNewBIOS)
 	} else {
 		BurnLoadRom(Neo68KBIOS, 0x00080 +     6, 1);
 	}
-	
-	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "kf2k3pcb")) kof2003biosdecode();
+
+	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "kf2k3pcb")) kf2k3pcb_bios_decode();
 
 	// Patch out checksum test (only needed for the irrmaze BIOS)
 	if (nBIOS == 9) {
@@ -382,19 +348,20 @@ static int NeoLoad68KBIOS(int nNewBIOS)
 		*((unsigned short*)(Neo68KBIOS + 0x010D8E)) = 0x4E71;
 	}
 
+#if 0
 	if (nBIOS == 0x0C && (NeoSystem & 0x04) == 0) {
 		// Patch UniBIOS v2.0 for AES mode
-//		*((unsigned short*)(Neo68KBIOS + 0x0125DE)) = 0x6706;
-//		*((unsigned short*)(Neo68KBIOS + 0x000080)) = 0xBFBF + 0x0101;
+		*((unsigned short*)(Neo68KBIOS + 0x0125DE)) = 0x6706;
+		*((unsigned short*)(Neo68KBIOS + 0x000080)) = 0xBFBF + 0x0101;
 
-//		// Patch out checksum in UniBIOS v2.0
-//		*((unsigned short*)(Neo68KBIOS + 0x011C62)) = 0x4E71;
-//		*((unsigned short*)(Neo68KBIOS + 0x011C64)) = 0x4E71;
+		// Patch out checksum in UniBIOS v2.0
+		*((unsigned short*)(Neo68KBIOS + 0x011C62)) = 0x4E71;
+		*((unsigned short*)(Neo68KBIOS + 0x011C64)) = 0x4E71;
 	}
-	
+#endif
+
 	// Create copy of 68K with BIOS vector table
-	memcpy(Neo68KVectors + 0x00, Neo68KBIOS,	   0x0080);
-	memcpy(Neo68KVectors + 0x80, Neo68KROM + 0x80, 0x0380);
+	memcpy(Neo68KVectors + 0x00, Neo68KBIOS,       0x0080);
 
 	return 0;
 }
@@ -479,7 +446,7 @@ static int LoadRoms(NeoGameInfo* pInfo)
 	{
 		// Load boardROM data
 		BurnLoadRom(NeoTextROM,	0x00080 + 0x14, 1);
-		
+
 		if (pInfo->nTextOffset != -1) {
 			// Load S ROM data
 			BurnLoadRom(NeoTextROM + 0x020000, pInfo->nTextOffset, 1);
@@ -487,6 +454,12 @@ static int LoadRoms(NeoGameInfo* pInfo)
 			// Extract data from the end of C ROMS
 			BurnUpdateProgress(0.0, _T("Generating text layer graphics..."), 0);
 			NeoExtractSData(NeoSpriteROM, NeoTextROM + 0x020000, nSpriteSize, nNeoTextROMSize);
+
+			if ((BurnDrvGetHardwareCode() & HARDWARE_SNK_CONTROLMASK) == HARDWARE_SNK_PCB) {
+				for (int i = 0; i < nNeoTextROMSize; i++) {
+					NeoTextROM[0x20000 + i] = BITSWAP08(NeoTextROM[0x20000 + i] ^ 0xd2, 4, 0, 7, 2, 5, 1, 6, 3);
+				}
+			}
 		}
 	}
 
@@ -508,33 +481,20 @@ static int LoadRoms(NeoGameInfo* pInfo)
 		BurnLoadRom(Neo68KROM + 0x0C0000, 0, 1);
 		NeoLoadCode(pInfo->nCodeOffset + 1, pInfo->nCodeNum - 1, Neo68KROM + 0x100000);
 	} else {
-		if (BurnDrvGetHardwareCode() & HARDWARE_SNK_P32) {
-			unsigned char* pTemp = (unsigned char*)malloc(0x800000);
-			if (pTemp == NULL) return 1;
-			
-			BurnLoadRom(pTemp, 0, 1);
-			BurnLoadRom(pTemp + 0x800000 / 2, 1, 1);
-			
-			for (int i = 0; i < 0x200000; i++) {
-				((unsigned short*)Neo68KROM)[2 * i + 0] = ((unsigned short*)pTemp)[0x000000 + i];
-				((unsigned short*)Neo68KROM)[2 * i + 1] = ((unsigned short*)pTemp)[0x200000 + i];
-			}
-
-			free(pTemp);
-			
-			if (!strcmp(BurnDrvGetTextA(DRV_NAME), "kof2003")) {
-				BurnLoadRom(Neo68KROM + 0x800000, 2, 1);
-			}
-		} else {
-			NeoLoadCode(pInfo->nCodeOffset, pInfo->nCodeNum, Neo68KROM);
-		}
+		NeoLoadCode(pInfo->nCodeOffset, pInfo->nCodeNum, Neo68KROM);
 	}
-	
+
 	BurnLoadRom(NeoZ80ROM, pInfo->nSoundOffset, 1);
-	
+
+	if (NeoLoad68KBIOS((NeoSystem & 0x07) ^ 4)) {
+		return 1;
+	}
+
+	if (pNeoInitCallback) {
+		pNeoInitCallback();
+	}
+
 	if (pInfo->nADPCMANum) {
-		char* pName;
-		struct BurnRomInfo ri;
 		unsigned char* pADPCMData;
 
 		YM2610ADPCMAROM	= (unsigned char*)malloc(nYM2610ADPCMASize);
@@ -542,29 +502,17 @@ static int LoadRoms(NeoGameInfo* pInfo)
 			return 1;
 		}
 
-		ri.nType = 0;
-		ri.nLen = 0;
-		BurnDrvGetRomInfo(&ri, pInfo->nADPCMOffset);
-		BurnDrvGetRomName(&pName, pInfo->nADPCMOffset, 0);
-
 		pADPCMData = YM2610ADPCMAROM;
 
-		// pbobblen needs this (V ROMs are v3 & v4), note aof/wh1/wh1h/kotm2 (V ROMs are v2 & v4)
-		if (pInfo->nADPCMANum == 2 && pName[FindType(pName) + 1] == '3') {
-			pADPCMData += ri.nLen * 2;
-		}
-		
-		NeoLoadADPCM(pInfo->nADPCMOffset, pInfo->nADPCMANum, pADPCMData);
+		if (!strcmp(BurnDrvGetTextA(DRV_NAME), "pbobblna")) {
+			YM2610ADPCMAROM = (unsigned char*)realloc(YM2610ADPCMAROM, 0x380000);
+			nYM2610ADPCMASize += 0x200000;
+			pADPCMData = YM2610ADPCMAROM + 0x200000;
+ 		}
 
-		if (BurnDrvGetHardwareCode() & HARDWARE_SNK_SWAPV) {
-			for (int i = 0; i < 0x00200000; i++) {
-				unsigned char n = YM2610ADPCMAROM[i];
-				YM2610ADPCMAROM[i] = YM2610ADPCMAROM[0x00200000 + i];
-				YM2610ADPCMAROM[0x00200000 + i] = n;
-			}
-		}
+		NeoLoadADPCM(pInfo->nADPCMOffset, pInfo->nADPCMANum, pADPCMData);
 	}
-	
+
 	if (pInfo->nADPCMBNum) {
 		YM2610ADPCMBROM	= (unsigned char*)malloc(nYM2610ADPCMBSize);
 		if (YM2610ADPCMBROM == NULL) {
@@ -576,21 +524,16 @@ static int LoadRoms(NeoGameInfo* pInfo)
 		YM2610ADPCMBROM = YM2610ADPCMAROM;
 		nYM2610ADPCMBSize = nYM2610ADPCMASize;
 	}
-	
-	if (pNeoInitCallback) {
-		pNeoInitCallback();
-	}
 
 	// Decode text data
 	BurnUpdateProgress(0.0, _T("Decoding text layer graphics..."), 0);
 	NeoDecodeText(NeoTextROM, nNeoTextROMSize);
 
+	// Save decrypted Cs
+	if (bSaveCRoms) NeoSaveDecryptedCRoms();
+
 	// Decode sprite data
 	NeoDecodeSprites(NeoSpriteROM, nSpriteSize);
-
-	if (NeoLoad68KBIOS((NeoSystem & 0x07) ^ 4)) {
-		return 1;
-	}
 
 	BurnLoadRom(NeoZ80BIOS,	0x00080 + 0x10, 1);
 	BurnLoadRom(NeoZoomROM,	0x00080 + 0x18, 1);
@@ -694,7 +637,7 @@ void NeoMapBank()
 	SekMapMemory(Neo68KROM + nNeo68KROMBank, 0x200000, 0x2FFFFF, SM_ROM);
 }
 
-static void Bankswitch(unsigned int nBank)
+void Bankswitch(unsigned int nBank)
 {
 	nBank = 0x100000 + ((nBank & 7) << 20);
 	if (nBank >= nCodeSize) {
@@ -793,7 +736,6 @@ int NeoScan(int nAction, int* pnMin)
 		ba.szName	= "NVRAM";
 		BurnAcb(&ba);
 
-#if 1
 		if ((BurnDrvGetHardwareCode() & HARDWARE_SNK_CONTROLMASK) == HARDWARE_SNK_GAMBLING) {
 			ba.Data		= NeoNVRAM2;
 			ba.nLen		= 0x00002000;
@@ -801,17 +743,7 @@ int NeoScan(int nAction, int* pnMin)
 			ba.szName	= "Extra NVRAM";
 			BurnAcb(&ba);
 		}
-#endif
-		if (BurnDrvGetHardwareCode() & HARDWARE_SNK_PVC_PROT) {
-			if (nAction & ACB_MEMORY_RAM) {
-				ba.Data		= CartRAM;
-				ba.nLen		= 0x00002000;
-				ba.nAddress	= 0;
-				ba.szName	= "PVC RAM";
-				BurnAcb(&ba);
-			}
-		}
-	}	
+	}
 	if (nAction & ACB_MEMORY_RAM) {								// Scan RAM
 		ba.Data		= Neo68KRAM;
 		ba.nLen		= 0x00010000;
@@ -922,7 +854,9 @@ int NeoScan(int nAction, int* pnMin)
 			if (pNeoBankswitchCallback) {
 				pNeoBankswitchCallback();
 			} else {
-				SekMapMemory(Neo68KROM + nNeo68KROMBank, 0x200000, 0x2FFFFF, SM_ROM);
+				if ((BurnDrvGetHardwareCode() & HARDWARE_SNK_CONTROLMASK) != HARDWARE_SNK_GAMBLING) {
+					SekMapMemory(Neo68KROM + nNeo68KROMBank, 0x200000, 0x2FFFFF, SM_ROM);
+				}
 			}
 
 			nBank = nNeoPaletteBank; nNeoPaletteBank = -1;
@@ -1135,7 +1069,7 @@ unsigned char __fastcall neogeoReadByte(unsigned int sekAddress)
 		case 0x300000:
 //			bprintf(PRINT_NORMAL, _T(" -- bank %d inputP0[0x%02X] read (%i).\n"), 0, nInputSelect, SekTotalCycles());
 			return ~NeoInputBank[nJoyport0[nInputSelect & 0x07]];
-		
+
 		case 0x300001:
 			return ~NeoInputBank[4];
 
@@ -1180,6 +1114,17 @@ unsigned char __fastcall neogeoReadByte(unsigned int sekAddress)
 		case 0x380000:
 //			bprintf(PRINT_NORMAL, " -- input 2 read.\n");
 			return ~NeoInputBank[2];
+
+		case 0x3c007b:		// kof2002 'how to play' reads here, expects 0xff back
+		case 0x3c007d:
+		case 0x3c007f:
+		case 0x3c0081:
+		case 0x3c0085:
+		case 0x3c0124:
+		case 0x3c0125:
+		case 0x3c01ba:
+		case 0x3c01bb:
+			return 0xff;
 
 //		default:
 //			bprintf(PRINT_NORMAL, _T("  - 0x%08X byte (word, PC: %08X)\n"), sekAddress, SekGetPC(-1));
@@ -1236,12 +1181,10 @@ void __fastcall neogeoWriteByte(unsigned int sekAddress, unsigned char byteValue
 			break;
 		}
 
-#ifdef EMULATE_WATCHDOG
 		case 0x300001:										// Watchdog
-//			bprintf(PRINT_NORMAL, "  - Watchdog timer reset (%02X, at scanline %i)\n", byteValue, SekCurrentScanline());
+//			bprintf(PRINT_NORMAL, _T("  - Watchdog timer reset (%02X, at scanline %i)\n"), byteValue, SekCurrentScanline());
 			nNeoWatchdog = -SekTotalCycles();
 			break;
-#endif
 
 		case 0x320000:
 			SendSoundCommand(byteValue);
@@ -1263,7 +1206,7 @@ void __fastcall neogeoWriteByte(unsigned int sekAddress, unsigned char byteValue
 	static int blaat;
 
 		case 0x380031: {									// Setting the bits to 0 sends the value written to 0x380041 to the appropriate output
-															// Select LED outut (bits 5/4 - numeric displays, bit 3 - marquee lights, one per slot)
+															// Select LED output (bits 5/4 - numeric displays, bit 3 - marquee lights, one per slot)
 //			bprintf(PRINT_NORMAL, _T("  - 0x%06X -> 0x%02X.\n"), sekAddress, byteValue);
 			if (byteValue != 255) {
 //				bprintf(PRINT_NORMAL, _T("  - LED %02X -> %02X\n"), ~byteValue & 255, ~blaat & 255);
@@ -1526,33 +1469,15 @@ void __fastcall neogeoWriteWord(unsigned int sekAddress, unsigned short wordValu
 
 void __fastcall neogeoWriteByteSRAM(unsigned int sekAddress, unsigned char byteValue)
 {
-	sekAddress &= 0xFFFF;
-
-	if (bSRAMWritable) {
-		if (byteValue == 1) {
-			if ((int)(sekAddress ^ 1) != nSRAMProtAddress) {
-				NeoNVRAM[sekAddress ^ 1] = byteValue;
-			}
-		} else {
-			NeoNVRAM[sekAddress ^ 1] = byteValue;
-		}
-	}
+ 	if (bSRAMWritable) {
+		NeoNVRAM[(sekAddress & 0xffff) ^ 1] = byteValue;
+ 	}
 }
 
 void __fastcall neogeoWriteWordSRAM(unsigned int sekAddress, unsigned short wordValue)
 {
-	sekAddress &= 0xFFFF;
-
 	if (bSRAMWritable) {
-		if ((wordValue & 0xFF) == 1) {
-			if ((int)sekAddress != nSRAMProtAddress) {
-				*((unsigned short*)(NeoNVRAM + sekAddress)) = wordValue;
-			} else {
-				NeoNVRAM[sekAddress] = wordValue >> 8;
-			}
-		} else {
-			*((unsigned short*)(NeoNVRAM + sekAddress)) = wordValue;
-		}
+		*((unsigned short*)(NeoNVRAM + (sekAddress & 0xffff))) = wordValue;
 	}
 }
 
@@ -1630,8 +1555,6 @@ unsigned char __fastcall neogeoReadByteGambling(unsigned int sekAddress)
 
 unsigned short __fastcall neogeoReadWordGambling(unsigned int sekAddress)
 {
-	
-	
 	switch (sekAddress) {
 		case 0x280000: {
 			return 0xff - NeoInput[3];
@@ -1688,101 +1611,10 @@ unsigned char __fastcall vliner_timing(unsigned int sekAddress)
 
 // ----------------------------------------------------------------------------
 
-void pvc_prot1()
-{
-	unsigned char b1, b2;
-	b1 = CartRAM[0x1fe1];
-	b2 = CartRAM[0x1fe0];
-	CartRAM[0x1fe2] = (((b2>>0)&0xf)<<1)|((b1>>4)&1);
-	CartRAM[0x1fe3] = (((b2>>4)&0xf)<<1)|((b1>>5)&1);
-	CartRAM[0x1fe4] = (((b1>>0)&0xf)<<1)|((b1>>6)&1);
-	CartRAM[0x1fe5] = (b1>>7);
-}
-
-void pvc_prot2()
-{
-	unsigned char b1, b2, b3, b4;
-	b1 = CartRAM[0x1fe9];
-	b2 = CartRAM[0x1fe8];
-	b3 = CartRAM[0x1feb];
-	b4 = CartRAM[0x1fea];
-	CartRAM[0x1fec] = (b2>>1)|((b1>>1)<<4);
-	CartRAM[0x1fed] = (b4>>1)|((b2&1)<<4)|((b1&1)<<5)|((b4&1)<<6)|((b3&1)<<7);
-}
-
-void NeoPVCBankswitch()
-{
-	UINT32 nBank = ((*((unsigned short*)(CartRAM + 0x1ff0))>>8)|(*((unsigned short*)(CartRAM + 0x1ff2))<<8));
-	CartRAM[0x1ff0] = 0xA0;
-	CartRAM[0x1ff1] &= 0xFE;
-	CartRAM[0x1ff3] &= 0x7F;
-	
-	if (nBank != nNeo68KROMBank) {
-		nNeo68KROMBank = nBank;
-		SekMapMemory(Neo68KROM + nNeo68KROMBank + 0x100000, 0x200000, 0x2fdfff, SM_ROM);
-	}
-}
-
-void __fastcall PVCWriteByteBankSwitch(unsigned int sekAddress, unsigned char byteValue)
-{
-	int offset = (sekAddress & 0x1FFF) ^ 1;
-	
-	CartRAM[offset] = byteValue;
-	
-	if(offset == 0x1fe0) {
-		pvc_prot1();
-		return;
-	}
-	
-	if(offset >= 0x1fe8 && offset <= 0x1fea) {
-		pvc_prot2();
-		return;
-	}
-	
-	if(offset >= 0x1ff0) {
-		NeoPVCBankswitch();
-		return;
-	}
-}
-
-void __fastcall PVCWriteWordBankSwitch(unsigned int sekAddress, unsigned short wordValue)
-{
-	int offset = sekAddress & 0x1FFE;
-	
-	*((unsigned short*)(CartRAM + offset)) = wordValue;
-	
-	if(offset == 0x1fe0) {
-		pvc_prot1();
-		return;
-	}
-	
-	if(offset >= 0x1fe8 && offset <= 0x1fea) {
-		pvc_prot2();
-		return;
-	}
-	
-	if(offset >= 0x1ff0) {
-		NeoPVCBankswitch();
-		return;
-	}
-}
-
-// ----------------------------------------------------------------------------
-
 static int neogeoReset()
 {
 	NeoLoad68KBIOS((NeoSystem & 0x07) ^ 4);
-	
-	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "svcpcb") || !strcmp(BurnDrvGetTextA(DRV_NAME), "svcpcba")) {
-		int harddip3 = (NeoSystem & 0x03) & 1;
-		switch (NeoSystem & 0x03) {
-			case 0x02:
-			case 0x03:
-				memcpy(Neo68KBIOS, Neo68KBIOS + 0x20000 + harddip3 * 0x20000, 0x20000);
-				break;
-		}
-	}
-	
+
 	if (nBIOS == -1 || nBIOS == 9) {
 		// Write system type & region code into BIOS ROM
 		*((unsigned short*)(Neo68KBIOS + 0x000400)) = ((NeoSystem & 4) << 13) | (NeoSystem & 0x03);
@@ -1835,7 +1667,6 @@ static int neogeoReset()
 	if ((BurnDrvGetHardwareCode() & HARDWARE_SNK_CONTROLMASK) == HARDWARE_SNK_PCB) {
 		bprintf(PRINT_IMPORTANT, _T(" custom JAMMA PCB board BIOS"));
 	}
-	
 	if (nBIOS == -1) {
 		bprintf(PRINT_IMPORTANT, _T(" (patching region)"));
 	}
@@ -1851,8 +1682,6 @@ static int neogeoReset()
 	bAESBIOS = NeoCheckAESBIOS();
 
 	bSRAMWritable = false;
-	// Enable SRAM protection when emulating an MVS system
-	nSRAMProtAddress = nNeoSRAMProtection;
 
 	bNeoEnableGraphics = true;
 
@@ -1897,6 +1726,11 @@ static int neogeoReset()
 
 		MapVectorTable(b68KBoardROMBankedIn);
 
+		// Set by a switch on the PCB
+		if (!strcmp(BurnDrvGetTextA(DRV_NAME), "svcpcb") || !strcmp(BurnDrvGetTextA(DRV_NAME), "svcpcba")) {
+			SekMapMemory(Neo68KBIOS + 0x20000 * (~NeoSystem & 1), 0xc00000, 0xc1ffff, SM_ROM);
+		}
+
 		SekReset();
 
 		MapPalette(0);
@@ -1934,9 +1768,7 @@ static int neogeoReset()
 
 	BurnYM2610Reset();
 
-#ifdef EMULATE_WATCHDOG
 	nNeoWatchdog = 0;
-#endif
 
 	nIRQCycles = NO_IRQ_PENDING;
 
@@ -1946,6 +1778,10 @@ static int neogeoReset()
 int NeoInit()
 {
 	BurnSetRefreshRate(NEO_VREFRESH);
+	{
+		int nNeoScreenHeight; // not used
+		BurnDrvGetFullSize(&nNeoScreenWidth, &nNeoScreenHeight);
+	}
 
 	NeoGameInfo info;
 	NeoGameInfo* pInfo = &info;
@@ -1955,10 +1791,6 @@ int NeoInit()
 
 		ri.nType = 0;
 		ri.nLen = 0;
-
-		if (BurnDrvGetHardwareCode() & HARDWARE_SNK_SRAM && nNeoSRAMProtection == -1) {
-			nNeoSRAMProtection = 0x0100;
-		}
 
 		// Find 'P' ROMs
 		FindROMs(1, &pInfo->nCodeOffset, &pInfo->nCodeNum);
@@ -1998,8 +1830,6 @@ int NeoInit()
 			nCodeSize += ri.nLen;
 		}
 		nCodeSize = (nCodeSize + 0x0FFFFF) & ~0x0FFFFF;
-		if(!strcmp(BurnDrvGetTextA(DRV_NAME), "jockeygp")) nCodeSize = 0x200000;
-		if(!strcmp(BurnDrvGetTextA(DRV_NAME), "kof10th")) nCodeSize += 0x100000;
 
 		nSpriteSize = 0;
 
@@ -2048,36 +1878,20 @@ int NeoInit()
 		}
 
 		nYM2610ADPCMASize = nYM2610ADPCMBSize = 0;
-		if (pInfo->nADPCMOffset >= 0)	{
-			char* pName;
-			BurnDrvGetRomInfo(&ri, pInfo->nADPCMOffset);
-			BurnDrvGetRomName(&pName, pInfo->nADPCMOffset, 0);
-			nYM2610ADPCMASize = ri.nLen;
-			
-			if (pInfo->nADPCMANum > 1) {
-				BurnDrvGetRomInfo(&ri, pInfo->nADPCMOffset + pInfo->nADPCMANum - 1);
-				BurnDrvGetRomName(&pName, pInfo->nADPCMOffset + pInfo->nADPCMANum - 1, 0);
-				if (pInfo->nADPCMBNum == 0) {
-					nYM2610ADPCMASize *= pName[FindType(pName) + 1] - '1';
-				} else {
-					nYM2610ADPCMASize *= pName[FindType(pName) + 2] - '1';
-				}
-				nYM2610ADPCMASize += ri.nLen;
+		if (pInfo->nADPCMOffset >= 0) {
+			if (pInfo->nADPCMANum) {
+				ri.nLen = 0;
+				BurnDrvGetRomInfo(&ri, pInfo->nADPCMOffset);
+				nYM2610ADPCMASize = ri.nLen * pInfo->nADPCMANum;
 			}
-
 			if (pInfo->nADPCMBNum) {
+				ri.nLen = 0;
 				BurnDrvGetRomInfo(&ri, pInfo->nADPCMOffset + pInfo->nADPCMANum);
-				nYM2610ADPCMBSize = ri.nLen * (pInfo->nADPCMBNum - 1);
-				BurnDrvGetRomInfo(&ri, pInfo->nADPCMOffset + pInfo->nADPCMANum + pInfo->nADPCMBNum - 1);
-				nYM2610ADPCMBSize += ri.nLen;
-			}
-		}
+				nYM2610ADPCMBSize = ri.nLen * pInfo->nADPCMBNum;
+			}				
+ 		}
 	}
-	
-	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "svcboot") || !strcmp(BurnDrvGetTextA(DRV_NAME), "svcplus") || !strcmp(BurnDrvGetTextA(DRV_NAME), "svcplusa") || !strcmp(BurnDrvGetTextA(DRV_NAME), "svcsplus")) nYM2610ADPCMASize += 0x400000;
-	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "kof2k4se")) nYM2610ADPCMASize += 0x800000;
-	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "mahretsu")) nYM2610ADPCMASize = 0x100000;
-	
+
 	nBIOS = 9999;
 	if (LoadRoms(pInfo)) {
 		return 1;
@@ -2098,7 +1912,7 @@ int NeoInit()
 
 	{
 		SekInit(0, 0x68000);										// Allocate 68000
-	    SekOpen(0);
+		SekOpen(0);
 
 		SekSetCyclesScanline((int)(12000000.0 / NEO_HREFRESH));
 
@@ -2112,7 +1926,7 @@ int NeoInit()
 		}
 		SekMapMemory(Neo68KRAM,		0x100000, 0x10FFFF, SM_RAM);	// 68K RAM
 		SekMapMemory(NeoPalSrc[0],	0x6A0000, 0x6A1FFF, SM_RAM);	// Palette RAM bank 0 always accessed here
-		SekMapMemory(Neo68KBIOS,	0xC00000, 0xC1FFFF, SM_ROM);	// BIOS ROM
+		SekMapMemory(Neo68KBIOS,	0xC00000, 0xC7FFFF, SM_ROM);	// BIOS ROM
 
 		SekSetReadWordHandler(0, neogeoReadWord);
 		SekSetReadByteHandler(0, neogeoReadByte);
@@ -2136,7 +1950,7 @@ int NeoInit()
 		if ((BurnDrvGetHardwareCode() & HARDWARE_SNK_CONTROLMASK) == HARDWARE_SNK_GAMBLING) {
 			SekMapMemory(NeoNVRAM2,	0x200000, 0x201FFF, SM_RAM);	// 68K RAM
 			
-			SekMapHandler(5,	0x280000, 0x2FFFFF, SM_READ);
+			SekMapHandler(5,	0x202000, 0x2FFFFF, SM_READ);
 			SekSetReadByteHandler(5,     neogeoReadByteGambling);
 			SekSetReadWordHandler(5,     neogeoReadWordGambling);
 			
@@ -2159,21 +1973,6 @@ int NeoInit()
 				SekSetWriteWordHandler(4, neogeoWriteWordBankswitch);
 				SekSetWriteByteHandler(4, neogeoWriteByteBankswitch);
 			}
-		}
-		
-		if (BurnDrvGetHardwareCode() & HARDWARE_SNK_PVC_PROT) {
-			pNeoBankswitchCallback = NeoPVCBankswitch;
-		
-			SekMapHandler(7,		0x200000, 0x2FDFFF, SM_WRITE);
-
-			SekMapMemory(CartRAM, 0x2FE000, 0x2FFFFF, SM_READ);
-			SekMapMemory(CartRAM, 0x2FE000, 0x2FFDFF, SM_WRITE);
-			SekMapHandler(4,		0x2FFE00, 0x2FFFFF, SM_WRITE);
-
-			SekSetWriteWordHandler(4, PVCWriteWordBankSwitch);
-			SekSetWriteByteHandler(4, PVCWriteByteBankSwitch);
-
-			SekMapMemory(Neo68KROM + 0x100000, 0x200000, 0x2FDFFF, SM_ROM);
 		}
 
 		SekClose();
@@ -2254,7 +2053,7 @@ int NeoInit()
 
 	nZ80Clockspeed = 4000000;
 
-	BurnYM2610Init(8000000, YM2610ADPCMAROM, &nYM2610ADPCMASize, YM2610ADPCMBROM, &nYM2610ADPCMBSize, &neogeoFMIRQHandler, neogeoSynchroniseStream, neogeoGetTime);
+	BurnYM2610Init(8000000, YM2610ADPCMAROM, &nYM2610ADPCMASize, YM2610ADPCMBROM, &nYM2610ADPCMBSize, &neogeoFMIRQHandler, neogeoSynchroniseStream, neogeoGetTime, 0);
 	BurnTimerAttachZet(nZ80Clockspeed);
 
 	NeoInitText();
@@ -2310,7 +2109,6 @@ int NeoExit()
 	free(AllRAM);							// Misc RAM
 	AllRAM = NULL;
 
-	nNeoSRAMProtection = -1;
 	nNeoTextROMSize = -1;
 
 	nBIOS = 9999;
@@ -2400,6 +2198,10 @@ int NeoFrame()
 {
 	if (NeoReset) {							   						// Reset machine
 		neogeoReset();
+	}
+
+	if (bAESBIOS && !SekReadByte(0x10fcef))	{		// AES hack
+		SekWriteByte(0x108000 + 0x7cef, 0xff);
 	}
 
 	NeoInput[ 5] |= 0x80;											// Default test switches to off
@@ -2529,14 +2331,12 @@ int NeoFrame()
 		nPrevBurnCPUSpeedAdjust = nBurnCPUSpeedAdjust;
 	}
 
-#ifdef EMULATE_WATCHDOG
 	// If the watchdog isn't reset every 8 frames, reset the system
 	// This can't be 100% accurate, as the 68000 instruction timings are not 100%
 	if (nNeoWatchdog > nCyclesTotal[0] * 8) {
 		bprintf(PRINT_IMPORTANT, _T(" ** Watchdog triggered system reset\n"));
 		neogeoReset();
 	}
-#endif
 
 	bRenderImage = false;
 	bForceUpdateOnStatusRead = false;
@@ -2785,15 +2585,13 @@ int NeoFrame()
 
 	nCycles68KSync = SekTotalCycles();
 	BurnTimerEndFrame(nCyclesTotal[1]);
-	BurnYM2610Update(nBurnSoundLen);
+	BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
 
 	// Update the uPD4990 until the end of the frame
 	uPD4990AUpdate(SekTotalCycles() - nuPD4990ATicks);
 
-#ifdef EMULATE_WATCHDOG
 	// Handle the watchdog
 	nNeoWatchdog += SekTotalCycles();
-#endif
 
 	// Remember extra cycles executed
 	nCyclesExtra[0] = SekTotalCycles() - nCyclesTotal[0];

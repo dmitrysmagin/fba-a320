@@ -786,6 +786,7 @@ struct BurnDriver BurnDrvmazinger = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL |BDF_ORIENTATION_FLIPPED | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_Z80,
 	NULL, mazingerRomInfo, mazingerRomName, mazingerInputInfo, mazingerDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &CaveRecalcPalette,
-	240, 384, 3, 4
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 240, 384, 3, 4
 };

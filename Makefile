@@ -70,7 +70,9 @@ alldir	=	burn \
 			cpu/a68k \
 			cpu/c68k \
 			cpu/cz80 \
+			cpu/i8039 \
 			cpu/m68k \
+			cpu/m6502 \
 			cpu/nec \
 			cpu/sh2 \
 			cpu/z80 \
@@ -89,91 +91,109 @@ ifdef USE_LIBAO
 	lib += -lao
 endif
 
-drvobj	=	d_neogeo.o \
-			\
-			dc_3wonders.o dc_1941.o dc_1944.o dc_19xx.o dc_armwar.o dc_avsp.o dc_batcir.o \
-			dc_captcomm.o dc_cawing.o dc_choko.o dc_csclub.o dc_cworld2j.o dc_cworld2j.o \
-			dc_cyb.o dc_ddsom.o dc_ddtod.o dc_dimahoo.o dc_dino.o dc_dstlk.o \
-			dc_dw.o dc_ecofghtr.o dc_ffight.o dc_forgottn.o dc_ghouls.o dc_gigawing.o \
-			dc_hsf2.o dc_jyangoku.o dc_knights.o dc_kod.o dc_megaman.o \
-			dc_megaman2.o dc_mercs.o dc_mmatrix.o dc_mpang.o dc_msh.o dc_mshvsf.o \
-			dc_msword.o dc_mtwins.o dc_mvsc.o dc_nemo.o dc_nwarr.o dc_pang3.o dc_pnickj.o \
-			dc_progear.o dc_punisher.o dc_pzloop2.o dc_qad.o dc_qnd.o dc_qtono2.o \
-			dc_ringdest.o dc_sf2.o dc_sf2t.o dc_sfa.o dc_sfa2.o dc_sfa3.o dc_sfzch.o \
-			dc_sgemf.o dc_slammast.o dc_spf.o dc_ssf2.o dc_ssf2t.o dc_strider.o dc_unsquad.o \
-			dc_varth.o dc_vhunt2.o dc_vsav.o dc_vsav2.o dc_willow.o dc_wof.o dc_xmcota.o dc_xmvsf.o \
-			\
-			d_batrider.o d_batsugun.o d_battleg.o d_bbakraid.o d_dogyuun.o d_hellfire.o d_kbash.o \
-			d_mahoudai.o d_outzone.o d_shippumd.o d_snowbro2.o d_tekipaki.o d_truxton.o d_truxton2.o \
-			d_vfive.o d_zerowing.o \
-			\
-			d_dodonpachi.o d_donpachi.o d_esprade.o d_feversos.o d_gaia.o d_guwange.o d_hotdogst.o \
-			d_mazinger.o d_metmqstr.o d_pwrinst2.o d_sailormn.o d_uopoko.o \
-			\
-			d_opwolf.o d_rainbow.o d_rastan.o d_superman.o d_twinhawk.o \
-			\
-			d_1945kiii.o d_aerofgt.o d_biomtoy.o d_bombjack.o d_esd16.o d_fstarfrc.o \
-			d_gaiden.o d_galpanic.o d_hyperpac.o d_kaneko16.o d_m92.o d_madgear.o d_news.o \
-			d_ohmygod.o d_parent.o d_powerins.o d_prehisle.o d_shadfrce.o d_solomon.o \
-			d_tigerheli.o d_tumbleb.o d_unico.o d_wc90.o d_wwfwfest.o \
-			\
-			d_pgm.o \
-			\
-			d_hangon.o d_outrun.o d_sys16a.o d_sys16b.o d_xbrd.o d_ybrd.o \
-			#\
-			#d_mia.o d_tmnt.o \
-			#\
-			#d_robocop.o d_baddudes.o \
-			#\
-			#d_psikyo.o
+drvobj	=	\
+		d_dodonpachi.o d_donpachi.o d_esprade.o d_feversos.o d_gaia.o d_guwange.o \
+		d_hotdogst.o d_mazinger.o d_metmqstr.o d_pwrinst2.o d_sailormn.o d_uopoko.o \
+		\
+		d_cps1.o \
+		\
+		d_cps2.o \
+		\
+		d_neogeo.o \
+		\
+		d_pgm.o \
+		\
+		d_hangon.o d_outrun.o d_sys16a.o d_sys16b.o d_sys18.o d_xbrd.o d_ybrd.o \
+		\
+	        d_batrider.o d_batsugun.o d_battleg.o d_bbakraid.o d_dogyuun.o d_hellfire.o d_kbash.o \
+		d_mahoudai.o d_outzone.o d_shippumd.o d_snowbro2.o d_tekipaki.o d_truxton.o \
+		d_truxton2.o d_vfive.o d_zerowing.o \
+		\
+		d_mia.o d_tmnt.o \
+		\
+		d_taitof2.o d_taitox.o d_taitoz.o d_taitomisc.o d_darius2.o \
+		\
+		d_4enraya.o d_1942.o d_1943.o d_ambush.o d_arkanoid.o d_bankp.o d_bionicc.o d_bombjack.o \
+		d_dotrikun.o d_epos.o d_exedexes.o d_funkybee.o d_gberet.o d_gunsmoke.o d_higemaru.o \
+		d_jack.o d_kyugo.o d_madgear.o d_meijinsn.o d_minivdr.o d_mole.o d_mrdo.o d_mrflea.o \
+		d_mystston.o d_pacman.o d_pkunwar.o d_pooyan.o d_prehisle.o d_quizo.o d_route16.o d_scregg.o \
+		d_solomon.o d_sys1.o d_tigerheli.o d_tnzs.o d_vulgus.o d_wallc.o d_wc90.o \
+		\
+		d_1945kiii.o d_aerofgt.o d_biomtoy.o d_ddragon3.o d_drtomy.o d_fstarfrc.o d_gaiden.o \
+		d_galpanic.o d_hyperpac.o d_kaneko16.o d_m90.o d_m92.o d_news.o d_ohmygod.o d_powerins.o \
+		d_raiden.o d_seta2.o d_shadfrce.o d_silkroad.o d_tumbleb.o d_wwfwfest.o irem_cpu.o \
+		\
+		d_parent.o \
+		\
+		#d_psikyo.o \
+		#\
+		#d_baddudes.o d_robocop.o \
+		#\
+		#d_megadrive.o
+		#\
+		#d_cps3.o \
 
 ifdef USE_LIBAO
 	depobj = ao_audio.o 
 endif
 
 depobj	+=	\
-			bzip.o config.o drv.o font.o input.o main.o paths.o \
-			run.o tchar.o \
-			\
-			sdl_audio.o sdl_input.o sdl_menu.o sdl_progress.o \
-			sdl_run.o sdl_video.o snd.o \
-			\
-			unzip.o dat.o state.o zipfn.o \
-			\
-			gui_config.o gui_gfx.o gui_main.o gui_romlist.o gui_setpath.o \
-			\
-			$(drvobj) \
-			\
-			burn.o burn_sound.o burn_sound_c.o cheat.o eeprom_93cxx.o load.o \
-			sek.o timer.o vez.o zet.o z80.o z80daisy.o cz80.o nec.o \
-			\
-			ay8910.o fm.o fmopl.o ym2151.o ymdeltat.o ymf278b.o msm5205.o msm6295.o ymz280b.o \
-			burn_ym2151.o burn_ym2203.o burn_ym2608.o burn_ym2610.o burn_ym3812.o burn_ymf278b.o \
-			\
-			neo_decrypt.o neo_palette.o neo_run.o neo_sprite.o neo_text.o neo_upd4990a.o neogeo.o \
-			\
-			cps.o cps2_crpt.o cps_draw.o cps_mem.o cps_obj.o cps_pal.o cps_run.o \
-			cps_rw.o cps_scr.o cpsr.o cpsrd.o cpst.o ctv.o dc_input.o \
-			kabuki.o ps.o ps_m.o ps_z.o qs.o qs_c.o qs_z.o \
-			\
-			toa_bcu2.o toa_extratext.o toa_gp9001.o toa_palette.o toaplan.o \
-			toaplan1.o \
-			\
-			cave.o cave_palette.o cave_sprite.o cave_tile.o \
-			\
-			rain_chip.o snd_tc0140.o taito_gfx.o vid_pc080sn.o vid_pc090oj.o vid_sysx.o \
-			\
-			tiles_generic.o \
-			\
-			pgm_crypt.o pgm_draw.o pgm_prot.o pgm_run.o pgm_snd.o \
-			\
-			fd1089.o fd1094.o mc8123.o sys16_fd1094.o sys16_gfx.o sys16_pcm.o sys16_ppi.o sys16_run.o \
-			#\
-			#tmnt_inp.o tmnt_pal.o tmnt_run.o tmnt_til.o \
-			#\
-			#dec_misc.o dec_vid.o \
-			#\
-			#psikyo_palette.o psikyo_sprite.o psikyo_tile.o \
+		bzip.o config.o drv.o font.o input.o main.o paths.o \
+		run.o tchar.o \
+		\
+		sdl_audio.o sdl_input.o sdl_menu.o sdl_progress.o \
+		sdl_run.o sdl_video.o snd.o \
+		\
+		unzip.o dat.o state.o zipfn.o \
+		\
+		gui_config.o gui_gfx.o gui_main.o gui_romlist.o gui_setpath.o \
+		\
+		$(drvobj) \
+		\
+		burn.o cheat.o burn_gun.o load.o \
+		\
+		sek.o zet.o vez.o eeprom_93cxx.o \
+		burn_sound.o burn_sound_c.o timer.o \
+		burn_ym2151.o burn_ym3812.o burn_ym2608.o burn_ym2610.o burn_ymf278b.o burn_ym2203.o burn_ym2612.o \
+		ay8910.o ym2151.o fm.o fmopl.o ymdeltat.o \
+		dac.o ics2115.o msm5205.o msm6295.o rf5c68.o segapcm.o sn76496.o upd7759.o ymf278b.o ymz280b.o \
+		x1010.o \
+		\
+		i8039.o m6502.o m6502_intf.o nec.o sh2.o z80.o z80daisy.o cz80.o \
+		\
+		cave.o cave_tile.o cave_sprite.o cave_palette.o \
+		\
+		cps.o cps_config.o cps_draw.o cps_mem.o cps_obj.o cps_pal.o cps_run.o \
+		cps2_crpt.o cps_rw.o cps_scr.o cpsr.o cpsrd.o \
+		cpst.o ctv.o ps.o ps_m.o ps_z.o qs.o qs_c.o qs_z.o \
+		kabuki.o \
+		\
+		neogeo.o neo_run.o neo_decrypt.o neo_text.o neo_sprite.o neo_palette.o neo_upd4990a.o \
+		rom_save.o \
+		\
+		pgm_crypt.o pgm_draw.o pgm_prot.o pgm_run.o \
+		\
+		sys16_run.o sys16_gfx.o sys16_fd1094.o fd1089.o fd1094.o mc8123.o sys16_ppi.o genesis_vid.o \
+		\
+		toaplan.o toa_gp9001.o toa_extratext.o toa_palette.o \
+		\
+		toa_bcu2.o toaplan1.o \
+		\
+		K052109.o tmnt_inp.o tmnt_pal.o tmnt_run.o tmnt_til.o \
+		\
+		tc0110pcr.o tc0220ioc.o tc0150rod.o tc0140syt.o tc0100scn.o tc0510nio.o tc0480scp.o tc0360pri.o \
+		tc0280grd.o pc080sn.o pc090oj.o cchip.o taito_ic.o taito.o \
+		\
+		tiles_generic.o \
+		#\
+		#megadrive.o
+		#\
+		#cps3run.o cps3snd.o \
+		#\
+		#psikyo_tile.o psikyo_sprite.o psikyo_palette.o \
+		#\
+		#dec_aud.o dec_misc.o dec_vid.o \
+
 
 autobj += $(depobj)
 

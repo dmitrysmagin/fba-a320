@@ -885,6 +885,29 @@ static struct BurnRomInfo LoffireuRomDesc[] = {
 STD_ROM_PICK(Loffireu);
 STD_ROM_FN(Loffireu);
 
+static struct BurnRomInfo Rascot2RomDesc[] = {
+	{ "ep13965a",         0x20000, 0x7eacdfb3, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "ep13694a",         0x20000, 0x15b86498, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	
+	{ "epr13967",         0x20000, 0x3b92e2b8, SYS16_ROM_PROG2 | BRF_ESS | BRF_PRG },
+	{ "epr13966",         0x20000, 0xeaa644e1, SYS16_ROM_PROG2 | BRF_ESS | BRF_PRG },
+
+	{ "epr13961" ,        0x10000, 0x68038629, SYS16_ROM_TILES | BRF_GRA },
+	{ "epr13962",         0x10000, 0x7d7605bc, SYS16_ROM_TILES | BRF_GRA },
+	{ "epr13963",         0x10000, 0xf3376b65, SYS16_ROM_TILES | BRF_GRA },
+	
+	{ "epr13957",         0x20000, 0x6d50fb54, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr13958",         0x20000, 0x7803a027, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr13959",         0x20000, 0xdb245b22, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr13960",         0x20000, 0xb974128d, SYS16_ROM_SPRITES | BRF_GRA },
+	
+	{ "ep13221a",         0x10000, 0x0d429ac4, SYS16_ROM_Z80PROG | BRF_ESS | BRF_PRG },
+};
+
+
+STD_ROM_PICK(Rascot2);
+STD_ROM_FN(Rascot2);
+
 static struct BurnRomInfo RacheroRomDesc[] = {
 	{ "epr-13129.ic58",   0x20000, 0xad9f32e7, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
 	{ "epr-13130.ic63",   0x20000, 0x6022777b, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
@@ -1104,9 +1127,52 @@ static struct BurnRomInfo SmgpjRomDesc[] = {
 STD_ROM_PICK(Smgpj);
 STD_ROM_FN(Smgpj);
 
+static struct BurnRomInfo SmgpjaRomDesc[] = {
+	{ "epr12432a.58",     0x20000, 0x22517672, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr12433a.63",     0x20000, 0xa46b5d13, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+		
+	{ "epr12441a.20",     0x20000, 0x2c9599c1, SYS16_ROM_PROG2 | BRF_ESS | BRF_PRG },
+	{ "epr12442a.29",     0x20000, 0x77a5ec16, SYS16_ROM_PROG2 | BRF_ESS | BRF_PRG },
+
+	{ "epr12429.154",     0x10000, 0x5851e614, SYS16_ROM_TILES | BRF_GRA },
+	{ "epr12430.153",     0x10000, 0x05e00134, SYS16_ROM_TILES | BRF_GRA },
+	{ "epr12431.152",     0x10000, 0x35572f4a, SYS16_ROM_TILES | BRF_GRA },
+	
+	{ "mpr12425.90",      0x20000, 0x14bf2a15, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "mpr12426.94",      0x20000, 0x28b60dc0, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "mpr12427.98",      0x20000, 0x0a367928, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "mpr12428.102",     0x20000, 0xefa80ad5, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "mpr12421.91",      0x20000, 0x25f46140, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "mpr12422.95",      0x20000, 0xcb51c8f6, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "mpr12423.99",      0x20000, 0x0be9818e, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "mpr12424.103",     0x20000, 0x0ce00dfc, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "mpr12417.92",      0x20000, 0xa806eabf, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "mpr12418.96",      0x20000, 0xed1a0f2b, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "mpr12419.100",     0x20000, 0xce4568cb, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "mpr12420.104",     0x20000, 0x679442eb, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr12413.93",      0x20000, 0x2f1693df, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr12414.97",      0x20000, 0xc78f3d45, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr12415.101",     0x20000, 0x6080e9ed, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr12416.105",     0x20000, 0x6f1f2769, SYS16_ROM_SPRITES | BRF_GRA },
+	
+	{ "epr12436.17",      0x10000, 0x16ec5f0a, SYS16_ROM_Z80PROG | BRF_ESS | BRF_PRG },
+	
+	{ "epr12587.14",      0x08000, 0x2afe648b, SYS16_ROM_Z80PROG2 | BRF_ESS | BRF_PRG },
+	
+	{ "mpr12437.11",      0x20000, 0xa1c7e712, SYS16_ROM_PCMDATA | BRF_SND },
+	{ "mpr12438.12",      0x20000, 0x6573d46b, SYS16_ROM_PCMDATA | BRF_SND },
+	{ "mpr12439.13",      0x20000, 0x13bf6de5, SYS16_ROM_PCMDATA | BRF_SND },
+	
+	{ "317-0124a.key",    0x02000, 0x022a8a16, SYS16_ROM_KEY | BRF_ESS | BRF_PRG },
+};
+
+
+STD_ROM_PICK(Smgpja);
+STD_ROM_FN(Smgpja);
+
 static struct BurnRomInfo SmgpuRomDesc[] = {
-	{ "ep12561c.58",      0x20000, 0xa5b0f3fe, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
-	{ "ep12562c.63",      0x20000, 0x799e55f4, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr12561c.58",     0x20000, 0xa5b0f3fe, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr12562c.63",     0x20000, 0x799e55f4, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
 		
 	{ "epr12574a.20",     0x20000, 0xf8b5c38b, SYS16_ROM_PROG2 | BRF_ESS | BRF_PRG },
 	{ "epr12575a.29",     0x20000, 0x248b1d17, SYS16_ROM_PROG2 | BRF_ESS | BRF_PRG },
@@ -1148,8 +1214,8 @@ STD_ROM_PICK(Smgpu);
 STD_ROM_FN(Smgpu);
 
 static struct BurnRomInfo Smgpu1RomDesc[] = {
-	{ "ep12561b.63",      0x20000, 0x80a32655, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
-	{ "ep12562b.58",      0x20000, 0xd525f2a8, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr12561b.58",     0x20000, 0x80a32655, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr12562b.63",     0x20000, 0xd525f2a8, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
 		
 	{ "epr12574a.20",     0x20000, 0xf8b5c38b, SYS16_ROM_PROG2 | BRF_ESS | BRF_PRG },
 	{ "epr12575a.29",     0x20000, 0x248b1d17, SYS16_ROM_PROG2 | BRF_ESS | BRF_PRG },
@@ -1429,6 +1495,22 @@ unsigned short __fastcall XBoardReadWord(unsigned int a)
 	if (a >= 0x2e8000 && a <= 0x2e800f) {
 		return System16CompareTimerChipRead(1, (a - 0x2e8000) >> 1);
 	}
+	
+	switch (a) {
+		case 0x2ee000: {
+			// swap the halves of the road RAM
+			memcpy(System16RoadRamBuff, System16RoadRam, 0x1000);
+			UINT32 *src = (UINT32 *)System16RoadRamBuff;
+			UINT32 *dst = (UINT32 *)System16RoadRam;
+			for (int i = 0; i < 0x1000/4; i++) {
+				UINT32 temp = *src;
+				*src++ = *dst;
+				*dst++ = temp;
+			}
+		
+			return System16RoadControl;
+		}
+	}
 
 #if 0 && defined FBA_DEBUG
 	bprintf(PRINT_NORMAL, _T("68000 Read Word -> 0x%06X\n"), a);
@@ -1453,7 +1535,7 @@ unsigned char __fastcall XBoardReadByte(unsigned int a)
 			case 0: {
 				return iochip_r(0, 0, 0xff);
 			}
-			
+	
 			case 1: {
 				return iochip_r(0, 1, 0xff);
 			}
@@ -1535,6 +1617,11 @@ unsigned char __fastcall XBoardReadByte(unsigned int a)
 
 void __fastcall XBoardWriteWord(unsigned int a, unsigned short d)
 {
+	if (a >= 0x0c0000 && a <= 0x0cffff) {
+		System16BTileWordWrite(a - 0x0c0000, d);
+		return;
+	}
+
 	if (a >= 0x0e0000 && a <= 0x0e0007) {
 		System16MultiplyChipWrite(0, (a - 0x0e0000) >> 1, d);
 		return;
@@ -1546,6 +1633,13 @@ void __fastcall XBoardWriteWord(unsigned int a, unsigned short d)
 	}
 	
 	if (a >= 0x0e8000 && a <= 0x0e801f) {
+		if (a == 0x0e8016) {
+			System16SoundLatch = d & 0xff;
+			ZetOpen(0);
+			ZetNmi();
+			ZetClose();
+		}
+		
 		System16CompareTimerChipWrite(0, (a - 0x0e8000) >> 1, d);
 		return;
 	}
@@ -1558,7 +1652,9 @@ void __fastcall XBoardWriteWord(unsigned int a, unsigned short d)
 		if (offset == 2) {
 			System16VideoEnable = d & 0x20;
 			if (!(d & 0x01)) {
+				ZetOpen(0);
 				ZetReset();
+				ZetClose();
 			}
 		}
 		return;
@@ -1617,6 +1713,11 @@ void __fastcall XBoardWriteWord(unsigned int a, unsigned short d)
 
 void __fastcall XBoardWriteByte(unsigned int a, unsigned char d)
 {
+	if (a >= 0x0c0000 && a <= 0x0cffff) {
+		System16BTileByteWrite((a - 0x0c0000) ^ 1, d);
+		return;
+	}
+	
 	if (a >= 0x140000 && a <= 0x14ffff) {
 		int offset = ((a - 0x140000) >> 1) & 7;
 		
@@ -1625,7 +1726,9 @@ void __fastcall XBoardWriteByte(unsigned int a, unsigned char d)
 		if (offset == 2) {
 			System16VideoEnable = d & 0x20;
 			if (!(d & 0x01)) {
+				ZetOpen(0);
 				ZetReset();
+				ZetClose();
 			}
 		}
 		return;
@@ -1662,8 +1765,11 @@ void __fastcall XBoardWriteByte(unsigned int a, unsigned char d)
 		}
 		
 		case 0x0e8017: {
+			System16CompareTimerChipWrite(0, (a - 0x0e8000) >> 1, d);
 			System16SoundLatch = d & 0xff;
+			ZetOpen(0);
 			ZetNmi();
+			ZetClose();
 			return;
 		}
 	}
@@ -1696,6 +1802,7 @@ unsigned short __fastcall XBoard2ReadWord(unsigned int a)
 	}
 	
 	switch (a) {
+		case 0x0ee000:
 		case 0x2ee000: {
 			// swap the halves of the road RAM
 			memcpy(System16RoadRamBuff, System16RoadRam, 0x1000);
@@ -1877,29 +1984,21 @@ unsigned char GpriderProcessAnalogControls(UINT16 value)
 
 unsigned char LoffireProcessAnalogControls(UINT16 value)
 {
-	float temp = 0;
-	
 	switch (value) {
 		case 0: {
-			temp = (float)((System16Gun1X >> 8) + 8) / 320.0 * 0xff;
-//			bprintf(PRINT_NORMAL, _T("x -> %x\n"), (unsigned char)temp);
-			return (unsigned char)temp;
+			return BurnGunReturnX(0);
 		}
 		
 		case 1: {
-			temp = (float)((System16Gun1Y >> 8) + 8) / 224.0 * 0xff;
-//			bprintf(PRINT_NORMAL, _T("y -> %x\n"), (unsigned char)temp);
-			return ~(unsigned char)temp;
+			return ~BurnGunReturnY(0);
 		}
 		
 		case 2: {
-			temp = (float)((System16Gun2X >> 8) + 8) / 320.0 * 0xff;
-			return (unsigned char)temp;
+			return BurnGunReturnX(1);
 		}
 		
 		case 3: {
-			temp = (float)((System16Gun2Y >> 8) + 8) / 224.0 * 0xff;
-			return ~(unsigned char)temp;
+			return ~BurnGunReturnY(1);
 		}
 	}
 	
@@ -2014,7 +2113,7 @@ static int GpriderInit()
 
 static int LoffireInit()
 {
-	System16Gun = true;
+	BurnGunInit(2, true);
 	
 	System16ProcessAnalogControlsDo = LoffireProcessAnalogControls;
 	
@@ -2083,7 +2182,7 @@ struct BurnDriver BurnDrvAbcop = {
 	BDF_GAME_WORKING, 2, HARDWARE_SEGA_SYSTEMX | HARDWARE_SEGA_SPRITE_LOAD32 | HARDWARE_SEGA_FD1094_ENC,
 	NULL, AbcopRomInfo, AbcopRomName, AbcopInputInfo, AbcopDIPInfo,
 	AbcopInit, XBoardExit, XBoardFrame, NULL, XBoardScan,
-	NULL, 320, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 320, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvAburner2 = {
@@ -2093,7 +2192,7 @@ struct BurnDriver BurnDrvAburner2 = {
 	BDF_GAME_WORKING, 2, HARDWARE_SEGA_SYSTEMX | HARDWARE_SEGA_SPRITE_LOAD32,
 	NULL, Aburner2RomInfo, Aburner2RomName, Aburner2InputInfo, Aburner2DIPInfo,
 	Aburner2Init, XBoardExit, XBoardFrame, NULL, XBoardScan,
-	NULL, 320, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 320, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvAburner = {
@@ -2103,7 +2202,7 @@ struct BurnDriver BurnDrvAburner = {
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEMX | HARDWARE_SEGA_SPRITE_LOAD32,
 	NULL, AburnerRomInfo, AburnerRomName, Aburner2InputInfo, AburnerDIPInfo,
 	Aburner2Init, XBoardExit, XBoardFrame, NULL, XBoardScan,
-	NULL, 320, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 320, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvGprider = {
@@ -2113,7 +2212,7 @@ struct BurnDriver BurnDrvGprider = {
 	0, 2, HARDWARE_SEGA_SYSTEMX | HARDWARE_SEGA_SPRITE_LOAD32 | HARDWARE_SEGA_FD1094_ENC,
 	NULL, GpriderRomInfo, GpriderRomName, GpriderInputInfo, GpriderDIPInfo,
 	GpriderInit, XBoardExit, XBoardFrame, NULL, XBoardScan,
-	NULL, 320, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 320, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvGprider1 = {
@@ -2123,7 +2222,7 @@ struct BurnDriver BurnDrvGprider1 = {
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEMX | HARDWARE_SEGA_SPRITE_LOAD32 | HARDWARE_SEGA_FD1094_ENC,
 	NULL, Gprider1RomInfo, Gprider1RomName, GpriderInputInfo, GpriderDIPInfo,
 	GpriderInit, XBoardExit, XBoardFrame, NULL, XBoardScan,
-	NULL, 320, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 320, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvLoffire = {
@@ -2133,7 +2232,7 @@ struct BurnDriver BurnDrvLoffire = {
 	BDF_GAME_WORKING, 2, HARDWARE_SEGA_SYSTEMX | HARDWARE_SEGA_SPRITE_LOAD32 | HARDWARE_SEGA_FD1094_ENC,
 	NULL, LoffireRomInfo, LoffireRomName, LoffireInputInfo, LoffireDIPInfo,
 	LoffireInit, XBoardExit, XBoardFrame, NULL, XBoardScan,
-	NULL, 320, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 320, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvLoffirej = {
@@ -2143,7 +2242,7 @@ struct BurnDriver BurnDrvLoffirej = {
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEMX | HARDWARE_SEGA_SPRITE_LOAD32 | HARDWARE_SEGA_FD1094_ENC,
 	NULL, LoffirejRomInfo, LoffirejRomName, LoffireInputInfo, LoffireDIPInfo,
 	LoffireInit, XBoardExit, XBoardFrame, NULL, XBoardScan,
-	NULL, 320, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 320, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvLoffireu = {
@@ -2153,7 +2252,7 @@ struct BurnDriver BurnDrvLoffireu = {
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEMX | HARDWARE_SEGA_SPRITE_LOAD32 | HARDWARE_SEGA_FD1094_ENC,
 	NULL, LoffireuRomInfo, LoffireuRomName, LoffireInputInfo, LoffireDIPInfo,
 	LoffireInit, XBoardExit, XBoardFrame, NULL, XBoardScan,
-	NULL, 320, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 320, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvRachero = {
@@ -2163,87 +2262,107 @@ struct BurnDriver BurnDrvRachero = {
 	BDF_GAME_WORKING, 2, HARDWARE_SEGA_SYSTEMX | HARDWARE_SEGA_SPRITE_LOAD32 | HARDWARE_SEGA_FD1094_ENC,
 	NULL, RacheroRomInfo, RacheroRomName, RacheroInputInfo, RacheroDIPInfo,
 	RacheroInit, XBoardExit, XBoardFrame, NULL, XBoardScan,
-	NULL, 320, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 320, 224, 4, 3
+};
+
+struct BurnDriverD BurnDrvRascot2 = {
+	"rascot2", NULL, NULL, "19??",
+	"Royal Ascot 2\0", NULL, "????", "X-Board",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING, 2, HARDWARE_SEGA_SYSTEMX | HARDWARE_SEGA_SPRITE_LOAD32,
+	NULL, Rascot2RomInfo, Rascot2RomName, Aburner2InputInfo, Aburner2DIPInfo,
+	Aburner2Init, XBoardExit, XBoardFrame, NULL, XBoardScan,
+	0, NULL, NULL, NULL, NULL, 320, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvSmgp = {
 	"smgp", NULL, NULL, "1989",
-	"Super Monaco GP (set 8, World, Rev B, 'Twin', FD1094 317-0126a)\0", "Imperfect Sound", "Sega", "X-Board",
+	"Super Monaco GP (set 9, World, Rev B, 'Twin', FD1094 317-0126a)\0", NULL, "Sega", "X-Board",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_SEGA_SYSTEMX | HARDWARE_SEGA_SPRITE_LOAD32 | HARDWARE_SEGA_FD1094_ENC,
 	NULL, SmgpRomInfo, SmgpRomName, SmgpInputInfo, SmgpDIPInfo,
 	SmgpInit, XBoardExit, XBoardFrame, NULL, XBoardScan,
-	NULL, 320, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 320, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvSmgp5 = {
 	"smgp5", "smgp", NULL, "1989",
-	"Super Monaco GP (set 6, World, 'Air Drive Cabinet', FD1094 317-0126)\0", "Imperfect Sound", "Sega", "X-Board",
+	"Super Monaco GP (set 7, World, 'Air Drive Cabinet', FD1094 317-0126)\0", NULL, "Sega", "X-Board",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEMX | HARDWARE_SEGA_SPRITE_LOAD32 | HARDWARE_SEGA_FD1094_ENC,
 	NULL, Smgp5RomInfo, Smgp5RomName, SmgpInputInfo, SmgpDIPInfo,
 	SmgpInit, XBoardExit, XBoardFrame, NULL, XBoardScan,
-	NULL, 320, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 320, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvSmgp6 = {
 	"smgp6", "smgp", NULL, "1989",
-	"Super Monaco GP (set 7, World, Rev A, FD1094 317-0126a)\0", "Imperfect Sound", "Sega", "X-Board",
+	"Super Monaco GP (set 8, World, Rev A, FD1094 317-0126a)\0", NULL, "Sega", "X-Board",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEMX | HARDWARE_SEGA_SPRITE_LOAD32 | HARDWARE_SEGA_FD1094_ENC,
 	NULL, Smgp6RomInfo, Smgp6RomName, SmgpInputInfo, SmgpDIPInfo,
 	SmgpInit, XBoardExit, XBoardFrame, NULL, XBoardScan,
-	NULL, 320, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 320, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvSmgpj = {
 	"smgpj", "smgp", NULL, "1989",
-	"Super Monaco GP (set 1, Japan, Rev B, FD1094 317-0124a)\0", "Imperfect Sound", "Sega", "X-Board",
+	"Super Monaco GP (set 2, Japan, Rev B, FD1094 317-0124a)\0", NULL, "Sega", "X-Board",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEMX | HARDWARE_SEGA_SPRITE_LOAD32 | HARDWARE_SEGA_FD1094_ENC,
 	NULL, SmgpjRomInfo, SmgpjRomName, SmgpInputInfo, SmgpDIPInfo,
 	SmgpInit, XBoardExit, XBoardFrame, NULL, XBoardScan,
-	NULL, 320, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 320, 224, 4, 3
+};
+
+struct BurnDriver BurnDrvSmgpja = {
+	"smgpja", "smgp", NULL, "1989",
+	"Super Monaco GP (set 1, Japan, Rev A, FD1094 317-0124a)\0", NULL, "Sega", "X-Board",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEMX | HARDWARE_SEGA_SPRITE_LOAD32 | HARDWARE_SEGA_FD1094_ENC,
+	NULL, SmgpjaRomInfo, SmgpjaRomName, SmgpInputInfo, SmgpDIPInfo,
+	SmgpInit, XBoardExit, XBoardFrame, NULL, XBoardScan,
+	0, NULL, NULL, NULL, NULL, 320, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvSmgpu = {
 	"smgpu", "smgp", NULL, "1989",
-	"Super Monaco GP (set 5, US, Rev C, FD1094 317-0125a)\0", "Imperfect Sound", "Sega", "X-Board",
+	"Super Monaco GP (set 6, US, Rev C, FD1094 317-0125a)\0", NULL, "Sega", "X-Board",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEMX | HARDWARE_SEGA_SPRITE_LOAD32 | HARDWARE_SEGA_FD1094_ENC,
 	NULL, SmgpuRomInfo, SmgpuRomName, SmgpInputInfo, SmgpDIPInfo,
 	SmgpInit, XBoardExit, XBoardFrame, NULL, XBoardScan,
-	NULL, 320, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 320, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvSmgpu1 = {
 	"smgpu1", "smgp", NULL, "1989",
-	"Super Monaco GP (set 4, US, Rev B, FD1094 317-0125a)\0", "Imperfect Sound", "Sega", "X-Board",
+	"Super Monaco GP (set 5, US, Rev B, FD1094 317-0125a)\0", NULL, "Sega", "X-Board",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEMX | HARDWARE_SEGA_SPRITE_LOAD32 | HARDWARE_SEGA_FD1094_ENC,
 	NULL, Smgpu1RomInfo, Smgpu1RomName, SmgpInputInfo, SmgpDIPInfo,
 	SmgpInit, XBoardExit, XBoardFrame, NULL, XBoardScan,
-	NULL, 320, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 320, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvSmgpu2 = {
 	"smgpu2", "smgp", NULL, "1989",
-	"Super Monaco GP (set 3, US, Rev A, FD1094 317-0125a)\0", "Imperfect Sound", "Sega", "X-Board",
+	"Super Monaco GP (set 4, US, Rev A, FD1094 317-0125a)\0", NULL, "Sega", "X-Board",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEMX | HARDWARE_SEGA_SPRITE_LOAD32 | HARDWARE_SEGA_FD1094_ENC,
 	NULL, Smgpu2RomInfo, Smgpu2RomName, SmgpInputInfo, SmgpDIPInfo,
 	SmgpInit, XBoardExit, XBoardFrame, NULL, XBoardScan,
-	NULL, 320, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 320, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvSmgpu3 = {
 	"smgpu3", "smgp", NULL, "1989",
-	"Super Monaco GP (set 2, US, FD1094 317-0125a)\0", "Imperfect Sound", "Sega", "X-Board",
+	"Super Monaco GP (set 3, US, FD1094 317-0125a)\0", NULL, "Sega", "X-Board",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEMX | HARDWARE_SEGA_SPRITE_LOAD32 | HARDWARE_SEGA_FD1094_ENC,
 	NULL, Smgpu3RomInfo, Smgpu3RomName, SmgpInputInfo, SmgpDIPInfo,
 	SmgpInit, XBoardExit, XBoardFrame, NULL, XBoardScan,
-	NULL, 320, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 320, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvThndrbld = {
@@ -2253,7 +2372,7 @@ struct BurnDriver BurnDrvThndrbld = {
 	BDF_GAME_WORKING, 2, HARDWARE_SEGA_SYSTEMX | HARDWARE_SEGA_SPRITE_LOAD32 | HARDWARE_SEGA_FD1094_ENC,
 	NULL, ThndrbldRomInfo, ThndrbldRomName, ThndrbldInputInfo, ThndrbldDIPInfo,
 	ThndrbldInit, XBoardExit, XBoardFrame, NULL, XBoardScan,
-	NULL, 320, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 320, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvThndrbd1 = {
@@ -2263,5 +2382,5 @@ struct BurnDriver BurnDrvThndrbd1 = {
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEMX | HARDWARE_SEGA_SPRITE_LOAD32,
 	NULL, Thndrbd1RomInfo, Thndrbd1RomName, ThndrbldInputInfo, Thndrbd1DIPInfo,
 	ThndrbldInit, XBoardExit, XBoardFrame, NULL, XBoardScan,
-	NULL, 320, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 320, 224, 4, 3
 };

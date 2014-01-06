@@ -4,6 +4,8 @@
  * http://oopsware.googlepages.com
  * http://oopsware.ys168.com
  *
+ * 6.13.2007
+ *   Add driver Spinal Breakers (spinlbrk)
  *
  * 6.12.2007
  *   Add driver Karate Blazers (karatblz)
@@ -19,7 +21,7 @@
 #include "burnint.h"
 #include "burn_ym2610.h"
 
-#define	USE_BURN_HIGHCOL	0
+#define	USE_BURN_HIGHCOL	1
 
 static unsigned char DrvButton[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 static unsigned char DrvJoy1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
@@ -131,11 +133,9 @@ static struct BurnInputInfo aerofgtInputList[] = {
 STDINPUTINFO(aerofgt);
 
 static struct BurnDIPInfo aerofgtDIPList[] = {
-
 	// Defaults
 	{0x12,	0xFF, 0xFF,	0x00, NULL},
 	{0x13,	0xFF, 0xFF,	0x00, NULL},
-	{0x14,	0xFF, 0xFF,	0x0F, NULL},
 
 	// DIP 1
 	{0,		0xFE, 0,	2,	  "Coin Slot"},
@@ -187,16 +187,21 @@ static struct BurnDIPInfo aerofgtDIPList[] = {
 	{0x13,	0x01, 0x80, 0x00, "Off"}, 
 	{0x13,	0x01, 0x80, 0x80, "On"},
 	
+};
+
+static struct BurnDIPInfo aerofgt_DIPList[] = {
+	{0x14,	0xFF, 0xFF,	0x0F, NULL},
+
 	// DIP 3
 	{0,		0xFE, 0,	5,	  "Region"},
 	{0x14,	0x01, 0x0F, 0x00, "USA"},
 	{0x14,	0x01, 0x0F, 0x01, "Korea"},
 	{0x14,	0x01, 0x0F, 0x02, "Hong Kong"},
 	{0x14,	0x01, 0x0F, 0x04, "Taiwan"},
-	{0x14,	0x01, 0x0F, 0x0F, "Any"},
+	{0x14,	0x01, 0x0F, 0x0F, "Any"},	
 };
 
-STDDIPINFO(aerofgt);
+STDDIPINFOEXT(aerofgt, aerofgt, aerofgt_);
 
 // Rom information
 static struct BurnRomInfo aerofgtRomDesc[] = {
@@ -629,7 +634,7 @@ static int aerofgtInit()
 		ZetClose();
 	}
 	
-	BurnYM2610Init(8000000, RomSnd2, &RomSndSize2, RomSnd1, &RomSndSize1, &aerofgtFMIRQHandler, aerofgtSynchroniseStream, aerofgtGetTime);
+	BurnYM2610Init(8000000, RomSnd2, &RomSndSize2, RomSnd1, &RomSndSize1, &aerofgtFMIRQHandler, aerofgtSynchroniseStream, aerofgtGetTime, 0);
 	BurnTimerAttachZet(4000000);
 	
 	DrvDoReset();												// Reset machine
@@ -1150,7 +1155,7 @@ static int DrvFrame()
 	SekSetIRQLine(1, SEK_IRQSTATUS_AUTO);
 	
 	BurnTimerEndFrame(nCyclesTotal[1]);
-	BurnYM2610Update(nBurnSoundLen);
+	BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
 
 	ZetClose();
 	SekClose();
@@ -1218,10 +1223,10 @@ struct BurnDriver BurnDrvAerofgt = {
 	"aerofgt", NULL, NULL, "1992",
 	"Aero Fighters\0", NULL, "Video System Co.", "Video System",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_MISC_POST90S,
 	NULL, aerofgtRomInfo, aerofgtRomName, aerofgtInputInfo, aerofgtDIPInfo,
 	aerofgtInit,DrvExit,DrvFrame,DrvDraw,DrvScan,
-	NULL,224,320,3,4
+	0, NULL, NULL, NULL, NULL, 224,320,3,4
 };
 
 // ------------------------------------------------------
@@ -1661,7 +1666,7 @@ static int turbofrcInit()
 		ZetClose();
 	}
 	
-	BurnYM2610Init(8000000, RomSnd2, &RomSndSize2, RomSnd1, &RomSndSize1, &aerofgtFMIRQHandler, aerofgtSynchroniseStream, aerofgtGetTime);
+	BurnYM2610Init(8000000, RomSnd2, &RomSndSize2, RomSnd1, &RomSndSize1, &aerofgtFMIRQHandler, aerofgtSynchroniseStream, aerofgtGetTime, 0);
 	BurnTimerAttachZet(4000000);
 	
 	DrvDoReset();	
@@ -2181,7 +2186,7 @@ static int turbofrcFrame()
 	SekSetIRQLine(1, SEK_IRQSTATUS_AUTO);
 	
 	BurnTimerEndFrame(nCyclesTotal[1]);
-	BurnYM2610Update(nBurnSoundLen);
+	BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
 
 	ZetClose();
 	SekClose();
@@ -2195,10 +2200,10 @@ struct BurnDriver BurnDrvTurbofrc = {
 	"turbofrc", NULL, NULL, "1991",
 	"Turbo Force\0", NULL, "Video System Co.", "Video System",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 3, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 3, HARDWARE_MISC_POST90S,
 	NULL, turbofrcRomInfo, turbofrcRomName, turbofrcInputInfo, turbofrcDIPInfo,
 	turbofrcInit,DrvExit,turbofrcFrame,turbofrcDraw,DrvScan,
-	NULL,240,352,3,4
+	0, NULL, NULL, NULL, NULL,240,352,3,4
 };
 
 
@@ -2341,6 +2346,54 @@ static struct BurnRomInfo karatblzRomDesc[] = {
 
 STD_ROM_PICK(karatblz);
 STD_ROM_FN(karatblz);
+
+static struct BurnRomInfo karatbluRomDesc[] = {
+	{ "2.u14",    	  0x040000, 0x202e6220, BRF_ESS | BRF_PRG }, // 68000 code swapped
+	{ "1.u15",    	  0x040000, 0xd16ee21b, BRF_ESS | BRF_PRG },
+
+	{ "gha.u55",   	  0x080000, 0x3e0cea91, BRF_GRA },			 // gfx1
+	{ "gh9.u61",  	  0x080000, 0x5d1676bd, BRF_GRA },			 // gfx2
+	
+	{ "u42",          0x100000, 0x65f0da84, BRF_GRA },			 // gfx3
+	{ "3.u44",        0x020000, 0x34bdead2, BRF_GRA },
+	{ "u43",          0x100000, 0x7b349e5d, BRF_GRA },			
+	{ "4.u45",        0x020000, 0xbe4d487d, BRF_GRA },
+	
+	{ "u59.ghb",      0x080000, 0x158c9cde, BRF_GRA },			 // gfx4
+	{ "ghd.u60",      0x080000, 0x73180ae3, BRF_GRA },
+
+	{ "5.u92",    	  0x020000, 0x97d67510, BRF_ESS | BRF_PRG }, // Sound CPU
+	
+	{ "u105.gh8",     0x080000, 0x7a68cb1b, BRF_SND },			 // samples
+	{ "u104",         0x100000, 0x5795e884, BRF_SND },	
+};
+
+STD_ROM_PICK(karatblu);
+STD_ROM_FN(karatblu);
+
+static struct BurnRomInfo karatbljRomDesc[] = {
+	{ "2tecmo.u14",   0x040000, 0x57e52654, BRF_ESS | BRF_PRG }, // 68000 code swapped
+	{ "1.u15",    	  0x040000, 0xd16ee21b, BRF_ESS | BRF_PRG },
+
+	{ "gha.u55",   	  0x080000, 0x3e0cea91, BRF_GRA },			 // gfx1
+	{ "gh9.u61",  	  0x080000, 0x5d1676bd, BRF_GRA },			 // gfx2
+	
+	{ "u42",          0x100000, 0x65f0da84, BRF_GRA },			 // gfx3
+	{ "3.u44",        0x020000, 0x34bdead2, BRF_GRA },
+	{ "u43",          0x100000, 0x7b349e5d, BRF_GRA },			
+	{ "4.u45",        0x020000, 0xbe4d487d, BRF_GRA },
+	
+	{ "u59.ghb",      0x080000, 0x158c9cde, BRF_GRA },			 // gfx4
+	{ "ghd.u60",      0x080000, 0x73180ae3, BRF_GRA },
+
+	{ "5.u92",    	  0x020000, 0x97d67510, BRF_ESS | BRF_PRG }, // Sound CPU
+	
+	{ "u105.gh8",     0x080000, 0x7a68cb1b, BRF_SND },			 // samples
+	{ "u104",         0x100000, 0x5795e884, BRF_SND },	
+};
+
+STD_ROM_PICK(karatblj);
+STD_ROM_FN(karatblj);
 
 unsigned char __fastcall karatblzReadByte(unsigned int sekAddress)
 {
@@ -2574,7 +2627,7 @@ static int karatblzInit()
 		ZetClose();
 	}
 	
-	BurnYM2610Init(8000000, RomSnd2, &RomSndSize2, RomSnd1, &RomSndSize1, &aerofgtFMIRQHandler, aerofgtSynchroniseStream, aerofgtGetTime);
+	BurnYM2610Init(8000000, RomSnd2, &RomSndSize2, RomSnd1, &RomSndSize1, &aerofgtFMIRQHandler, aerofgtSynchroniseStream, aerofgtGetTime, 0);
 	BurnTimerAttachZet(4000000);
 	
 	DrvDoReset();	
@@ -2773,7 +2826,7 @@ static int karatblzFrame()
 	SekSetIRQLine(1, SEK_IRQSTATUS_AUTO);
 	
 	BurnTimerEndFrame(nCyclesTotal[1]);
-	BurnYM2610Update(nBurnSoundLen);
+	BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
 
 	ZetClose();
 	SekClose();
@@ -2787,205 +2840,33 @@ struct BurnDriver BurnDrvKaratblz = {
 	"karatblz", NULL, NULL, "1991",
 	"Karate Blazers (World?)\0", NULL, "Video System Co.", "Video System",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_16BIT_ONLY, 4, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_16BIT_ONLY, 4, HARDWARE_MISC_POST90S,
 	NULL, karatblzRomInfo, karatblzRomName, karatblzInputInfo, karatblzDIPInfo,
 	karatblzInit,DrvExit,karatblzFrame,karatblzDraw,DrvScan,
-	NULL,352,240,4,3
+	0, NULL, NULL, NULL, NULL,352,240,4,3
 };
 
-// -------------------------------------------------------
-
-/*
-static struct BurnDIPInfo aerofgtbDIPList[] = {
-
-	// Defaults
-	{0x12,	0xFF, 0xFF,	0x00, NULL},
-	{0x13,	0xFF, 0xFF,	0x00, NULL},
-	{0x14,	0xFF, 0xFF,	0x0F, NULL},
-
-	// DIP 1
-	{0,		0xFE, 0,	2,	  "Coin Slot"},
-	{0x12,	0x01, 0x01,	0x00, "Same"},
-	{0x12,	0x01, 0x01,	0x01, "Individual"},
-	{0,		0xFE, 0,	8,	  "Coin 1"},
-	{0x12,	0x01, 0x0E, 0x00, "1 coin 1 credits"},
-	{0x12,	0x01, 0x0E, 0x02, "2 coin 1 credits"},
-	{0x12,	0x01, 0x0E, 0x04, "3 coin 1 credit"},
-	{0x12,	0x01, 0x0E, 0x06, "1 coin 2 credits"},
-	{0x12,	0x01, 0x0E, 0x08, "1 coins 3 credit"},
-	{0x12,	0x01, 0x0E, 0x0A, "1 coins 4 credit"},
-	{0x12,	0x01, 0x0E, 0x0C, "1 coins 5 credit"},
-	{0x12,	0x01, 0x0E, 0x0E, "1 coins 6 credit"},
-	{0,		0xFE, 0,	8,	  "Coin 2"},
-	{0x12,	0x01, 0x70, 0x00, "1 coin 1 credits"},
-	{0x12,	0x01, 0x70, 0x10, "2 coin 1 credits"},
-	{0x12,	0x01, 0x70, 0x20, "3 coin 1 credit"},
-	{0x12,	0x01, 0x70, 0x30, "1 coin 2 credits"},
-	{0x12,	0x01, 0x70, 0x40, "1 coins 3 credit"},
-	{0x12,	0x01, 0x70, 0x50, "1 coins 4 credit"},
-	{0x12,	0x01, 0x70, 0x60, "1 coins 5 credit"},
-	{0x12,	0x01, 0x70, 0x70, "1 coins 6 credit"},
-	{0,		0xFE, 0,	2,	  "2 Coins to Start, 1 to Continue"},
-	{0x12,	0x01, 0x80,	0x00, "Off"},
-	{0x12,	0x01, 0x80,	0x80, "On"},
-
-	// DIP 2
-	{0,		0xFE, 0,	2,	  "Screen flip"},
-	{0x13,	0x01, 0x01, 0x00, "Off"},
-	{0x13,	0x01, 0x01, 0x01, "On"},
-	{0,		0xFE, 0,	2,	  "Demo sound"},
-	{0x13,	0x01, 0x02, 0x00, "Off"},
-	{0x13,	0x01, 0x02, 0x02, "On"},
-	{0,		0xFE, 0,	4,	  "Difficulty"},
-	{0x13,	0x01, 0x0C, 0x00, "Normal"},
-	{0x13,	0x01, 0x0C, 0x04, "Easy"},
-	{0x13,	0x01, 0x0C, 0x08, "Hard"},
-	{0x13,	0x01, 0x0C, 0x0C, "Hardest"},
-	{0,		0xFE, 0,	4,	  "Lives"},
-	{0x13,	0x01, 0x30, 0x00, "3"},
-	{0x13,	0x01, 0x30, 0x10, "1"},
-	{0x13,	0x01, 0x30, 0x20, "2"},
-	{0x13,	0x01, 0x30, 0x30, "4"},
-	{0,		0xFE, 0,	2,	  "Bonus Life"},
-	{0x13,	0x01, 0x40, 0x00, "200000"},
-	{0x13,	0x01, 0x40, 0x40, "300000"},
-	{0,		0xFE, 0,	2,	  "Service"},
-	{0x13,	0x01, 0x80, 0x00, "Off"}, 
-	{0x13,	0x01, 0x80, 0x80, "On"},
-	
-	// DIP 3
-	{0,		0xFE, 0,	2,	  "Region"},
-	{0x14,	0x01, 0x01, 0x00, "Taiwan"},
-	{0x14,	0x01, 0x01, 0x01, "Japan"},
-};
-
-STDDIPINFO(aerofgtb);
-
-static struct BurnRomInfo aerofgtbRomDesc[] = {
-	{ "v2",    	      0x040000, 0x5c9de9f0, BRF_ESS | BRF_PRG }, // 68000 code swapped
-	{ "v1",    	      0x040000, 0x89c1dcf4, BRF_ESS | BRF_PRG }, // 68000 code swapped
-
-	{ "it-19-03",     0x080000, 0x85eba1a4, BRF_GRA },			 // graphics
-	{ "it-19-02",     0x080000, 0x4f57f8ba, BRF_GRA },
-	
-	{ "it-19-04",     0x080000, 0x3b329c1f, BRF_GRA },			 // 
-	{ "it-19-05",     0x080000, 0x02b525af, BRF_GRA },			 //
-	
-	{ "g27",          0x040000, 0x4d89cbc8, BRF_GRA },
-	{ "g26",          0x040000, 0x8072c1d2, BRF_GRA },
-
-	{ "v3",    	      0x020000, 0xcbb18cf4, BRF_ESS | BRF_PRG }, // Sound CPU
-	
-	{ "it-19-01",     0x040000, 0x6d42723d, BRF_SND },			 // samples
-	{ "it-19-06",     0x100000, 0xcdbbdb1d, BRF_SND },	
-};
-
-STD_ROM_PICK(aerofgtb);
-STD_ROM_FN(aerofgtb);
-
-
-static int aerofgtbInit()
-{
-	Mem = NULL;
-	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) {
-		return 1;
-	}
-	memset(Mem, 0, nLen);										// blank all memory
-	MemIndex();	
-	
-	// Load the roms into memory
-	// Load 68000 ROM
-	if (BurnLoadRom(Rom01, 0, 1)) {
-		return 1;
-	}
-	
-	// Load Graphic
-	BurnLoadRom(RomBg,   1, 1);
-	BurnLoadRom(RomBg+0x80000,  2, 1);
-	DecodeBg();
-	
-	BurnLoadRom(RomSpr1+0x000000, 3, 1);
-	BurnLoadRom(RomSpr1+0x100000, 4, 1);
-	DecodeSpr(DeRomSpr1, RomSpr1, 8192+4096);
-	
-	// Load Z80 ROM
-	if (BurnLoadRom(RomZ80+0x10000, 5, 1)) return 1;
-	memcpy(RomZ80, RomZ80+0x10000, 0x10000);
-
-	BurnLoadRom(RomSnd1,  6, 1);
-	BurnLoadRom(RomSnd2,  7, 1);
-
-	{
-		SekInit(0, 0x68000);										// Allocate 68000
-	    SekOpen(0);
-
-		// Map 68000 memory:
-		SekMapMemory(Rom01,			0x000000, 0x07FFFF, SM_ROM);	// CPU 0 ROM
-		SekMapMemory(RamPal,		0x1A0000, 0x1A07FF, SM_ROM);	// Palette
-		SekMapMemory((unsigned char *)RamRaster,
-									0x1B0000, 0x1B0FFF, SM_RAM);	// Raster / MRA_NOP / MRA_BANK7
-		SekMapMemory((unsigned char *)RamBg1V,		
-									0x1B2000, 0x1B3FFF, SM_RAM);	
-		SekMapMemory((unsigned char *)RamBg2V,		
-									0x1B4000, 0x1B5FFF, SM_RAM);	
-		SekMapMemory((unsigned char *)RamSpr1,
-									0x1C0000, 0x1C7FFF, SM_RAM);
-		SekMapMemory((unsigned char *)RamSpr2,
-									0x1D0000, 0x1D1FFF, SM_RAM);
-		SekMapMemory(Ram01,			0xFEF000, 0xFFEFFF, SM_RAM);	// 64K Work RAM
-
-		SekSetReadWordHandler(0, aerofgtReadWord);
-		SekSetReadByteHandler(0, aerofgtReadByte);
-		SekSetWriteWordHandler(0, aerofgtWriteWord);
-		SekSetWriteByteHandler(0, aerofgtWriteByte);
-
-		SekClose();
-	}
-	
-	{
-		ZetInit(1);
-		ZetOpen(0);
-		
-		ZetMapArea(0x0000, 0x77FF, 0, RomZ80);
-		ZetMapArea(0x0000, 0x77FF, 2, RomZ80);
-		
-		ZetMapArea(0x7800, 0x7FFF, 0, RamZ80);
-		ZetMapArea(0x7800, 0x7FFF, 1, RamZ80);
-		ZetMapArea(0x7800, 0x7FFF, 2, RamZ80);
-		
-		ZetMemEnd();
-		
-		//ZetSetReadHandler(aerofgtZ80Read);
-		//ZetSetWriteHandler(aerofgtZ80Write);
-		ZetSetInHandler(aerofgtZ80PortRead);
-		ZetSetOutHandler(aerofgtZ80PortWrite);
-		
-		ZetClose();
-	}
-	
-	BurnYM2610Init(8000000, RomSnd2, &RomSndSize2, RomSnd1, &RomSndSize1, &aerofgtFMIRQHandler, aerofgtSynchroniseStream, aerofgtGetTime);
-	BurnTimerAttachZet(4000000);
-	
-	DrvDoReset();												// Reset machine
-	return 0;
-}
-
-struct BurnDriver BurnDrvAerofgt = {
-	"aerofgtb", NULL, NULL, "1992",
-	"Aero Fighters (Turbo Force hardware set 1)\0", NULL, "Video System Co.", "Video System",
+struct BurnDriver BurnDrvKaratblu = {
+	"karatblu", "karatblz", NULL, "1991",
+	"Karate Blazers (US)\0", NULL, "Video System Co.", "Video System",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_MISC_MISC,
-	NULL, aerofgtbRomInfo, aerofgtbRomName, aerofgtInputInfo, aerofgtbDIPInfo,
-	aerofgtbInit,DrvExit,DrvFrame,DrvDraw,DrvScan,
-	NULL,224,320,3,4
+	BDF_GAME_WORKING | BDF_CLONE | BDF_16BIT_ONLY, 4, HARDWARE_MISC_POST90S,
+	NULL, karatbluRomInfo, karatbluRomName, karatblzInputInfo, karatblzDIPInfo,
+	karatblzInit,DrvExit,karatblzFrame,karatblzDraw,DrvScan,
+	0, NULL, NULL, NULL, NULL,352,240,4,3
 };
 
-*/
+struct BurnDriver BurnDrvKaratblj = {
+	"karatblj", "karatblz", NULL, "1991",
+	"Karate Blazers (Japan)\0", NULL, "Video System Co.", "Video System",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_16BIT_ONLY, 4, HARDWARE_MISC_POST90S,
+	NULL, karatbljRomInfo, karatbljRomName, karatblzInputInfo, karatblzDIPInfo,
+	karatblzInit,DrvExit,karatblzFrame,karatblzDraw,DrvScan,
+	0, NULL, NULL, NULL, NULL,352,240,4,3
+};
 
 // -----------------------------------------------------------
-
 
 static struct BurnInputInfo spinlbrkInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvButton + 0,	"p1 coin"},
@@ -3175,7 +3056,12 @@ static struct BurnRomInfo spinlbrkRomDesc[] = {
 	{ "ic166",	      0x080000, 0x6e0d063a, BRF_SND },			 // samples
 	{ "ic163",   	  0x080000, 0xe6621dfb, BRF_SND },	
 	
-	//.....
+	{ "epl16p8bp.ic100",   263, 0x00000000, BRF_OPT | BRF_NODUMP },	
+	{ "epl16p8bp.ic127",   263, 0x00000000, BRF_OPT | BRF_NODUMP },	
+	{ "epl16p8bp.ic133",   263, 0x00000000, BRF_OPT | BRF_NODUMP },	
+	{ "epl16p8bp.ic99",    263, 0x00000000, BRF_OPT | BRF_NODUMP },	
+	{ "gal16v8a.ic114",    279, 0x00000000, BRF_OPT | BRF_NODUMP },	
+	{ "gal16v8a.ic95",     279, 0x00000000, BRF_OPT | BRF_NODUMP },
 };
 
 STD_ROM_PICK(spinlbrk);
@@ -3211,6 +3097,12 @@ static struct BurnRomInfo spinlbruRomDesc[] = {
 	{ "ic166",	      0x080000, 0x6e0d063a, BRF_SND },			 // samples
 	{ "ic163",   	  0x080000, 0xe6621dfb, BRF_SND },	
 	
+	{ "epl16p8bp.ic100",   263, 0x00000000, BRF_OPT | BRF_NODUMP },	
+	{ "epl16p8bp.ic127",   263, 0x00000000, BRF_OPT | BRF_NODUMP },	
+	{ "epl16p8bp.ic133",   263, 0x00000000, BRF_OPT | BRF_NODUMP },	
+	{ "epl16p8bp.ic99",    263, 0x00000000, BRF_OPT | BRF_NODUMP },	
+	{ "gal16v8a.ic114",    279, 0x00000000, BRF_OPT | BRF_NODUMP },	
+	{ "gal16v8a.ic95",     279, 0x00000000, BRF_OPT | BRF_NODUMP },		
 };
 
 STD_ROM_PICK(spinlbru);
@@ -3246,6 +3138,12 @@ static struct BurnRomInfo spinlbrjRomDesc[] = {
 	{ "ic166",	      0x080000, 0x6e0d063a, BRF_SND },			 // samples
 	{ "ic163",   	  0x080000, 0xe6621dfb, BRF_SND },	
 	
+	{ "epl16p8bp.ic100",   263, 0x00000000, BRF_OPT | BRF_NODUMP },	
+	{ "epl16p8bp.ic127",   263, 0x00000000, BRF_OPT | BRF_NODUMP },	
+	{ "epl16p8bp.ic133",   263, 0x00000000, BRF_OPT | BRF_NODUMP },	
+	{ "epl16p8bp.ic99",    263, 0x00000000, BRF_OPT | BRF_NODUMP },	
+	{ "gal16v8a.ic114",    279, 0x00000000, BRF_OPT | BRF_NODUMP },	
+	{ "gal16v8a.ic95",     279, 0x00000000, BRF_OPT | BRF_NODUMP },	
 };
 
 STD_ROM_PICK(spinlbrj);
@@ -3458,7 +3356,7 @@ static int spinlbrkInit()
 		ZetClose();
 	}
 	
-	BurnYM2610Init(8000000, RomSnd2, &RomSndSize2, RomSnd1, &RomSndSize1, &aerofgtFMIRQHandler, aerofgtSynchroniseStream, aerofgtGetTime);
+	BurnYM2610Init(8000000, RomSnd2, &RomSndSize2, RomSnd1, &RomSndSize1, &aerofgtFMIRQHandler, aerofgtSynchroniseStream, aerofgtGetTime, 0);
 	BurnTimerAttachZet(4000000);
 	
 	bg2scrollx = 0;	// 
@@ -3590,7 +3488,7 @@ static int spinlbrkFrame()
 	SekSetIRQLine(1, SEK_IRQSTATUS_AUTO);
 	
 	BurnTimerEndFrame(nCyclesTotal[1]);
-	BurnYM2610Update(nBurnSoundLen);
+	BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
 
 	ZetClose();
 	SekClose();
@@ -3604,29 +3502,913 @@ struct BurnDriver BurnDrvSpinlbrk = {
 	"spinlbrk", NULL, NULL, "1990",
 	"Spinal Breakers (World)\0", NULL, "V-System Co.", "V-System",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_16BIT_ONLY, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_16BIT_ONLY, 2, HARDWARE_MISC_POST90S,
 	NULL, spinlbrkRomInfo, spinlbrkRomName, spinlbrkInputInfo, spinlbrkDIPInfo,
 	spinlbrkInit,DrvExit,spinlbrkFrame,spinlbrkDraw,DrvScan,
-	NULL,352,240,4,3
+	0, NULL, NULL, NULL, NULL,352,240,4,3
 };
 
 struct BurnDriver BurnDrvSpinlbru = {
 	"spinlbru", "spinlbrk", NULL, "1990",
 	"Spinal Breakers (US)\0", NULL, "V-System Co.", "V-System",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_16BIT_ONLY, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_16BIT_ONLY, 2, HARDWARE_MISC_POST90S,
 	NULL, spinlbruRomInfo, spinlbruRomName, spinlbrkInputInfo, spinlbruDIPInfo,
 	spinlbrkInit,DrvExit,spinlbrkFrame,spinlbrkDraw,DrvScan,
-	NULL,352,240,4,3
+	0, NULL, NULL, NULL, NULL,352,240,4,3
 };
 
 struct BurnDriver BurnDrvSpinlbrj = {
 	"spinlbrj", "spinlbrk", NULL, "1990",
 	"Spinal Breakers (Japan)\0", NULL, "V-System Co.", "V-System",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_16BIT_ONLY, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_16BIT_ONLY, 2, HARDWARE_MISC_POST90S,
 	NULL, spinlbrjRomInfo, spinlbrjRomName, spinlbrkInputInfo, spinlbrjDIPInfo,
 	spinlbrkInit,DrvExit,spinlbrkFrame,spinlbrkDraw,DrvScan,
-	NULL,352,240,4,3
+	0, NULL, NULL, NULL, NULL,352,240,4,3
+};
+
+// -------------------------------------------------------
+
+static struct BurnDIPInfo aerofgtb_DIPList[] = {
+	
+	{0x14,	0xFF, 0xFF,	0x01, NULL},
+
+	// DIP 3
+	{0,		0xFE, 0,	2,	  "Region"},
+	{0x14,	0x01, 0x01, 0x00, "Taiwan"},
+	{0x14,	0x01, 0x01, 0x01, "Japan"},
+};
+
+STDDIPINFOEXT(aerofgtb, aerofgt, aerofgtb_);
+
+static struct BurnRomInfo aerofgtbRomDesc[] = {
+	{ "v2",    	      0x040000, 0x5c9de9f0, BRF_ESS | BRF_PRG }, // 68000 code swapped
+	{ "v1",    	      0x040000, 0x89c1dcf4, BRF_ESS | BRF_PRG }, // 68000 code swapped
+
+	{ "it-19-03",     0x080000, 0x85eba1a4, BRF_GRA },			 // graphics
+	{ "it-19-02",     0x080000, 0x4f57f8ba, BRF_GRA },
+	
+	{ "it-19-04",     0x080000, 0x3b329c1f, BRF_GRA },			 // 
+	{ "it-19-05",     0x080000, 0x02b525af, BRF_GRA },			 //
+	
+	{ "g27",          0x040000, 0x4d89cbc8, BRF_GRA },
+	{ "g26",          0x040000, 0x8072c1d2, BRF_GRA },
+
+	{ "v3",    	      0x020000, 0xcbb18cf4, BRF_ESS | BRF_PRG }, // Sound CPU
+	
+	{ "it-19-01",     0x040000, 0x6d42723d, BRF_SND },			 // samples
+	{ "it-19-06",     0x100000, 0xcdbbdb1d, BRF_SND },	
+};
+
+STD_ROM_PICK(aerofgtb);
+STD_ROM_FN(aerofgtb);
+
+static struct BurnRomInfo aerofgtcRomDesc[] = {
+	{ "v2.149",       0x040000, 0xf187aec6, BRF_ESS | BRF_PRG }, // 68000 code swapped
+	{ "v1.111",       0x040000, 0x9e684b19, BRF_ESS | BRF_PRG }, // 68000 code swapped
+
+	{ "it-19-03",     0x080000, 0x85eba1a4, BRF_GRA },			 // graphics
+	{ "it-19-02",     0x080000, 0x4f57f8ba, BRF_GRA },
+	
+	{ "it-19-04",     0x080000, 0x3b329c1f, BRF_GRA },			 // 
+	{ "it-19-05",     0x080000, 0x02b525af, BRF_GRA },			 //
+	
+	{ "g27",          0x040000, 0x4d89cbc8, BRF_GRA },
+	{ "g26",          0x040000, 0x8072c1d2, BRF_GRA },
+
+	{ "2.153",        0x020000, 0xa1ef64ec, BRF_ESS | BRF_PRG }, // Sound CPU
+	
+	{ "it-19-01",     0x040000, 0x6d42723d, BRF_SND },			 // samples
+	{ "it-19-06",     0x100000, 0xcdbbdb1d, BRF_SND },	
+};
+
+STD_ROM_PICK(aerofgtc);
+STD_ROM_FN(aerofgtc);
+
+static struct BurnRomInfo sonicwiRomDesc[] = {
+	{ "2.149",    	  0x040000, 0x3d1b96ba, BRF_ESS | BRF_PRG }, // 68000 code swapped
+	{ "1.111",    	  0x040000, 0xa3d09f94, BRF_ESS | BRF_PRG }, // 68000 code swapped
+
+	{ "it-19-03",     0x080000, 0x85eba1a4, BRF_GRA },			 // graphics
+	{ "it-19-02",     0x080000, 0x4f57f8ba, BRF_GRA },
+	
+	{ "it-19-04",     0x080000, 0x3b329c1f, BRF_GRA },			 // 
+	{ "it-19-05",     0x080000, 0x02b525af, BRF_GRA },			 //
+	
+	{ "g27",          0x040000, 0x4d89cbc8, BRF_GRA },
+	{ "g26",          0x040000, 0x8072c1d2, BRF_GRA },
+
+	{ "2.153",        0x020000, 0xa1ef64ec, BRF_ESS | BRF_PRG }, // Sound CPU
+	
+	{ "it-19-01",     0x040000, 0x6d42723d, BRF_SND },			 // samples
+	{ "it-19-06",     0x100000, 0xcdbbdb1d, BRF_SND },	
+};
+
+STD_ROM_PICK(sonicwi);
+STD_ROM_FN(sonicwi);
+
+unsigned char __fastcall aerofgtbReadByte(unsigned int sekAddress)
+{
+	switch (sekAddress) {
+		case 0x0FE000:
+			return ~DrvInput[2];
+		case 0x0FE001:
+			return ~DrvInput[0];
+		case 0x0FE002:
+			return 0xFF;
+		case 0x0FE003:
+			return ~DrvInput[1];
+		case 0x0FE004:
+			return ~DrvInput[4];			
+		case 0x0FE005:
+			return ~DrvInput[3];
+		case 0x0FE007:
+			return pending_command;
+		case 0x0FE009:
+			return ~DrvInput[5];
+			
+		default:
+			printf("Attempt to read byte value of location %x\n", sekAddress);
+	}
+	return 0;
+}
+
+unsigned short __fastcall aerofgtbReadWord(unsigned int sekAddress)
+{
+	switch (sekAddress) {
+
+
+		default:
+			printf("Attempt to read word value of location %x\n", sekAddress);
+	}
+	return 0;
+}
+
+void __fastcall aerofgtbWriteByte(unsigned int sekAddress, unsigned char byteValue)
+{
+	if (( sekAddress & 0x0FF000 ) == 0x0FD000) {
+		sekAddress &= 0x07FF;
+		RamPal[sekAddress^1] = byteValue;
+		// palette byte write at boot self-test only ?!
+		//if (sekAddress & 1)
+		//	RamCurPal[sekAddress>>1] = CalcCol( *((unsigned short *)&RamPal[sekAddress & 0xFFE]) );
+		return;	
+	}
+	
+	switch (sekAddress) {
+		case 0x0FE001:
+		case 0x0FE401:
+		case 0x0FE403:
+			// NOP
+			break;
+			
+		case 0x0FE00E:
+			pending_command = 1;
+			SoundCommand(byteValue);
+			break;	
+
+		default:
+			printf("Attempt to write byte value %x to location %x\n", byteValue, sekAddress);
+	}
+}
+
+void __fastcall aerofgtbWriteWord(unsigned int sekAddress, unsigned short wordValue)
+{
+	if (( sekAddress & 0x0FF000 ) == 0x0FD000) {
+		sekAddress &= 0x07FE;
+		*((unsigned short *)&RamPal[sekAddress]) = wordValue;
+		RamCurPal[sekAddress>>1] = CalcCol( wordValue );
+		return;	
+	}
+
+	switch (sekAddress) {
+		case 0x0FE002:
+			bg1scrolly = wordValue;
+			break;
+		case 0x0FE004:
+			bg2scrollx = wordValue;
+			break;
+		case 0x0FE006:
+			bg2scrolly = wordValue;
+			break;
+		case 0x0FE008:
+			RamGfxBank[0] = (wordValue >>  0) & 0x0f;
+			RamGfxBank[1] = (wordValue >>  4) & 0x0f;
+			RamGfxBank[2] = (wordValue >>  8) & 0x0f;
+			RamGfxBank[3] = (wordValue >> 12) & 0x0f;
+			break;
+		case 0x0FE00A:
+			RamGfxBank[4] = (wordValue >>  0) & 0x0f;
+			RamGfxBank[5] = (wordValue >>  4) & 0x0f;
+			RamGfxBank[6] = (wordValue >>  8) & 0x0f;
+			RamGfxBank[7] = (wordValue >> 12) & 0x0f;
+			break;
+		case 0x0FE00C:
+			// NOP
+			break;
+
+		default:
+			printf("Attempt to write word value %x to location %x\n", wordValue, sekAddress);
+	}
+}
+
+static int aerofgtbMemIndex()
+{
+	unsigned char *Next; Next = Mem;
+	Rom01 		= Next; Next += 0x080000;			// 68000 ROM
+	RomZ80		= Next; Next += 0x030000;			// Z80 ROM
+	RomBg		= Next; Next += 0x200040;			// Background, 1M 8x8x4bit decode to 2M + 64Byte safe 
+	DeRomBg		= 	   RomBg +  0x000040;
+	RomSpr1		= Next; Next += 0x200000;			// Sprite 1	 , 1M 16x16x4bit decode to 2M + 256Byte safe 
+	RomSpr2		= Next; Next += 0x100100;			// Sprite 2
+	
+	DeRomSpr1	= RomSpr1    +  0x000100;
+	DeRomSpr2	= RomSpr2    += 0x000100;
+	
+	RomSnd1		= Next; Next += 0x040000;			// ADPCM data
+	RomSndSize1 = 0x040000;
+	RomSnd2		= Next; Next += 0x100000;			// ADPCM data
+	RomSndSize2 = 0x100000;
+
+	RamStart	= Next;
+	
+	Ram01		= Next; Next += 0x014000;					// Work Ram 
+	RamBg1V		= (unsigned short *)Next; Next += 0x002000;	// BG1 Video Ram
+	RamBg2V		= (unsigned short *)Next; Next += 0x002000;	// BG2 Video Ram
+	RamSpr1		= (unsigned short *)Next; Next += 0x004000;	// Sprite 1 Ram
+	RamSpr2		= (unsigned short *)Next; Next += 0x004000;	// Sprite 2 Ram
+	RamSpr3		= (unsigned short *)Next; Next += 0x000800;	// Sprite 3 Ram
+	RamPal		= Next; Next += 0x000800;					// 1024 of X1R5G5B5 Palette
+	RamRaster	= (unsigned short *)Next; Next += 0x001000;	// Raster
+
+	RamSpr1SizeMask = 0x1FFF;
+	RamSpr2SizeMask = 0x1FFF;
+	RomSpr1SizeMask = 0x1FFF;
+	RomSpr2SizeMask = 0x0FFF;
+	
+	RamZ80		= Next; Next += 0x000800;					// Z80 Ram 2K
+
+	RamEnd		= Next;
+
+	RamCurPal	= (unsigned short *)Next; Next += 0x000800;	// 1024 colors
+
+	MemEnd		= Next;
+	return 0;
+}
+
+static void aerofgtbDecodeSpr(unsigned char *d, unsigned char *s, int cnt)
+{
+	for (int c=cnt-1; c>=0; c--)
+		for (int y=15; y>=0; y--) {
+			d[(c * 256) + (y * 16) + 15] = s[0x00005 + (y * 8) + (c * 128)] >> 4;
+			d[(c * 256) + (y * 16) + 14] = s[0x00005 + (y * 8) + (c * 128)] & 0x0f;
+			d[(c * 256) + (y * 16) + 13] = s[0x00007 + (y * 8) + (c * 128)] >> 4;
+			d[(c * 256) + (y * 16) + 12] = s[0x00007 + (y * 8) + (c * 128)] & 0x0f;
+			d[(c * 256) + (y * 16) + 11] = s[0x00004 + (y * 8) + (c * 128)] >> 4;
+			d[(c * 256) + (y * 16) + 10] = s[0x00004 + (y * 8) + (c * 128)] & 0x0f;
+			d[(c * 256) + (y * 16) +  9] = s[0x00006 + (y * 8) + (c * 128)] >> 4;
+			d[(c * 256) + (y * 16) +  8] = s[0x00006 + (y * 8) + (c * 128)] & 0x0f;
+
+			d[(c * 256) + (y * 16) +  7] = s[0x00001 + (y * 8) + (c * 128)] >> 4;
+			d[(c * 256) + (y * 16) +  6] = s[0x00001 + (y * 8) + (c * 128)] & 0x0f;
+			d[(c * 256) + (y * 16) +  5] = s[0x00003 + (y * 8) + (c * 128)] >> 4;
+			d[(c * 256) + (y * 16) +  4] = s[0x00003 + (y * 8) + (c * 128)] & 0x0f;
+			d[(c * 256) + (y * 16) +  3] = s[0x00000 + (y * 8) + (c * 128)] >> 4;
+			d[(c * 256) + (y * 16) +  2] = s[0x00000 + (y * 8) + (c * 128)] & 0x0f;
+			d[(c * 256) + (y * 16) +  1] = s[0x00002 + (y * 8) + (c * 128)] >> 4;
+			d[(c * 256) + (y * 16) +  0] = s[0x00002 + (y * 8) + (c * 128)] & 0x0f;
+		}
+}
+
+static int aerofgtbInit()
+{
+	Mem = NULL;
+	aerofgtbMemIndex();
+	int nLen = MemEnd - (unsigned char *)0;
+	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) {
+		return 1;
+	}
+	memset(Mem, 0, nLen);										// blank all memory
+	aerofgtbMemIndex();	
+	
+	// Load the roms into memory
+	// Load 68000 ROM
+	if (BurnLoadRom(Rom01 + 0x00001, 0, 2)) return 1;
+	if (BurnLoadRom(Rom01 + 0x00000, 1, 2)) return 1;
+	
+	// Load Graphic
+	BurnLoadRom(RomBg+0x00000,  2, 1);
+	BurnLoadRom(RomBg+0x80000,  3, 1);
+	pspikesDecodeBg(0x8000);
+		
+	BurnLoadRom(RomSpr1+0x000000, 4, 2);
+	BurnLoadRom(RomSpr1+0x000001, 5, 2);
+	BurnLoadRom(RomSpr1+0x100000, 6, 2);
+	BurnLoadRom(RomSpr1+0x100001, 7, 2);
+	aerofgtbDecodeSpr(DeRomSpr1, RomSpr1, 0x3000);
+	
+	// Load Z80 ROM
+	if (BurnLoadRom(RomZ80+0x10000, 8, 1)) return 1;
+	memcpy(RomZ80, RomZ80+0x10000, 0x10000);
+
+	BurnLoadRom(RomSnd1,  9, 1);
+	BurnLoadRom(RomSnd2, 10, 1);
+
+	{
+		SekInit(0, 0x68000);										// Allocate 68000
+	    SekOpen(0);
+
+		// Map 68000 memory:
+		SekMapMemory(Rom01,			0x000000, 0x07FFFF, SM_ROM);	// CPU 0 ROM
+		SekMapMemory(Ram01,			0x0C0000, 0x0CFFFF, SM_RAM);	// 64K Work RAM
+		SekMapMemory((unsigned char *)RamBg1V,		
+									0x0D0000, 0x0D1FFF, SM_RAM);	
+		SekMapMemory((unsigned char *)RamBg2V,		
+									0x0D2000, 0x0D3FFF, SM_RAM);	
+		SekMapMemory((unsigned char *)RamSpr1,
+									0x0E0000, 0x0E3FFF, SM_RAM);
+		SekMapMemory((unsigned char *)RamSpr2,
+									0x0E4000, 0x0E7FFF, SM_RAM);
+		SekMapMemory(Ram01+0x10000,	0x0F8000, 0x0FBFFF, SM_RAM);	// Work RAM
+		SekMapMemory((unsigned char *)RamSpr3,
+									0x0FC000, 0x0FC7FF, SM_RAM);
+		SekMapMemory(RamPal,		0x0FD000, 0x0FD7FF, SM_ROM);	// Palette
+		SekMapMemory((unsigned char *)RamRaster,
+									0x0FF000, 0x0FFFFF, SM_RAM);	// Raster 
+
+		SekSetReadWordHandler(0, aerofgtbReadWord);
+		SekSetReadByteHandler(0, aerofgtbReadByte);
+		SekSetWriteWordHandler(0, aerofgtbWriteWord);
+		SekSetWriteByteHandler(0, aerofgtbWriteByte);
+
+		SekClose();
+	}
+	
+	{
+		ZetInit(1);
+		ZetOpen(0);
+		
+		ZetMapArea(0x0000, 0x77FF, 0, RomZ80);
+		ZetMapArea(0x0000, 0x77FF, 2, RomZ80);
+		
+		ZetMapArea(0x7800, 0x7FFF, 0, RamZ80);
+		ZetMapArea(0x7800, 0x7FFF, 1, RamZ80);
+		ZetMapArea(0x7800, 0x7FFF, 2, RamZ80);
+		
+		ZetMemEnd();
+		
+		//ZetSetReadHandler(aerofgtZ80Read);
+		//ZetSetWriteHandler(aerofgtZ80Write);
+		ZetSetInHandler(aerofgtZ80PortRead);
+		ZetSetOutHandler(aerofgtZ80PortWrite);
+		
+		ZetClose();
+	}
+	
+	BurnYM2610Init(8000000, RomSnd2, &RomSndSize2, RomSnd1, &RomSndSize1, &aerofgtFMIRQHandler, aerofgtSynchroniseStream, aerofgtGetTime, 0);
+	BurnTimerAttachZet(4000000);
+	
+	DrvDoReset();												// Reset machine
+	return 0;
+}
+
+static void aerofgtbTileBackground_1(unsigned short *bg, unsigned char *BgGfx, unsigned short *pal)
+{
+	int offs, mx, my, x, y;
+	
+	mx = -1;
+	my = 0;
+	for (offs = 0; offs < 64*64; offs++) {
+		mx++;
+		if (mx == 64) {
+			mx = 0;
+			my++;
+		}
+
+		x = mx * 8 - (RamRaster[7] & 0x1FF);
+		if (x <= (320-512)) x += 512;
+		
+		y = my * 8 - (((signed short)bg1scrolly + 2) & 0x1FF);
+		if (y <= (224-512)) y += 512;
+		
+		if ( x<=-8 || x>=320 || y<=-8 || y>= 224 ) 
+			continue;
+
+		else
+		if ( x >=0 && x < (320-8) && y >= 0 && y < (224-8)) {
+			
+			unsigned char *d = BgGfx + ( (bg[offs] & 0x07FF) + ( RamGfxBank[((bg[offs] & 0x1800) >> 11)] << 11 ) ) * 64;
+ 			unsigned short c = (bg[offs] & 0xE000) >> 9;
+ 			unsigned short * p = (unsigned short *) pBurnDraw + y * 320 + x;
+			
+			for (int k=0;k<8;k++) {
+ 				p[0] = pal[ d[0] | c ];
+ 				p[1] = pal[ d[1] | c ];
+ 				p[2] = pal[ d[2] | c ];
+ 				p[3] = pal[ d[3] | c ];
+ 				p[4] = pal[ d[4] | c ];
+ 				p[5] = pal[ d[5] | c ];
+ 				p[6] = pal[ d[6] | c ];
+ 				p[7] = pal[ d[7] | c ];
+ 				
+ 				d += 8;
+ 				p += 320;
+ 			}
+		} else {
+
+			unsigned char *d = BgGfx + ( (bg[offs] & 0x07FF) + ( RamGfxBank[((bg[offs] & 0x1800) >> 11)] << 11 ) ) * 64;
+ 			unsigned short c = (bg[offs] & 0xE000) >> 9;
+ 			unsigned short * p = (unsigned short *) pBurnDraw + y * 320 + x;
+			
+			for (int k=0;k<8;k++) {
+				if ( (y+k)>=0 && (y+k)<224 ) {
+	 				if ((x + 0) >= 0 && (x + 0)<320) p[0] = pal[ d[0] | c ];
+	 				if ((x + 1) >= 0 && (x + 1)<320) p[1] = pal[ d[1] | c ];
+	 				if ((x + 2) >= 0 && (x + 2)<320) p[2] = pal[ d[2] | c ];
+	 				if ((x + 3) >= 0 && (x + 3)<320) p[3] = pal[ d[3] | c ];
+	 				if ((x + 4) >= 0 && (x + 4)<320) p[4] = pal[ d[4] | c ];
+	 				if ((x + 5) >= 0 && (x + 5)<320) p[5] = pal[ d[5] | c ];
+	 				if ((x + 6) >= 0 && (x + 6)<320) p[6] = pal[ d[6] | c ];
+	 				if ((x + 7) >= 0 && (x + 7)<320) p[7] = pal[ d[7] | c ];
+	 			}
+ 				d += 8;
+ 				p += 320;
+ 			}
+			
+		}
+
+	}
+}
+
+static void aerofgtbTileBackground_2(unsigned short *bg, unsigned char *BgGfx, unsigned short *pal)
+{
+	int offs, mx, my, x, y;
+	//printf(" %5d%5d%5d%5d\n", (signed short)RamRaster[7],(signed short)bg1scrolly, (signed short)bg2scrollx,(signed short)bg2scrolly);
+	mx = -1;
+	my = 0;
+	for (offs = 0; offs < 64*64; offs++) {
+		mx++;
+		if (mx == 64) {
+			mx = 0;
+			my++;
+		}
+
+		x = mx * 8 - (((signed short)bg2scrollx + 5) & 0x1FF);
+		if (x <= (320-512)) x += 512;
+		
+		y = my * 8 - (((signed short)bg2scrolly + 2) & 0x1FF);
+		if (y <= (224-512)) y += 512;
+		
+		if ( x<=-8 || x>=320 || y<=-8 || y>= 224 ) 
+			continue;
+		else
+		if ( x >=0 && x < (320-8) && y >= 0 && y < (224-8)) {
+
+			unsigned char *d = BgGfx + ( (bg[offs] & 0x07FF) + ( RamGfxBank[((bg[offs] & 0x1800) >> 11) + 4] << 11 ) ) * 64;
+ 			unsigned short c = (bg[offs] & 0xE000) >> 9;
+ 			unsigned short * p = (unsigned short *) pBurnDraw + y * 320 + x;
+			
+			for (int k=0;k<8;k++) {
+				
+ 				if (d[0] != 15) p[0] = pal[ d[0] | c ];
+ 				if (d[1] != 15) p[1] = pal[ d[1] | c ];
+ 				if (d[2] != 15) p[2] = pal[ d[2] | c ];
+ 				if (d[3] != 15) p[3] = pal[ d[3] | c ];
+ 				if (d[4] != 15) p[4] = pal[ d[4] | c ];
+ 				if (d[5] != 15) p[5] = pal[ d[5] | c ];
+ 				if (d[6] != 15) p[6] = pal[ d[6] | c ];
+ 				if (d[7] != 15) p[7] = pal[ d[7] | c ];
+ 				
+ 				d += 8;
+ 				p += 320;
+ 			}
+		} else {
+
+			unsigned char *d = BgGfx + ( (bg[offs] & 0x07FF) + ( RamGfxBank[((bg[offs] & 0x1800) >> 11) + 4] << 11 ) ) * 64;
+ 			unsigned short c = (bg[offs] & 0xE000) >> 9;
+ 			unsigned short * p = (unsigned short *) pBurnDraw + y * 320 + x;
+			
+			for (int k=0;k<8;k++) {
+				if ( (y+k)>=0 && (y+k)<224 ) {
+	 				if (d[0] != 15 && (x + 0) >= 0 && (x + 0)<352) p[0] = pal[ d[0] | c ];
+	 				if (d[1] != 15 && (x + 1) >= 0 && (x + 1)<352) p[1] = pal[ d[1] | c ];
+	 				if (d[2] != 15 && (x + 2) >= 0 && (x + 2)<352) p[2] = pal[ d[2] | c ];
+	 				if (d[3] != 15 && (x + 3) >= 0 && (x + 3)<352) p[3] = pal[ d[3] | c ];
+	 				if (d[4] != 15 && (x + 4) >= 0 && (x + 4)<352) p[4] = pal[ d[4] | c ];
+	 				if (d[5] != 15 && (x + 5) >= 0 && (x + 5)<352) p[5] = pal[ d[5] | c ];
+	 				if (d[6] != 15 && (x + 6) >= 0 && (x + 6)<352) p[6] = pal[ d[6] | c ];
+	 				if (d[7] != 15 && (x + 7) >= 0 && (x + 7)<352) p[7] = pal[ d[7] | c ];
+	 			}
+ 				d += 8;
+ 				p += 320;
+ 			}
+			
+		}
+
+	}
+}
+
+static void aerofgtb_pdrawgfxzoom(int bank,unsigned int code,unsigned int color,int flipx,int flipy,int sx,int sy,int scalex,int scaley)
+{
+	if (!scalex || !scaley) return;
+			
+	unsigned short * p = (unsigned short *) pBurnDraw;
+	unsigned char * q;
+	unsigned short * pal;
+	
+	if (bank) {
+		//if (code > RomSpr2SizeMask)
+			code &= RomSpr2SizeMask;
+		q = DeRomSpr2 + (code) * 256;
+		pal = RamCurPal + 768;
+	} else {
+		//if (code > RomSpr1SizeMask)
+			code &= RomSpr1SizeMask;
+		q = DeRomSpr1 + (code) * 256;
+		pal = RamCurPal + 512;
+	}
+
+	p += sy * 320 + sx;
+		
+	if (sx < 0 || sx >= (320-16) || sy < 0 || sy >= (224-16) ) {
+		
+		if ((sx <= -16) || (sx >= 320) || (sy <= -16) || (sy >= 224))
+			return;
+			
+		if (flipy) {
+		
+			p += 320 * 15;
+			
+			if (flipx) {
+			
+				for (int i=15;i>=0;i--) {
+					if (((sy+i)>=0) && ((sy+i)<224)) {
+						if (q[ 0] != 15 && ((sx + 15) >= 0) && ((sx + 15)<320)) p[15] = pal[ q[ 0] | color];
+						if (q[ 1] != 15 && ((sx + 14) >= 0) && ((sx + 14)<320)) p[14] = pal[ q[ 1] | color];
+						if (q[ 2] != 15 && ((sx + 13) >= 0) && ((sx + 13)<320)) p[13] = pal[ q[ 2] | color];
+						if (q[ 3] != 15 && ((sx + 12) >= 0) && ((sx + 12)<320)) p[12] = pal[ q[ 3] | color];
+						if (q[ 4] != 15 && ((sx + 11) >= 0) && ((sx + 11)<320)) p[11] = pal[ q[ 4] | color];
+						if (q[ 5] != 15 && ((sx + 10) >= 0) && ((sx + 10)<320)) p[10] = pal[ q[ 5] | color];
+						if (q[ 6] != 15 && ((sx +  9) >= 0) && ((sx +  9)<320)) p[ 9] = pal[ q[ 6] | color];
+						if (q[ 7] != 15 && ((sx +  8) >= 0) && ((sx +  8)<320)) p[ 8] = pal[ q[ 7] | color];
+						
+						if (q[ 8] != 15 && ((sx +  7) >= 0) && ((sx +  7)<320)) p[ 7] = pal[ q[ 8] | color];
+						if (q[ 9] != 15 && ((sx +  6) >= 0) && ((sx +  6)<320)) p[ 6] = pal[ q[ 9] | color];
+						if (q[10] != 15 && ((sx +  5) >= 0) && ((sx +  5)<320)) p[ 5] = pal[ q[10] | color];
+						if (q[11] != 15 && ((sx +  4) >= 0) && ((sx +  4)<320)) p[ 4] = pal[ q[11] | color];
+						if (q[12] != 15 && ((sx +  3) >= 0) && ((sx +  3)<320)) p[ 3] = pal[ q[12] | color];
+						if (q[13] != 15 && ((sx +  2) >= 0) && ((sx +  2)<320)) p[ 2] = pal[ q[13] | color];
+						if (q[14] != 15 && ((sx +  1) >= 0) && ((sx +  1)<320)) p[ 1] = pal[ q[14] | color];
+						if (q[15] != 15 && ((sx +  0) >= 0) && ((sx +  0)<320)) p[ 0] = pal[ q[15] | color];
+					}
+					p -= 320;
+					q += 16;
+				}	
+			
+			} else {
+	
+				for (int i=15;i>=0;i--) {
+					if (((sy+i)>=0) && ((sy+i)<224)) {
+						if (q[ 0] != 15 && ((sx +  0) >= 0) && ((sx +  0)<320)) p[ 0] = pal[ q[ 0] | color];
+						if (q[ 1] != 15 && ((sx +  1) >= 0) && ((sx +  1)<320)) p[ 1] = pal[ q[ 1] | color];
+						if (q[ 2] != 15 && ((sx +  2) >= 0) && ((sx +  2)<320)) p[ 2] = pal[ q[ 2] | color];
+						if (q[ 3] != 15 && ((sx +  3) >= 0) && ((sx +  3)<320)) p[ 3] = pal[ q[ 3] | color];
+						if (q[ 4] != 15 && ((sx +  4) >= 0) && ((sx +  4)<320)) p[ 4] = pal[ q[ 4] | color];
+						if (q[ 5] != 15 && ((sx +  5) >= 0) && ((sx +  5)<320)) p[ 5] = pal[ q[ 5] | color];
+						if (q[ 6] != 15 && ((sx +  6) >= 0) && ((sx +  6)<320)) p[ 6] = pal[ q[ 6] | color];
+						if (q[ 7] != 15 && ((sx +  7) >= 0) && ((sx +  7)<320)) p[ 7] = pal[ q[ 7] | color];
+						
+						if (q[ 8] != 15 && ((sx +  8) >= 0) && ((sx +  8)<320)) p[ 8] = pal[ q[ 8] | color];
+						if (q[ 9] != 15 && ((sx +  9) >= 0) && ((sx +  9)<320)) p[ 9] = pal[ q[ 9] | color];
+						if (q[10] != 15 && ((sx + 10) >= 0) && ((sx + 10)<320)) p[10] = pal[ q[10] | color];
+						if (q[11] != 15 && ((sx + 11) >= 0) && ((sx + 11)<320)) p[11] = pal[ q[11] | color];
+						if (q[12] != 15 && ((sx + 12) >= 0) && ((sx + 12)<320)) p[12] = pal[ q[12] | color];
+						if (q[13] != 15 && ((sx + 13) >= 0) && ((sx + 13)<320)) p[13] = pal[ q[13] | color];
+						if (q[14] != 15 && ((sx + 14) >= 0) && ((sx + 14)<320)) p[14] = pal[ q[14] | color];
+						if (q[15] != 15 && ((sx + 15) >= 0) && ((sx + 15)<320)) p[15] = pal[ q[15] | color];
+					}
+					p -= 320;
+					q += 16;
+				}		
+			}
+			
+		} else {
+			
+			if (flipx) {
+			
+				for (int i=0;i<16;i++) {
+					if (((sy+i)>=0) && ((sy+i)<224)) {
+						if (q[ 0] != 15 && ((sx + 15) >= 0) && ((sx + 15)<320)) p[15] = pal[ q[ 0] | color];
+						if (q[ 1] != 15 && ((sx + 14) >= 0) && ((sx + 14)<320)) p[14] = pal[ q[ 1] | color];
+						if (q[ 2] != 15 && ((sx + 13) >= 0) && ((sx + 13)<320)) p[13] = pal[ q[ 2] | color];
+						if (q[ 3] != 15 && ((sx + 12) >= 0) && ((sx + 12)<320)) p[12] = pal[ q[ 3] | color];
+						if (q[ 4] != 15 && ((sx + 11) >= 0) && ((sx + 11)<320)) p[11] = pal[ q[ 4] | color];
+						if (q[ 5] != 15 && ((sx + 10) >= 0) && ((sx + 10)<320)) p[10] = pal[ q[ 5] | color];
+						if (q[ 6] != 15 && ((sx +  9) >= 0) && ((sx +  9)<320)) p[ 9] = pal[ q[ 6] | color];
+						if (q[ 7] != 15 && ((sx +  8) >= 0) && ((sx +  8)<320)) p[ 8] = pal[ q[ 7] | color];
+						
+						if (q[ 8] != 15 && ((sx +  7) >= 0) && ((sx +  7)<320)) p[ 7] = pal[ q[ 8] | color];
+						if (q[ 9] != 15 && ((sx +  6) >= 0) && ((sx +  6)<320)) p[ 6] = pal[ q[ 9] | color];
+						if (q[10] != 15 && ((sx +  5) >= 0) && ((sx +  5)<320)) p[ 5] = pal[ q[10] | color];
+						if (q[11] != 15 && ((sx +  4) >= 0) && ((sx +  4)<320)) p[ 4] = pal[ q[11] | color];
+						if (q[12] != 15 && ((sx +  3) >= 0) && ((sx +  3)<320)) p[ 3] = pal[ q[12] | color];
+						if (q[13] != 15 && ((sx +  2) >= 0) && ((sx +  2)<320)) p[ 2] = pal[ q[13] | color];
+						if (q[14] != 15 && ((sx +  1) >= 0) && ((sx +  1)<320)) p[ 1] = pal[ q[14] | color];
+						if (q[15] != 15 && ((sx +  0) >= 0) && ((sx +  0)<320)) p[ 0] = pal[ q[15] | color];
+					}
+					p += 320;
+					q += 16;
+				}		
+			
+			} else {
+	
+				for (int i=0;i<16;i++) {
+					if (((sy+i)>=0) && ((sy+i)<224)) {
+						if (q[ 0] != 15 && ((sx +  0) >= 0) && ((sx +  0)<320)) p[ 0] = pal[ q[ 0] | color];
+						if (q[ 1] != 15 && ((sx +  1) >= 0) && ((sx +  1)<320)) p[ 1] = pal[ q[ 1] | color];
+						if (q[ 2] != 15 && ((sx +  2) >= 0) && ((sx +  2)<320)) p[ 2] = pal[ q[ 2] | color];
+						if (q[ 3] != 15 && ((sx +  3) >= 0) && ((sx +  3)<320)) p[ 3] = pal[ q[ 3] | color];
+						if (q[ 4] != 15 && ((sx +  4) >= 0) && ((sx +  4)<320)) p[ 4] = pal[ q[ 4] | color];
+						if (q[ 5] != 15 && ((sx +  5) >= 0) && ((sx +  5)<320)) p[ 5] = pal[ q[ 5] | color];
+						if (q[ 6] != 15 && ((sx +  6) >= 0) && ((sx +  6)<320)) p[ 6] = pal[ q[ 6] | color];
+						if (q[ 7] != 15 && ((sx +  7) >= 0) && ((sx +  7)<320)) p[ 7] = pal[ q[ 7] | color];
+						
+						if (q[ 8] != 15 && ((sx +  8) >= 0) && ((sx +  8)<320)) p[ 8] = pal[ q[ 8] | color];
+						if (q[ 9] != 15 && ((sx +  9) >= 0) && ((sx +  9)<320)) p[ 9] = pal[ q[ 9] | color];
+						if (q[10] != 15 && ((sx + 10) >= 0) && ((sx + 10)<320)) p[10] = pal[ q[10] | color];
+						if (q[11] != 15 && ((sx + 11) >= 0) && ((sx + 11)<320)) p[11] = pal[ q[11] | color];
+						if (q[12] != 15 && ((sx + 12) >= 0) && ((sx + 12)<320)) p[12] = pal[ q[12] | color];
+						if (q[13] != 15 && ((sx + 13) >= 0) && ((sx + 13)<320)) p[13] = pal[ q[13] | color];
+						if (q[14] != 15 && ((sx + 14) >= 0) && ((sx + 14)<320)) p[14] = pal[ q[14] | color];
+						if (q[15] != 15 && ((sx + 15) >= 0) && ((sx + 15)<320)) p[15] = pal[ q[15] | color];
+					}
+					p += 320;
+					q += 16;
+				}	
+	
+			}
+			
+		}
+		
+		return;
+	}
+
+	if (flipy) {
+		
+		p += 320 * 15;
+		
+		if (flipx) {
+		
+			for (int i=0;i<16;i++) {
+				if (q[ 0] != 15) p[15] = pal[ q[ 0] | color];
+				if (q[ 1] != 15) p[14] = pal[ q[ 1] | color];
+				if (q[ 2] != 15) p[13] = pal[ q[ 2] | color];
+				if (q[ 3] != 15) p[12] = pal[ q[ 3] | color];
+				if (q[ 4] != 15) p[11] = pal[ q[ 4] | color];
+				if (q[ 5] != 15) p[10] = pal[ q[ 5] | color];
+				if (q[ 6] != 15) p[ 9] = pal[ q[ 6] | color];
+				if (q[ 7] != 15) p[ 8] = pal[ q[ 7] | color];
+				
+				if (q[ 8] != 15) p[ 7] = pal[ q[ 8] | color];
+				if (q[ 9] != 15) p[ 6] = pal[ q[ 9] | color];
+				if (q[10] != 15) p[ 5] = pal[ q[10] | color];
+				if (q[11] != 15) p[ 4] = pal[ q[11] | color];
+				if (q[12] != 15) p[ 3] = pal[ q[12] | color];
+				if (q[13] != 15) p[ 2] = pal[ q[13] | color];
+				if (q[14] != 15) p[ 1] = pal[ q[14] | color];
+				if (q[15] != 15) p[ 0] = pal[ q[15] | color];
+	
+				p -= 320;
+				q += 16;
+			}	
+		
+		} else {
+
+			for (int i=0;i<16;i++) {
+				if (q[ 0] != 15) p[ 0] = pal[ q[ 0] | color];
+				if (q[ 1] != 15) p[ 1] = pal[ q[ 1] | color];
+				if (q[ 2] != 15) p[ 2] = pal[ q[ 2] | color];
+				if (q[ 3] != 15) p[ 3] = pal[ q[ 3] | color];
+				if (q[ 4] != 15) p[ 4] = pal[ q[ 4] | color];
+				if (q[ 5] != 15) p[ 5] = pal[ q[ 5] | color];
+				if (q[ 6] != 15) p[ 6] = pal[ q[ 6] | color];
+				if (q[ 7] != 15) p[ 7] = pal[ q[ 7] | color];
+				
+				if (q[ 8] != 15) p[ 8] = pal[ q[ 8] | color];
+				if (q[ 9] != 15) p[ 9] = pal[ q[ 9] | color];
+				if (q[10] != 15) p[10] = pal[ q[10] | color];
+				if (q[11] != 15) p[11] = pal[ q[11] | color];
+				if (q[12] != 15) p[12] = pal[ q[12] | color];
+				if (q[13] != 15) p[13] = pal[ q[13] | color];
+				if (q[14] != 15) p[14] = pal[ q[14] | color];
+				if (q[15] != 15) p[15] = pal[ q[15] | color];
+	
+				p -= 320;
+				q += 16;
+			}		
+		}
+		
+	} else {
+		
+		if (flipx) {
+		
+			for (int i=0;i<16;i++) {
+				if (q[ 0] != 15) p[15] = pal[ q[ 0] | color];
+				if (q[ 1] != 15) p[14] = pal[ q[ 1] | color];
+				if (q[ 2] != 15) p[13] = pal[ q[ 2] | color];
+				if (q[ 3] != 15) p[12] = pal[ q[ 3] | color];
+				if (q[ 4] != 15) p[11] = pal[ q[ 4] | color];
+				if (q[ 5] != 15) p[10] = pal[ q[ 5] | color];
+				if (q[ 6] != 15) p[ 9] = pal[ q[ 6] | color];
+				if (q[ 7] != 15) p[ 8] = pal[ q[ 7] | color];
+				
+				if (q[ 8] != 15) p[ 7] = pal[ q[ 8] | color];
+				if (q[ 9] != 15) p[ 6] = pal[ q[ 9] | color];
+				if (q[10] != 15) p[ 5] = pal[ q[10] | color];
+				if (q[11] != 15) p[ 4] = pal[ q[11] | color];
+				if (q[12] != 15) p[ 3] = pal[ q[12] | color];
+				if (q[13] != 15) p[ 2] = pal[ q[13] | color];
+				if (q[14] != 15) p[ 1] = pal[ q[14] | color];
+				if (q[15] != 15) p[ 0] = pal[ q[15] | color];
+	
+				p += 320;
+				q += 16;
+			}		
+		
+		} else {
+
+			for (int i=0;i<16;i++) {
+				if (q[ 0] != 15) p[ 0] = pal[ q[ 0] | color];
+				if (q[ 1] != 15) p[ 1] = pal[ q[ 1] | color];
+				if (q[ 2] != 15) p[ 2] = pal[ q[ 2] | color];
+				if (q[ 3] != 15) p[ 3] = pal[ q[ 3] | color];
+				if (q[ 4] != 15) p[ 4] = pal[ q[ 4] | color];
+				if (q[ 5] != 15) p[ 5] = pal[ q[ 5] | color];
+				if (q[ 6] != 15) p[ 6] = pal[ q[ 6] | color];
+				if (q[ 7] != 15) p[ 7] = pal[ q[ 7] | color];
+				
+				if (q[ 8] != 15) p[ 8] = pal[ q[ 8] | color];
+				if (q[ 9] != 15) p[ 9] = pal[ q[ 9] | color];
+				if (q[10] != 15) p[10] = pal[ q[10] | color];
+				if (q[11] != 15) p[11] = pal[ q[11] | color];
+				if (q[12] != 15) p[12] = pal[ q[12] | color];
+				if (q[13] != 15) p[13] = pal[ q[13] | color];
+				if (q[14] != 15) p[14] = pal[ q[14] | color];
+				if (q[15] != 15) p[15] = pal[ q[15] | color];
+	
+				p += 320;
+				q += 16;
+			}	
+
+		}
+		
+	}
+
+}
+
+static void aerofgtb_drawsprites(int chip,int chip_disabled_pri)
+{
+	int attr_start,base,first;
+
+	base = chip * 0x0200;
+	first = 4 * RamSpr3[0x1fe + base];
+
+	//for (attr_start = base + 0x0200-8;attr_start >= first + base;attr_start -= 4) {
+	for (attr_start = first + base; attr_start <= base + 0x0200-8; attr_start += 4) {
+		int map_start;
+		int ox,oy,x,y,xsize,ysize,zoomx,zoomy,flipx,flipy,color,pri;
+// some other drivers still use this wrong table, they have to be upgraded
+//      int zoomtable[16] = { 0,7,14,20,25,30,34,38,42,46,49,52,54,57,59,61 };
+
+		if (!(RamSpr3[attr_start + 2] & 0x0080)) continue;
+		pri = RamSpr3[attr_start + 2] & 0x0010;
+		if ( chip_disabled_pri & !pri) continue;
+		if (!chip_disabled_pri & (pri>>4)) continue;
+		ox = RamSpr3[attr_start + 1] & 0x01ff;
+		xsize = (RamSpr3[attr_start + 2] & 0x0700) >> 8;
+		zoomx = (RamSpr3[attr_start + 1] & 0xf000) >> 12;
+		oy = RamSpr3[attr_start + 0] & 0x01ff;
+		ysize = (RamSpr3[attr_start + 2] & 0x7000) >> 12;
+		zoomy = (RamSpr3[attr_start + 0] & 0xf000) >> 12;
+		flipx = RamSpr3[attr_start + 2] & 0x0800;
+		flipy = RamSpr3[attr_start + 2] & 0x8000;
+		color = (RamSpr3[attr_start + 2] & 0x000f) << 4;	// + 16 * spritepalettebank;
+
+		map_start = RamSpr3[attr_start + 3];
+
+// aerofgt has this adjustment, but doing it here would break turbo force title screen
+//      ox += (xsize*zoomx+2)/4;
+//      oy += (ysize*zoomy+2)/4;
+
+		zoomx = 32 - zoomx;
+		zoomy = 32 - zoomy;
+
+		for (y = 0;y <= ysize;y++) {
+			int sx,sy;
+
+			if (flipy) sy = ((oy + zoomy * (ysize - y)/2 + 16) & 0x1ff) - 16 - 1;
+			else sy = ((oy + zoomy * y / 2 + 16) & 0x1ff) - 16 - 1;
+
+			for (x = 0;x <= xsize;x++) {
+				int code;
+
+				if (flipx) sx = ((ox + zoomx * (xsize - x) / 2 + 16) & 0x1ff) - 16 - 8;
+				else sx = ((ox + zoomx * x / 2 + 16) & 0x1ff) - 16 - 8;
+
+				if (chip == 0)	code = RamSpr1[map_start & RamSpr1SizeMask];
+				else			code = RamSpr2[map_start & RamSpr2SizeMask];
+
+				aerofgtb_pdrawgfxzoom(chip,code,color,flipx,flipy,sx,sy,zoomx << 11, zoomy << 11);
+
+				map_start++;
+			}
+
+			if (xsize == 2) map_start += 1;
+			if (xsize == 4) map_start += 3;
+			if (xsize == 5) map_start += 2;
+			if (xsize == 6) map_start += 1;
+		}
+	}
+}
+
+static int aerofgtbDraw()
+{
+	aerofgtbTileBackground_1(RamBg1V, DeRomBg, RamCurPal);
+	aerofgtbTileBackground_2(RamBg2V, DeRomBg + 0x100000, RamCurPal + 256);
+	
+	aerofgtb_drawsprites(0, 0); 
+ 	aerofgtb_drawsprites(0,-1); 
+	aerofgtb_drawsprites(1, 0); 
+	aerofgtb_drawsprites(1,-1);
+	
+	return 0;
+}
+
+static int aerofgtbFrame()
+{
+	if (DrvReset) DrvDoReset();
+	
+	// Compile digital inputs
+	DrvInput[0] = 0x00;													// Joy1
+	DrvInput[1] = 0x00;													// Joy2
+	DrvInput[2] = 0x00;													// Buttons
+	for (int i = 0; i < 8; i++) {
+		DrvInput[0] |= (DrvJoy1[i] & 1) << i;
+		DrvInput[1] |= (DrvJoy2[i] & 1) << i;
+		DrvInput[2] |= (DrvButton[i] & 1) << i;
+	}
+	
+	SekNewFrame();
+	ZetNewFrame();
+	
+	nCyclesTotal[0] = 10000000 / 60;
+	nCyclesTotal[1] = 4000000  / 60;
+
+	SekOpen(0);
+	ZetOpen(0);
+	
+	SekRun(nCyclesTotal[0]);
+	SekSetIRQLine(1, SEK_IRQSTATUS_AUTO);
+	
+	BurnTimerEndFrame(nCyclesTotal[1]);
+	BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
+
+	ZetClose();
+	SekClose();
+	
+	if (pBurnDraw) aerofgtbDraw();
+	
+	return 0;
+}
+
+struct BurnDriver BurnDrvAerofgtb = {
+	"aerofgtb", "aerofgt", NULL, "1992",
+	"Aero Fighters (Turbo Force hardware set 1)\0", NULL, "Video System Co.", "Video System",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_MISC_POST90S,
+	NULL, aerofgtbRomInfo, aerofgtbRomName, aerofgtInputInfo, aerofgtDIPInfo,
+	aerofgtbInit,DrvExit,aerofgtbFrame,aerofgtbDraw,DrvScan,
+	0, NULL, NULL, NULL, NULL, 224,320,3,4
+};
+
+struct BurnDriver BurnDrvAerofgtc = {
+	"aerofgtc", "aerofgt", NULL, "1992",
+	"Aero Fighters (Turbo Force hardware set 2)\0", NULL, "Video System Co.", "Video System",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_MISC_POST90S,
+	NULL, aerofgtcRomInfo, aerofgtcRomName, aerofgtInputInfo, aerofgtDIPInfo,
+	aerofgtbInit,DrvExit,aerofgtbFrame,aerofgtbDraw,DrvScan,
+	0, NULL, NULL, NULL, NULL, 224,320,3,4
+};
+
+struct BurnDriver BurnDrvSonicwi = {
+	"sonicwi", "aerofgt", NULL, "1992",
+	"Sonic Wings (Japan)\0", NULL, "Video System Co.", "Video System",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_MISC_POST90S,
+	NULL, sonicwiRomInfo, sonicwiRomName, aerofgtInputInfo, aerofgtDIPInfo,
+	aerofgtbInit,DrvExit,aerofgtbFrame,aerofgtbDraw,DrvScan,
+	0, NULL, NULL, NULL, NULL, 224,320,3,4
 };
 

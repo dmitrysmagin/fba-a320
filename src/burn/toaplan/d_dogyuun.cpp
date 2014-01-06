@@ -579,7 +579,7 @@ struct BurnDriver BurnDrvDogyuun = {
 	L"Dogyuun\0Dogyuun \u30C9\u30AD\u30E5\u30FC\u30F3\uFF01\uFF01\0", NULL, NULL, NULL,
 	BDF_GAME_WORKING | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_68K_Zx80,
 	NULL, dogyuunRomInfo, dogyuunRomName, dogyuunInputInfo, dogyuunDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &ToaRecalcPalette,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &ToaRecalcPalette,
 	240, 320, 3, 4
 };
 

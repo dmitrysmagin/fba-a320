@@ -618,8 +618,9 @@ struct BurnDriver BurnDrvFeverSOS = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_ONLY,
 	NULL, feversosRomInfo, feversosRomName, feversosInputInfo, NULL,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &CaveRecalcPalette,
-	240, 320, 3, 4
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 240, 320, 3, 4
 };
 
 struct BurnDriver BurnDrvDFeveron = {
@@ -628,6 +629,7 @@ struct BurnDriver BurnDrvDFeveron = {
 	L"\u5F3E\u9283 Feveron (Japan ver. Thu Sep 17 1998)\0Dangun Feveron (Japan ver. Thu Sep 17 1998)\0", NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_ONLY,
 	NULL, dfeveronRomInfo, dfeveronRomName, feversosInputInfo, NULL,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &CaveRecalcPalette,
-	240, 320, 3, 4
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 240, 320, 3, 4
 };

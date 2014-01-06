@@ -1018,8 +1018,8 @@ STD_ROM_PICK(Snowbroj);
 STD_ROM_FN(Snowbroj);
 
 static struct BurnRomInfo WintbobRomDesc[] = {
-	{ "wb03.bin",      0x10000, 0xdf56e168, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
-	{ "wb01.bin",      0x10000, 0x05722f17, BRF_ESS | BRF_PRG }, //  1	68000 Program Code
+	{ "wb3",           0x10000, 0xb9719767, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
+	{ "wb1",           0x10000, 0xa4488998, BRF_ESS | BRF_PRG }, //  1	68000 Program Code
 	{ "wb04.bin",      0x10000, 0x53be758d, BRF_ESS | BRF_PRG }, //  2	68000 Program Code
 	{ "wb02.bin",      0x10000, 0xfc8e292e, BRF_ESS | BRF_PRG }, //  3	68000 Program Code
 
@@ -1926,203 +1926,6 @@ static int Snowbro3MemIndex()
 	return 0;
 }
 
-void HyperpacDecodeSprites()
-{
-	for (int c = 0; c < HyperpacNumTiles; c++) {
-		for (int y = 0; y < 16; y++) {
-			int yOff = 0;
-
-			if (y ==  0) yOff = 0;
-			if (y ==  1) yOff = 2;
-			if (y ==  2) yOff = 1;
-			if (y ==  3) yOff = 3;
-			if (y ==  4) yOff = 16;
-			if (y ==  5) yOff = 18;
-			if (y ==  6) yOff = 17;
-			if (y ==  7) yOff = 19;
-			if (y ==  8) yOff = 4;
-			if (y ==  9) yOff = 6;
-			if (y == 10) yOff = 5;
-			if (y == 11) yOff = 7;
-			if (y == 12) yOff = 20;
-			if (y == 13) yOff = 22;
-			if (y == 14) yOff = 21;
-			if (y == 15) yOff = 23;
-
-			HyperpacSprites[(c * 256) + (y * 16) +  0] = HyperpacTempGfx[0x00000 + (yOff * 4) + (c * 128)] & 0x0f;
-			HyperpacSprites[(c * 256) + (y * 16) +  1] = HyperpacTempGfx[0x00000 + (yOff * 4) + (c * 128)] >> 4;
-			HyperpacSprites[(c * 256) + (y * 16) +  2] = HyperpacTempGfx[0x00020 + (yOff * 4) + (c * 128)] & 0x0f;
-			HyperpacSprites[(c * 256) + (y * 16) +  3] = HyperpacTempGfx[0x00020 + (yOff * 4) + (c * 128)] >> 4;
-			HyperpacSprites[(c * 256) + (y * 16) +  4] = HyperpacTempGfx[0x00002 + (yOff * 4) + (c * 128)] & 0x0f;
-			HyperpacSprites[(c * 256) + (y * 16) +  5] = HyperpacTempGfx[0x00002 + (yOff * 4) + (c * 128)] >> 4;
-			HyperpacSprites[(c * 256) + (y * 16) +  6] = HyperpacTempGfx[0x00022 + (yOff * 4) + (c * 128)] & 0x0f;
-			HyperpacSprites[(c * 256) + (y * 16) +  7] = HyperpacTempGfx[0x00022 + (yOff * 4) + (c * 128)] >> 4;
-			HyperpacSprites[(c * 256) + (y * 16) +  8] = HyperpacTempGfx[0x00001 + (yOff * 4) + (c * 128)] & 0x0f;
-			HyperpacSprites[(c * 256) + (y * 16) +  9] = HyperpacTempGfx[0x00001 + (yOff * 4) + (c * 128)] >> 4;
-			HyperpacSprites[(c * 256) + (y * 16) + 10] = HyperpacTempGfx[0x00021 + (yOff * 4) + (c * 128)] & 0x0f;
-			HyperpacSprites[(c * 256) + (y * 16) + 11] = HyperpacTempGfx[0x00021 + (yOff * 4) + (c * 128)] >> 4;
-			HyperpacSprites[(c * 256) + (y * 16) + 12] = HyperpacTempGfx[0x00003 + (yOff * 4) + (c * 128)] & 0x0f;
-			HyperpacSprites[(c * 256) + (y * 16) + 13] = HyperpacTempGfx[0x00003 + (yOff * 4) + (c * 128)] >> 4;
-			HyperpacSprites[(c * 256) + (y * 16) + 14] = HyperpacTempGfx[0x00023 + (yOff * 4) + (c * 128)] & 0x0f;
-			HyperpacSprites[(c * 256) + (y * 16) + 15] = HyperpacTempGfx[0x00023 + (yOff * 4) + (c * 128)] >> 4;
-		}
-	}
-}
-
-void SnowbrosDecodeSprites()
-{
-	int y;
-	for (int c = 0; c < HyperpacNumTiles; c++) {
-		for (y = 0; y < 8; y++) {
-			HyperpacSprites[(c * 256) + (y * 16) +  0] = HyperpacTempGfx[0x00000 + (y * 4) + (c * 128)] >> 4;
-			HyperpacSprites[(c * 256) + (y * 16) +  1] = HyperpacTempGfx[0x00000 + (y * 4) + (c * 128)] & 0x0f;
-			HyperpacSprites[(c * 256) + (y * 16) +  2] = HyperpacTempGfx[0x00001 + (y * 4) + (c * 128)] >> 4;
-			HyperpacSprites[(c * 256) + (y * 16) +  3] = HyperpacTempGfx[0x00001 + (y * 4) + (c * 128)] & 0x0f;
-			HyperpacSprites[(c * 256) + (y * 16) +  4] = HyperpacTempGfx[0x00002 + (y * 4) + (c * 128)] >> 4;
-			HyperpacSprites[(c * 256) + (y * 16) +  5] = HyperpacTempGfx[0x00002 + (y * 4) + (c * 128)] & 0x0f;
-			HyperpacSprites[(c * 256) + (y * 16) +  6] = HyperpacTempGfx[0x00003 + (y * 4) + (c * 128)] >> 4;
-			HyperpacSprites[(c * 256) + (y * 16) +  7] = HyperpacTempGfx[0x00003 + (y * 4) + (c * 128)] & 0x0f;
-			HyperpacSprites[(c * 256) + (y * 16) +  8] = HyperpacTempGfx[0x00020 + (y * 4) + (c * 128)] >> 4;
-			HyperpacSprites[(c * 256) + (y * 16) +  9] = HyperpacTempGfx[0x00020 + (y * 4) + (c * 128)] & 0x0f;
-			HyperpacSprites[(c * 256) + (y * 16) + 10] = HyperpacTempGfx[0x00021 + (y * 4) + (c * 128)] >> 4;
-			HyperpacSprites[(c * 256) + (y * 16) + 11] = HyperpacTempGfx[0x00021 + (y * 4) + (c * 128)] & 0x0f;
-			HyperpacSprites[(c * 256) + (y * 16) + 12] = HyperpacTempGfx[0x00022 + (y * 4) + (c * 128)] >> 4;
-			HyperpacSprites[(c * 256) + (y * 16) + 13] = HyperpacTempGfx[0x00022 + (y * 4) + (c * 128)] & 0x0f;
-			HyperpacSprites[(c * 256) + (y * 16) + 14] = HyperpacTempGfx[0x00023 + (y * 4) + (c * 128)] >> 4;
-			HyperpacSprites[(c * 256) + (y * 16) + 15] = HyperpacTempGfx[0x00023 + (y * 4) + (c * 128)] & 0x0f;
-		}
-
-		for (y = 8; y < 16; y++) {
-			HyperpacSprites[(c * 256) + (y * 16) +  0] = HyperpacTempGfx[0x00000 + ((y + 8) * 4) + (c * 128)] >> 4;
-			HyperpacSprites[(c * 256) + (y * 16) +  1] = HyperpacTempGfx[0x00000 + ((y + 8) * 4) + (c * 128)] & 0x0f;
-			HyperpacSprites[(c * 256) + (y * 16) +  2] = HyperpacTempGfx[0x00001 + ((y + 8) * 4) + (c * 128)] >> 4;
-			HyperpacSprites[(c * 256) + (y * 16) +  3] = HyperpacTempGfx[0x00001 + ((y + 8) * 4) + (c * 128)] & 0x0f;
-			HyperpacSprites[(c * 256) + (y * 16) +  4] = HyperpacTempGfx[0x00002 + ((y + 8) * 4) + (c * 128)] >> 4;
-			HyperpacSprites[(c * 256) + (y * 16) +  5] = HyperpacTempGfx[0x00002 + ((y + 8) * 4) + (c * 128)] & 0x0f;
-			HyperpacSprites[(c * 256) + (y * 16) +  6] = HyperpacTempGfx[0x00003 + ((y + 8) * 4) + (c * 128)] >> 4;
-			HyperpacSprites[(c * 256) + (y * 16) +  7] = HyperpacTempGfx[0x00003 + ((y + 8) * 4) + (c * 128)] & 0x0f;
-			HyperpacSprites[(c * 256) + (y * 16) +  8] = HyperpacTempGfx[0x00020 + ((y + 8) * 4) + (c * 128)] >> 4;
-			HyperpacSprites[(c * 256) + (y * 16) +  9] = HyperpacTempGfx[0x00020 + ((y + 8) * 4) + (c * 128)] & 0x0f;
-			HyperpacSprites[(c * 256) + (y * 16) + 10] = HyperpacTempGfx[0x00021 + ((y + 8) * 4) + (c * 128)] >> 4;
-			HyperpacSprites[(c * 256) + (y * 16) + 11] = HyperpacTempGfx[0x00021 + ((y + 8) * 4) + (c * 128)] & 0x0f;
-			HyperpacSprites[(c * 256) + (y * 16) + 12] = HyperpacTempGfx[0x00022 + ((y + 8) * 4) + (c * 128)] >> 4;
-			HyperpacSprites[(c * 256) + (y * 16) + 13] = HyperpacTempGfx[0x00022 + ((y + 8) * 4) + (c * 128)] & 0x0f;
-			HyperpacSprites[(c * 256) + (y * 16) + 14] = HyperpacTempGfx[0x00023 + ((y + 8) * 4) + (c * 128)] >> 4;
-			HyperpacSprites[(c * 256) + (y * 16) + 15] = HyperpacTempGfx[0x00023 + ((y + 8) * 4) + (c * 128)] & 0x0f;
-		}
-	}
-}
-
-inline static int readbit(const UINT8 *src, int bitnum)
-{
-	return src[bitnum / 8] & (0x80 >> (bitnum % 8));
-}
-
-static void decodechar(int num)
-{
-	int plane, x, y;
-	
-	UINT8 *dp = HyperpacSprites8bpp + (num * 256);
-	memset(dp, 0, 256);
-	
-	int planeoffsets[8] = { 0, 1, 2, 3, 0x800000, 0x800001, 0x800002, 0x800003 };
-	int yoffsets[16] = { 0, 32, 64, 96, 128, 160, 192, 224, 512, 544, 576, 608, 640, 672, 704, 736 };
-	int xoffsets[16] = { 0, 4, 8, 12, 16, 20, 24, 28, 256, 260, 264, 268, 272, 276, 280, 284 };
-	
-	for (plane = 0; plane < 8; plane++) {
-		int planebit = 1 << (8 - 1 - plane);
-		int planeoffs = (num * 0x400) + planeoffsets[plane];
-		
-		for (y = 0; y < 16; y++) {
-			int yoffs = planeoffs + yoffsets[y];
-			dp = HyperpacSprites8bpp + (num * 256) + (y * 16);
-			
-			for (x = 0; x < 16; x++) {
-				if (readbit(HyperpacTempGfx, yoffs + xoffsets[x])) dp[x] |= planebit;
-			}
-		}
-	}
-}
-
-void HoneydolDecode8bppSprites()
-{
-	int c;
-	
-	for (c = 0; c < HyperpacNumTiles8bpp; c++) {
-		decodechar(c);
-	}	
-}
-
-static void WintbobDecodeChar(int num)
-{
-	int plane, x, y;
-	
-	UINT8 *dp = HyperpacSprites + (num * 256);
-	memset(dp, 0, 256);
-	
-	int planeoffsets[4] = { 0, 1, 2, 3 };
-	int yoffsets[16] = { 0, 64, 128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960 };
-	int xoffsets[16] = { 12, 8, 4, 0, 28, 24, 20, 16, 44, 40, 36, 32, 60, 56, 52, 48 };
-	
-	for (plane = 0; plane < 4; plane++) {
-		int planebit = 1 << (4 - 1 - plane);
-		int planeoffs = (num * 0x400) + planeoffsets[plane];
-		
-		for (y = 0; y < 16; y++) {
-			int yoffs = planeoffs + yoffsets[y];
-			dp = HyperpacSprites + (num * 256) + (y * 16);
-			
-			for (x = 0; x < 16; x++) {
-				if (readbit(HyperpacTempGfx, yoffs + xoffsets[x])) dp[x] |= planebit;
-			}
-		}
-	}
-}
-
-void WintbobDecodeSprites()
-{
-	int c;
-	
-	for (c = 0; c < HyperpacNumTiles; c++) {
-		WintbobDecodeChar(c);
-	}	
-}
-
-static void Snowbro3DecodeChar(int num)
-{
-	int plane, x, y;
-	
-	UINT8 *dp = HyperpacSprites8bpp + (num * 256);
-	memset(dp, 0, 256);
-	
-	int planeoffsets[8] = { 8, 9, 10, 11, 0, 1, 2, 3 };
-	int yoffsets[16] = { 0, 64, 128, 192, 256, 320, 384, 448, 1024, 1088, 1152, 1216, 1280, 1344, 1408, 1472 };
-	int xoffsets[16] = { 0, 4, 16, 20, 32, 36, 48, 52, 512, 516, 528, 532, 544, 548, 560, 564 };
-	
-	for (plane = 0; plane < 8; plane++) {
-		int planebit = 1 << (8 - 1 - plane);
-		int planeoffs = (num * 0x800) + planeoffsets[plane];
-		
-		for (y = 0; y < 16; y++) {
-			int yoffs = planeoffs + yoffsets[y];
-			dp = HyperpacSprites8bpp + (num * 256) + (y * 16);
-			
-			for (x = 0; x < 16; x++) {
-				if (readbit(HyperpacTempGfx, yoffs + xoffsets[x])) dp[x] |= planebit;
-			}
-		}
-	}
-}
-
-void Snowbro3Decode8bppSprites()
-{
-	int c;
-	
-	for (c = 0; c < HyperpacNumTiles8bpp; c++) {
-		Snowbro3DecodeChar(c);
-	}	
-}
-
 int HyperpacMachineInit()
 {
 	BurnSetRefreshRate(57.5);
@@ -2176,6 +1979,22 @@ int HyperpacMachineInit()
 	return 0;
 }
 
+static int HyperpacSpritePlaneOffsets[4] = { 0, 1, 2, 3 };
+static int HyperpacSpriteXOffsets[16]    = { 4, 0, 260, 256, 20, 16, 276, 272, 12, 8, 268, 264, 28, 24, 284, 280 };
+static int HyperpacSpriteYOffsets[16]    = { 0, 64, 32, 96, 512, 576, 544, 608, 128, 192, 160, 224, 640, 704, 672, 736 };
+static int SnowbrosSpritePlaneOffsets[4] = { 0, 1, 2, 3 };
+static int SnowbrosSpriteXOffsets[16]    = { 0, 4, 8, 12, 16, 20, 24, 28, 256, 260, 264, 268, 272, 276, 280, 284 };
+static int SnowbrosSpriteYOffsets[16]    = { 0, 32, 64, 96, 128, 160, 192, 224, 512, 544, 576, 608, 640, 672, 704, 736 };
+static int WintbobSpritePlaneOffsets[4]  = { 0, 1, 2, 3 };
+static int WintbobSpriteXOffsets[16]     = { 12, 8, 4, 0, 28, 24, 20, 16, 44, 40, 36, 32, 60, 56, 52, 48 };
+static int WintbobSpriteYOffsets[16]     = { 0, 64, 128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960 };
+static int Honeydol8BppPlaneOffsets[8]   = { 0, 1, 2, 3, 0x800000, 0x800001, 0x800002, 0x800003 };
+static int Honeydol8BppXOffsets[16]      = { 0, 4, 8, 12, 16, 20, 24, 28, 256, 260, 264, 268, 272, 276, 280, 284 };
+static int Honeydol8BppYOffsets[16]      = { 0, 32, 64, 96, 128, 160, 192, 224, 512, 544, 576, 608, 640, 672, 704, 736 };
+static int Snowbro38BppPlaneOffsets[8]   = { 8, 9, 10, 11, 0, 1, 2, 3 };
+static int Snowbro38BppXOffsets[16]      = { 0, 4, 16, 20, 32, 36, 48, 52, 512, 516, 528, 532, 544, 548, 560, 564 };
+static int Snowbro38BppYOffsets[16]      = { 0, 64, 128, 192, 256, 320, 384, 448, 1024, 1088, 1152, 1216, 1280, 1344, 1408, 1472 };
+
 int HyperpacInit()
 {
 	int nRet = 0, nLen;
@@ -2221,7 +2040,7 @@ int HyperpacInit()
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x00000, 2, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x40000, 3, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x80000, 4, 1); if (nRet != 0) return 1;
-	HyperpacDecodeSprites();	
+	GfxDecode(HyperpacNumTiles, 4, 16, 16, HyperpacSpritePlaneOffsets, HyperpacSpriteXOffsets, HyperpacSpriteYOffsets, 0x400, HyperpacTempGfx, HyperpacSprites);	
 	free(HyperpacTempGfx);
 
 	// Load Sample Rom
@@ -2259,7 +2078,7 @@ int Cookbib2Init()
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x000000, 2, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x080000, 3, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x100000, 4, 1); if (nRet != 0) return 1;
-	HyperpacDecodeSprites();	
+	GfxDecode(HyperpacNumTiles, 4, 16, 16, HyperpacSpritePlaneOffsets, HyperpacSpriteXOffsets, HyperpacSpriteYOffsets, 0x400, HyperpacTempGfx, HyperpacSprites);	
 	free(HyperpacTempGfx);
 
 	// Load Sample Rom
@@ -2320,7 +2139,7 @@ int Cookbib3Init()
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x000000, 2, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x080000, 3, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x100000, 4, 1); if (nRet != 0) return 1;
-	HyperpacDecodeSprites();	
+	GfxDecode(HyperpacNumTiles, 4, 16, 16, HyperpacSpritePlaneOffsets, HyperpacSpriteXOffsets, HyperpacSpriteYOffsets, 0x400, HyperpacTempGfx, HyperpacSprites);	
 	free(HyperpacTempGfx);
 
 	// Load Sample Rom
@@ -2375,7 +2194,7 @@ int MoremoreInit()
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x080000, 3, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x100000, 4, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x180000, 5, 1); if (nRet != 0) return 1;
-	HyperpacDecodeSprites();	
+	GfxDecode(HyperpacNumTiles, 4, 16, 16, HyperpacSpritePlaneOffsets, HyperpacSpriteXOffsets, HyperpacSpriteYOffsets, 0x400, HyperpacTempGfx, HyperpacSprites);	
 	free(HyperpacTempGfx);
 
 	// Load Sample Rom
@@ -2424,7 +2243,7 @@ int TwinkleInit()
 
 	// Load and Decode Sprite Roms
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x000000, 2, 1); if (nRet != 0) return 1;
-	HyperpacDecodeSprites();	
+	GfxDecode(HyperpacNumTiles, 4, 16, 16, HyperpacSpritePlaneOffsets, HyperpacSpriteXOffsets, HyperpacSpriteYOffsets, 0x400, HyperpacTempGfx, HyperpacSprites);	
 	free(HyperpacTempGfx);
 
 	// Load Sample Rom
@@ -2510,7 +2329,7 @@ int Fourin1bootInit()
 	
 	// Load and Decode Sprite Roms
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x000000, 2, 1); if (nRet != 0) return 1;
-	SnowbrosDecodeSprites();	
+	GfxDecode(HyperpacNumTiles, 4, 16, 16, SnowbrosSpritePlaneOffsets, SnowbrosSpriteXOffsets, SnowbrosSpriteYOffsets, 0x400, HyperpacTempGfx, HyperpacSprites);		
 	free(HyperpacTempGfx);
 
 	// Load Sample Rom
@@ -2551,7 +2370,7 @@ int FinalttrInit()
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x040000, 3, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x080000, 4, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x0c0000, 5, 1); if (nRet != 0) return 1;
-	HyperpacDecodeSprites();	
+	GfxDecode(HyperpacNumTiles, 4, 16, 16, HyperpacSpritePlaneOffsets, HyperpacSpriteXOffsets, HyperpacSpriteYOffsets, 0x400, HyperpacTempGfx, HyperpacSprites);	
 	free(HyperpacTempGfx);
 
 	// Load Sample Rom
@@ -2604,7 +2423,7 @@ int TwinadvInit()
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x000000, 2, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x080000, 3, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x100000, 4, 1); if (nRet != 0) return 1;
-	SnowbrosDecodeSprites();	
+	GfxDecode(HyperpacNumTiles, 4, 16, 16, SnowbrosSpritePlaneOffsets, SnowbrosSpriteXOffsets, SnowbrosSpriteYOffsets, 0x400, HyperpacTempGfx, HyperpacSprites);		
 	free(HyperpacTempGfx);
 
 	// Load Sample Roms
@@ -2677,7 +2496,7 @@ int HoneydolInit()
 
 	// Load and Decode Sprite Roms
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x000000, 2, 1); if (nRet != 0) return 1;
-	SnowbrosDecodeSprites();
+	GfxDecode(HyperpacNumTiles, 4, 16, 16, SnowbrosSpritePlaneOffsets, SnowbrosSpriteXOffsets, SnowbrosSpriteYOffsets, 0x400, HyperpacTempGfx, HyperpacSprites);		
 		
 	// Load and Decode 8bpp Sprite Roms
 	memset(HyperpacTempGfx, 0, 0x200000);
@@ -2685,7 +2504,7 @@ int HoneydolInit()
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x080000, 4, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x100000, 5, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x180000, 6, 1); if (nRet != 0) return 1;
-	HoneydolDecode8bppSprites();
+	GfxDecode(HyperpacNumTiles8bpp, 8, 16, 16, Honeydol8BppPlaneOffsets, Honeydol8BppXOffsets, Honeydol8BppYOffsets, 0x400, HyperpacTempGfx, HyperpacSprites8bpp);
 	free(HyperpacTempGfx);
 
 	// Load Sample Roms
@@ -2720,7 +2539,7 @@ int HoneydolInit()
 	ZetSetWriteHandler(HoneydolZ80Write);
 	ZetClose();
 
-	BurnYM3812Init(3000000, &snowbrosFMIRQHandler, &HoneydolSynchroniseStream);
+	BurnYM3812Init(3000000, &snowbrosFMIRQHandler, &HoneydolSynchroniseStream, 0);
 	BurnTimerAttachZet(4000000);
 
 	// Setup the OKIM6295 emulation
@@ -2773,7 +2592,7 @@ int SnowbrosInit()
 		nRet = BurnLoadRom(HyperpacTempGfx + 0x40001, 9, 2); if (nRet != 0) return 1;
 		nRet = BurnLoadRom(HyperpacTempGfx + 0x60000, 10, 2); if (nRet != 0) return 1;
 		nRet = BurnLoadRom(HyperpacTempGfx + 0x60001, 11, 2); if (nRet != 0) return 1;
-		WintbobDecodeSprites();
+		GfxDecode(HyperpacNumTiles, 4, 16, 16, WintbobSpritePlaneOffsets, WintbobSpriteXOffsets, WintbobSpriteYOffsets, 0x400, HyperpacTempGfx, HyperpacSprites);		
 		free(HyperpacTempGfx);
 	} else {
 		// Load and byte-swap 68000 Program roms
@@ -2785,7 +2604,7 @@ int SnowbrosInit()
 
 		// Load and Decode Sprite Roms
 		nRet = BurnLoadRom(HyperpacTempGfx + 0x00000, 2, 1); if (nRet != 0) return 1;
-		SnowbrosDecodeSprites();
+		GfxDecode(HyperpacNumTiles, 4, 16, 16, SnowbrosSpritePlaneOffsets, SnowbrosSpriteXOffsets, SnowbrosSpriteYOffsets, 0x400, HyperpacTempGfx, HyperpacSprites);		
 		free(HyperpacTempGfx);
 	}
 
@@ -2815,7 +2634,7 @@ int SnowbrosInit()
 	ZetSetOutHandler(SnowbrosZ80PortWrite);
 	ZetClose();
 
-	BurnYM3812Init(3000000, &snowbrosFMIRQHandler, &snowbrosSynchroniseStream);
+	BurnYM3812Init(3000000, &snowbrosFMIRQHandler, &snowbrosSynchroniseStream, 0);
 	BurnTimerAttachZet(6000000);
 
 	GenericTilesInit();
@@ -2858,13 +2677,13 @@ int Snowbro3Init()
 
 	// Load and Decode Sprite Roms
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x00000, 2, 1); if (nRet != 0) return 1;
-	SnowbrosDecodeSprites();
+	GfxDecode(HyperpacNumTiles, 4, 16, 16, SnowbrosSpritePlaneOffsets, SnowbrosSpriteXOffsets, SnowbrosSpriteYOffsets, 0x400, HyperpacTempGfx, HyperpacSprites);
 	
 	// Load and Decode 8bpp Sprite Roms
 	memset(HyperpacTempGfx, 0, 0x400000);
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x000000, 3, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x200000, 4, 1); if (nRet != 0) return 1;
-	Snowbro3Decode8bppSprites();
+	GfxDecode(HyperpacNumTiles8bpp, 8, 16, 16, Snowbro38BppPlaneOffsets, Snowbro38BppXOffsets, Snowbro38BppYOffsets, 0x800, HyperpacTempGfx, HyperpacSprites8bpp);
 	
 	// Load Sample Roms
 	memset(HyperpacTempGfx, 0, 0x400000);
@@ -3418,62 +3237,50 @@ int Snowbro3CalcPalette()
 	return 0;
 }
 
-void HyperpacClearScreen()
-{
-	unsigned char pBlankTile[1][256] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-					    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-					    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-					    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-					    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-					    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-					    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-					    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-					    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-					    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-					    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-					    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-					    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-					    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-					    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-					    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
-				    
-	for (int x = 0; x < nScreenWidth; x += 16) {
-		for (int y = 0; y < nScreenHeight; y += 16) {
-			Render16x16Tile(pTransDraw, 0, x, y, 0xf0, 4, 0, (unsigned char*)pBlankTile);
-		}
-	}
-	
-				    
-}
-
 void HyperpacRender()
 {
-	BurnTransferClear();
 	HyperpacCalcPalette();
+	
+	for (int i = 0; i < nScreenHeight * nScreenWidth; i++) {
+		pTransDraw[i] = 0xf0;	
+	}
+	
 	HyperpacRenderSpriteLayer();
 	BurnTransferCopy(HyperpacPalette);
 }
 
 void TwinadvRender()
 {
-	BurnTransferClear();
 	HyperpacCalcPalette();
+	
+	for (int i = 0; i < nScreenHeight * nScreenWidth; i++) {
+		pTransDraw[i] = 0xf0;	
+	}
+	
 	TwinadvRenderSpriteLayer();
 	BurnTransferCopy(HyperpacPalette);
 }
 
 void HoneydolRender()
 {
-	BurnTransferClear();
 	HoneydolCalcPalette();
+	
+	for (int i = 0; i < nScreenHeight * nScreenWidth; i++) {
+		pTransDraw[i] = 0xf0;	
+	}
+	
 	HoneydolRenderSpriteLayer();
 	BurnTransferCopy(HyperpacPalette);
 }
 
 void SnowbrosRender()
 {
-	BurnTransferClear();
 	HyperpacCalcPalette();
+	
+	for (int i = 0; i < nScreenHeight * nScreenWidth; i++) {
+		pTransDraw[i] = 0xf0;	
+	}
+	
 	if (Wintbob) {
 		WintbobRenderSpriteLayer();
 	} else {
@@ -3484,8 +3291,13 @@ void SnowbrosRender()
 
 void Snowbro3Render()
 {
-	BurnTransferClear();
 	Snowbro3CalcPalette();
+	
+	for (int i = 0; i < nScreenHeight * nScreenWidth; i++) {
+		pTransDraw[i] = 0xf0;
+	
+	}
+	
 	Snowbro3RenderSpriteLayer();
 	BurnTransferCopy(HyperpacPalette);
 }
@@ -3505,6 +3317,7 @@ int HyperpacFrame()
 	int nSoundBufferPos = 0;
 
 	SekNewFrame();
+	ZetNewFrame();
 
 	SekOpen(0);
 	for (int i = 0; i < nInterleave; i++) {
@@ -3518,15 +3331,19 @@ int HyperpacFrame()
 
 		// Run Z80
 		nCurrentCPU = 1;
+		ZetOpen(0);
 		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
 		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
 		nCyclesSegment = ZetRun(nCyclesSegment);
 		nCyclesDone[nCurrentCPU] += nCyclesSegment;
+		ZetClose();
 
 		if (pBurnSoundOut) {
 			int nSegmentLength = nBurnSoundLen / nInterleave;
 			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			ZetOpen(0);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
+			ZetClose();
 			MSM6295Render(0, pSoundBuf, nSegmentLength);
 			nSoundBufferPos += nSegmentLength;
 		}
@@ -3544,7 +3361,9 @@ int HyperpacFrame()
 		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 		if (nSegmentLength) {
+			ZetOpen(0);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
+			ZetClose();
 			MSM6295Render(0, pSoundBuf, nSegmentLength);
 		}
 	}
@@ -3719,7 +3538,7 @@ int HoneydolFrame()
 
 	nCycles68KSync = SekTotalCycles();
 	BurnTimerEndFrame(nCyclesTotal[1]);
-	BurnYM3812Update(nBurnSoundLen);
+	BurnYM3812Update(pBurnSoundOut, nBurnSoundLen);
 	if (pBurnSoundOut) MSM6295Render(0, pBurnSoundOut, nBurnSoundLen);
 	
 	nCyclesDone[0] = SekTotalCycles() - nCyclesTotal[0];
@@ -3773,7 +3592,7 @@ int SnowbrosFrame()
 
 	nCycles68KSync = SekTotalCycles();
 	BurnTimerEndFrame(nCyclesTotal[1]);
-	BurnYM3812Update(nBurnSoundLen);
+	BurnYM3812Update(pBurnSoundOut, nBurnSoundLen);
 
 	nCyclesDone[0] = SekTotalCycles() - nCyclesTotal[0];
 	nCyclesDone[1] = ZetTotalCycles() - nCyclesTotal[1];
@@ -3913,7 +3732,7 @@ static int Snowbro3Scan(int nAction,int *pnMin)
 	struct BurnArea ba;
 
 	if (pnMin != NULL) {					// Return minimum compatible version
-		*pnMin = 0x029671;
+		*pnMin = 0x029672;
 	}
 
 	if (nAction & ACB_MEMORY_RAM) {								// Scan all memory, devices & variables
@@ -3944,208 +3763,208 @@ struct BurnDriver BurnDrvHyperpac = {
 	"hyperpac", NULL, NULL, "1995",
 	"Hyper Pacman\0", NULL, "SemiCom", "Kaneko Pandora based",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S,
 	NULL, HyperpacRomInfo, HyperpacRomName, HyperpacInputInfo, HyperpacDIPInfo,
 	HyperpacInit, HyperpacExit, HyperpacFrame, NULL, HyperpacScan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvHyperpcb = {
 	"hyperpcb", "hyperpac", NULL, "1995",
 	"Hyper Pacman (bootleg)\0", NULL, "SemiCom", "Kaneko Pandora based",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_MISC_POST90S,
 	NULL, HyperpcbRomInfo, HyperpcbRomName, HyperpacInputInfo, HyperpacDIPInfo,
 	HyperpacInit, HyperpacExit, HyperpacFrame, NULL, HyperpacScan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvCookbib2 = {
 	"cookbib2", NULL, NULL, "1996",
 	"Cookie & Bibi 2\0", NULL, "SemiCom", "Kaneko Pandora based",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S,
 	NULL, Cookbib2RomInfo, Cookbib2RomName, HyperpacInputInfo, Cookbib2DIPInfo,
 	Cookbib2Init, HyperpacExit, HyperpacFrame, NULL, HyperpacScan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvCookbib3 = {
 	"cookbib3", NULL, NULL, "1997",
 	"Cookie & Bibi 3\0", NULL, "SemiCom", "Kaneko Pandora based",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S,
 	NULL, Cookbib3RomInfo, Cookbib3RomName, HyperpacInputInfo, Cookbib3DIPInfo,
 	Cookbib3Init, HyperpacExit, HyperpacFrame, NULL, HyperpacScan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvMoremore = {
 	"moremore", NULL, NULL, "1999",
 	"More More\0", NULL, "SemiCom / Exit", "Kaneko Pandora based",
 	L"More More\0\uBAA8\uC544\uBAA8\uC544 More More\0", NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S,
 	NULL, MoremoreRomInfo, MoremoreRomName, HyperpacInputInfo, MoremoreDIPInfo,
 	MoremoreInit, HyperpacExit, HyperpacFrame, NULL, HyperpacScan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvMoremorp = {
 	"moremorp", NULL, NULL, "1999",
 	"More More Plus\0", NULL, "SemiCom / Exit", "Kaneko Pandora based",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S,
 	NULL, MoremorpRomInfo, MoremorpRomName, HyperpacInputInfo, MoremoreDIPInfo,
 	MoremoreInit, HyperpacExit, HyperpacFrame, NULL, HyperpacScan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvThreein1semi = {
 	"3in1semi", NULL, NULL, "1997",
 	"XESS - The New Revolution (SemiCom 3-in-1)\0", NULL, "SemiCom", "Kaneko Pandora based",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S,
 	NULL, Threein1semiRomInfo, Threein1semiRomName, HyperpacInputInfo, MoremoreDIPInfo,
 	MoremoreInit, HyperpacExit, HyperpacFrame, NULL, HyperpacScan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvToppyrap = {
 	"toppyrap", NULL, NULL, "1996",
 	"Toppy & Rappy\0", NULL, "SemiCom", "Kaneko Pandora based",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S,
 	NULL, ToppyrapRomInfo, ToppyrapRomName, HyperpacInputInfo, ToppyrapDIPInfo,
 	MoremoreInit, HyperpacExit, HyperpacFrame, NULL, HyperpacScan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvTwinkle = {
 	"twinkle", NULL, NULL, "1997",
 	"Twinkle\0", NULL, "SemiCom", "Kaneko Pandora based",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S,
 	NULL, TwinkleRomInfo, TwinkleRomName, HyperpacInputInfo, MoremoreDIPInfo,
 	TwinkleInit, HyperpacExit, HyperpacFrame, NULL, HyperpacScan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvFourin1boot = {
 	"4in1boot", NULL, NULL, "2002",
 	"Puzzle King\0", NULL, "K1 Soft", "Kaneko Pandora based",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_BOOTLEG, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_BOOTLEG, 2, HARDWARE_MISC_POST90S,
 	NULL, Fourin1bootRomInfo, Fourin1bootRomName, HyperpacInputInfo, Fourin1bootDIPInfo,
 	Fourin1bootInit, HyperpacExit, HyperpacFrame, NULL, HyperpacScan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvFinalttr = {
 	"finalttr", NULL, NULL, "1993",
 	"Final Tetris\0", NULL, "Jeil Computer System", "Kaneko Pandora based",
 	L"Final Tetris\0\uD30C\uC774\uB110 \uD14C\uD2B8\uB9AC\uC2A4\0", NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S,
 	NULL, FinalttrRomInfo, FinalttrRomName, HyperpacInputInfo, FinalttrDIPInfo,
 	FinalttrInit, HyperpacExit, FinalttrFrame, NULL, HyperpacScan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvTwinadv = {
 	"twinadv", NULL, NULL, "1995",
 	"Twin Adventure (World)\0", NULL, "Barko Corp", "Kaneko Pandora based",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S,
 	NULL, TwinadvRomInfo, TwinadvRomName, HyperpacInputInfo, TwinadvDIPInfo,
 	TwinadvInit, HyperpacExit, TwinadvFrame, NULL, HyperpacScan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvTwinadvk = {
 	"twinadvk", "twinadv", NULL, "1995",
 	"Twin Adventure (Korea)\0", NULL, "Barko Corp", "Kaneko Pandora based",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_POST90S,
 	NULL, TwinadvkRomInfo, TwinadvkRomName, HyperpacInputInfo, TwinadvDIPInfo,
 	TwinadvInit, HyperpacExit, TwinadvFrame, NULL, HyperpacScan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvHoneydol = {
 	"honeydol", NULL, NULL, "1995",
 	"Honey Dolls\0", NULL, "Barko Corp", "Kaneko Pandora based",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S,
 	NULL, HoneydolRomInfo, HoneydolRomName, HyperpacInputInfo, HoneydolDIPInfo,
 	HoneydolInit, HyperpacExit, HoneydolFrame, NULL, HyperpacScan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvSnowbros = {
 	"snowbros", NULL, NULL, "1990",
 	"Snow Bros. - Nick & Tom (set 1)\0", NULL, "Toaplan", "Kaneko Pandora based",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S,
 	NULL, SnowbrosRomInfo, SnowbrosRomName, SnowbrosInputInfo, SnowbrosDIPInfo,
 	SnowbrosInit, SnowbrosExit, SnowbrosFrame, NULL, SnowbrosScan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvSnowbroa = {
 	"snowbroa", "snowbros", NULL, "1990",
 	"Snow Bros. - Nick & Tom (set 2)\0", NULL, "Toaplan", "Kaneko Pandora based",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_POST90S,
 	NULL, SnowbroaRomInfo, SnowbroaRomName, SnowbrosInputInfo, SnowbrosDIPInfo,
 	SnowbrosInit, SnowbrosExit, SnowbrosFrame, NULL, SnowbrosScan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvSnowbrob = {
 	"snowbrob", "snowbros", NULL, "1990",
 	"Snow Bros. - Nick & Tom (set 3)\0", NULL, "Toaplan", "Kaneko Pandora based",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_POST90S,
 	NULL, SnowbrobRomInfo, SnowbrobRomName, SnowbrosInputInfo, SnowbrosDIPInfo,
 	SnowbrosInit, SnowbrosExit, SnowbrosFrame, NULL, SnowbrosScan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvSnowbroc = {
 	"snowbroc", "snowbros", NULL, "1990",
 	"Snow Bros. - Nick & Tom (set 4)\0", NULL, "Toaplan", "Kaneko Pandora based",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_POST90S,
 	NULL, SnowbrocRomInfo, SnowbrocRomName, SnowbrosInputInfo, SnowbrosDIPInfo,
 	SnowbrosInit, SnowbrosExit, SnowbrosFrame, NULL, SnowbrosScan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvSnowbroj = {
 	"snowbroj", "snowbros", NULL, "1990",
 	"Snow Bros. - Nick & Tom (Japan)\0", NULL, "Toaplan", "Kaneko Pandora based",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_POST90S,
 	NULL, SnowbrojRomInfo, SnowbrojRomName, SnowbrosInputInfo, SnowbrojDIPInfo,
 	SnowbrosInit, SnowbrosExit, SnowbrosFrame, NULL, SnowbrosScan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvWintbob = {
 	"wintbob", "snowbros", NULL, "1990",
 	"The Winter Bobble (bootleg)\0", NULL, "bootleg", "Kaneko Pandora based",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_MISC_POST90S,
 	NULL, WintbobRomInfo, WintbobRomName, SnowbrosInputInfo, SnowbrosDIPInfo,
 	SnowbrosInit, SnowbrosExit, SnowbrosFrame, NULL, SnowbrosScan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvSnowbro3 = {
 	"snowbro3", "snowbros", NULL, "2002",
 	"Snow Brothers 3 - Magical Adventure\0", NULL, "bootleg", "Kaneko Pandora based",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_MISC_POST90S,
 	NULL, Snowbro3RomInfo, Snowbro3RomName, SnowbrosInputInfo, SnowbrojDIPInfo,
 	Snowbro3Init, SnowbrosExit, Snowbro3Frame, NULL, SnowbrosScan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 256, 224, 4, 3
 };

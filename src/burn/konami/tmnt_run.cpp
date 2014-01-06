@@ -1,4 +1,5 @@
 #include "tmnt.h"
+#include "upd7759.h"
 // TMNT - Run module
 // Based on DTMNT and MAME
 
@@ -81,6 +82,47 @@ static void shuffle(UINT16 *buf,int len)
 }
 
 
+
+
+static int Interleve2(unsigned char *pd,int i,int nLen)
+{
+	unsigned char *pt;
+	unsigned short *pts,*ptd;
+	int a;
+
+	pt=(unsigned char *)malloc(nLen); 
+	if (pt==NULL) 
+	{
+		return 1;
+	}
+	memset(pt,0,nLen);
+	BurnLoadRom(pt,i,1);
+
+	nLen>>=1; 
+	pts=(unsigned short *)pt;
+	ptd=(unsigned short *)pd;
+	for (a=0;a<nLen; a++, pts++, ptd+=2)
+	{
+		*ptd=*pts;
+	}
+	free(pt);
+	return 0;
+}
+
+/*
+static GraphicsDecodeInfo tmnt_CHAR_Info= {
+	8,8,
+	0x100000/32,
+	4,
+	{ 3*8, 2*8, 1*8, 0*8 },
+	{ 0, 1, 2, 3, 4, 5, 6, 7 },
+	{ 0*32, 1*32, 2*32, 3*32, 4*32, 5*32, 6*32, 7*32 },
+	32*8
+};
+
+
+*/
+
 static int LoadRoms()
 {
 	int nRet=0;
@@ -108,59 +150,27 @@ static int LoadRoms()
 
 	nRet=BurnLoadRom(TmntZ80Rom,10,1); // load z80 code rom
 
-	nRet=BurnLoadRom(TmntTile,4,1); 
-	nRet=BurnLoadRom(TmntTile+0x80000,5,1); 
-	shuffle((UINT16*)TmntTile,0x100000/2);
 
-//Interleve2(TmntTile+0x000000,4,0x80000); // 8x8
-//	Interleve2(TmntTile+0x000002,5,0x80000); // ""
+	// Load tile bitmaps
+	Interleve2(TmntTile+0x000000,4,0x80000);
+	Interleve2(TmntTile+0x000002,5,0x80000);
 
+	// Load sprites
 	TmntSpriteTemp=(unsigned char *)malloc(0x200000);
-	if (TmntSpriteTemp==NULL)
-	{
-		return 1;
-	}
-/*
 
-	nRet=BurnLoadRom(TmntSpriteTemp,6,1); 
-	nRet=BurnLoadRom(TmntSpriteTemp+0x80000,7,1); 
-	nRet=BurnLoadRom(TmntSpriteTemp+0x100000,8,1); 
-	nRet=BurnLoadRom(TmntSpriteTemp+0x180000,9,1); 
-	shuffle((UINT16*)TmntSpriteTemp,0x200000/2);
+	Interleve2(TmntSpriteTemp+0x000000,6,0x80000);
+	Interleve2(TmntSpriteTemp+0x000002,7,0x80000);
+	Interleve2(TmntSpriteTemp+0x100000,8,0x80000);
+	Interleve2(TmntSpriteTemp+0x100002,9,0x80000);
 
-
-	char* proms = (char*)malloc(0x0200);
-	nRet=BurnLoadRom(proms,14,1); 
-	nRet=BurnLoadRom(proms+0x100,15,1);
-	decode_GFX_tmnt(
-	free(proms);
-*/
-
-	nRet=BurnLoadRom(TmntSpriteTemp,6,1); 
-	nRet=BurnLoadRom(TmntSpriteTemp+0x80000,7,1); 
-	nRet=BurnLoadRom(TmntSpriteTemp+0x100000,8,1);
-	nRet=BurnLoadRom(TmntSpriteTemp+0x180000,9,1);
-	shuffle((UINT16*)TmntSpriteTemp,0x200000/2);
-
-
-/*
-	Interleve2(TmntSpriteTemp+0x000000,6,0x80000); // sprites
-	Interleve2(TmntSpriteTemp+0x000002,7,0x80000); // ""
-	Interleve2(TmntSpriteTemp+0x100000,8,0x100000); // ""
-	Interleve2(TmntSpriteTemp+0x100002,9,0x180000); // ""
-*/
 	for (int i = 0; i<0x200000;i++)
 	{
-		TmntSprite[i*2]=(TmntSpriteTemp[i^1] & 0x0F);///((TmntSpriteTemp[i] & 0xF0) >> 4);
-		TmntSprite[(i*2)+1]=((TmntSpriteTemp[i^1] & 0xF0) >> 4);/////(TmntSpriteTemp[i] & 0x0F);
+		TmntSprite[i*2]=(TmntSpriteTemp[i^1] & 0x0F);//((TmntSpriteTemp[i] & 0xF0) >> 4);
+		TmntSprite[(i*2)+1]=((TmntSpriteTemp[i^1] & 0xF0) >> 4);//(TmntSpriteTemp[i] & 0x0F);
 
 	}
 
-	if (TmntSpriteTemp!=NULL)
-	{
-		free(TmntSpriteTemp);
-	}
-	TmntSpriteTemp=NULL;
+	free(TmntSpriteTemp);
 
 	// Load samples
 	TmntSampleROM01=(unsigned char *)malloc(0x20000);
@@ -205,11 +215,11 @@ static int LoadRoms()
 	}
 	TmntSampleROM01=NULL;
 
-	if (TmntSampleROM02!=NULL)
-	{
-		free(TmntSampleROM02);
-	}
-	TmntSampleROM02=NULL;
+//	if (TmntSampleROM02!=NULL)
+//	{
+//		free(TmntSampleROM02);
+//	}
+//	TmntSampleROM02=NULL;
 
 	if (TmntSampleROM03!=NULL)
 	{
@@ -222,13 +232,13 @@ static int LoadRoms()
 
 
 // Z80 accesses
-static unsigned char __fastcall tmntZ80In(unsigned short wordValue)
+unsigned char __fastcall tmntZ80In(unsigned short wordValue)
 {
 	printf("\nZ80: read from port %x",wordValue);
 	return 0;
 }
 
-static void __fastcall tmntZ80Out(unsigned short wordValue,unsigned char val)
+void __fastcall tmntZ80Out(unsigned short wordValue,unsigned char val)
 {
 	printf("\nZ80: Write %x to port %x",val,wordValue);
 }
@@ -256,15 +266,18 @@ unsigned char __fastcall tmntZ80Read(unsigned short wordValue)
 	}
 	if (wordValue==0xf000)
 	{
-	//	printf("\nZ80: UDP7759 busy read");
+		return UPD7759BusyRead();
+//		bprintf(PRINT_NORMAL, _T("\nZ80: UDP7759 busy read"));
 	}
 	return 0;
 }
 
-static void __fastcall tmntZ80Write(unsigned short wordValue,unsigned char val)
+void __fastcall tmntZ80Write(unsigned short wordValue,unsigned char val)
 {
 	if (wordValue==0x9000)
 	{
+		UPD7759ResetWrite(val & 2);
+//		bprintf(PRINT_NORMAL, _T("\nZ80: write %d to UPD7759 reset"), val & 2);
 		tmnt_soundlatch = val;
 	}
 	if ((wordValue>=0xb000) && (wordValue<=0xb00d))
@@ -283,35 +296,29 @@ static void __fastcall tmntZ80Write(unsigned short wordValue,unsigned char val)
 	}
 	if (wordValue==0xd000)
 	{
-//		printf("\nZ80: write %d to UPD7759_0_message", val);
+		UPD7759PortWrite(val);
+//		bprintf(PRINT_NORMAL, _T("\nZ80: write %d to UPD7759_0_message"), val);
 	}
 	if (wordValue==0xe000)
 	{
-//		printf("\nZ80: write %d to UPD7759_0_start", val);
+		UPD7759StartWrite(val);
+//		bprintf(PRINT_NORMAL, _T("\nZ80: write %d to UPD7759_0_start"), val);
 	}
 }
 // end of z80 accesses
 
-void tmntYM2151IRQHandler(int irq)
+void tmntYM2151IRQHandler(int /*irq*/)
 {
-	//if (irq)
-	{
-		ZetSetIRQLine(1, ZET_IRQSTATUS_AUTO);
-	}
-//	else
-	{
-//		ZetSetIRQLine(1, ZET_IRQSTATUS_ACK);
-	}
 
 }
 
 
-static unsigned short __fastcall TmntReadWord(unsigned int sekAddress)
+unsigned short __fastcall TmntReadWord(unsigned int /*sekAddress*/)
 {
 	return 0;
 }
 
-static void __fastcall TmntWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall TmntWriteWord(unsigned int sekAddress, unsigned short wordValue)
 {
 	switch (sekAddress) {
 		default: {
@@ -321,10 +328,12 @@ static void __fastcall TmntWriteWord(unsigned int sekAddress, unsigned short wor
 }
 
 
-static unsigned char __fastcall TmntReadByte(unsigned int a)
+unsigned char __fastcall TmntReadByte(unsigned int a)
 {
 	if (a>=0xa0000 && a<0xa0020)
+	{
 		return (unsigned char)(~TmntAoo[(a>>1)&0xf]);
+	}
 	return 0xff;
 }
 /*
@@ -337,9 +346,10 @@ static ADDRESS_MAP_START( tmnt_writemem, ADDRESS_SPACE_PROGRAM, 16 )
 	AM_RANGE(0x140000, 0x140007) AM_WRITE(K051937_word_w)
 ADDRESS_MAP_END
 */
-static void __fastcall TmntWriteByte(unsigned int a,unsigned char d)
+void __fastcall TmntWriteByte(unsigned int a,unsigned char d)
 {
 	unsigned int ab;
+	static int last;
 	ab=(a>>16)&0xff;
 	if (ab==0x08)
 	{
@@ -351,6 +361,16 @@ static void __fastcall TmntWriteByte(unsigned int a,unsigned char d)
 	{
 	case 0xa0001:
 		{
+
+		/* bit 3 high then low triggers irq on sound CPU */
+		if (last == 0x08 && (d & 0x08) == 0)
+		{
+			ZetSetIRQLine(0xff, ZET_IRQSTATUS_AUTO);
+			//cpunum_set_input_line_and_vector(1,0,HOLD_LINE,0xff);
+		}
+
+		last = d & 0x08;
+
 		if (d&0x20) 
 		{
 			bInt5=1;
@@ -366,6 +386,10 @@ static void __fastcall TmntWriteByte(unsigned int a,unsigned char d)
 	case 0x0a0009: // sound code
 		tmnt_soundlatch = d&0xFF;
 		return;
+
+
+
+
 	default:
 		bprintf(PRINT_NORMAL, _T("TmntWriteByte: value %x to location %x\n"), d, a);
 		break;
@@ -373,6 +397,22 @@ static void __fastcall TmntWriteByte(unsigned int a,unsigned char d)
 	}
 }
 
+void TmntReset()
+{
+	SekOpen(0);
+	SekReset();
+	SekClose();
+
+	ZetOpen(0);
+	ZetReset();
+	ZetClose();
+	
+	bInt5=0;
+	tmnt_soundlatch = 0;
+	BurnYM2151Reset();
+	UPD7759Reset();
+
+}
 
 int TmntInit()
 {
@@ -417,7 +457,7 @@ int TmntInit()
 	SekSetReadByteHandler(0,TmntReadByte);
 	SekSetWriteByteHandler(0,TmntWriteByte);
 	// ------------------------------------------------
-	SekReset();
+//	SekReset();
 	SekClose();
 	
 	// Setup the Z80 emulation
@@ -433,25 +473,32 @@ int TmntInit()
 	ZetSetOutHandler(tmntZ80Out);
 	ZetSetReadHandler(tmntZ80Read);
 	ZetSetWriteHandler(tmntZ80Write);
-	ZetReset();
+//	ZetReset();
 	ZetClose();
 
 	// sound stuff
 	// ym2151
-    BurnYM2151Init(3579545, 50.0);
+    	BurnYM2151Init(3579545, 50.0);
 	BurnYM2151SetIrqHandler(&tmntYM2151IRQHandler);
-	BurnYM2151Reset();
+//	BurnYM2151Reset();
+	
+	UPD7759Init(UPD7759_STANDARD_CLOCK, TmntSampleROM02);
 
 	bInt5=0;
+	GenericTilesInit();
 	TmntPalInit();
+	
+	TmntReset();
 	return 0;
 }
 
 
 int TmntExit()
 {
+	GenericTilesExit();
 	TmntPalExit();
 	BurnYM2151Exit();
+	UPD7759Exit();
 	SekExit(); // Deallocate 68000
 	ZetExit();
 	// Deallocate all used memory
@@ -469,27 +516,13 @@ int TmntExit()
 
 static int TmntDraw()
 {
+	BurnTransferClear();
 	TmntPalUpdate(bTmntRecalcPal); // Recalc whole pal if needed
 	bTmntRecalcPal=0;
 	BurnClearScreen();
 	TmntTileDraw();
-
+	BurnTransferCopy(TmntPal);
 	return 0;
-}
-
-
-void TmntReset()
-{
-	bInt5=0;
-	tmnt_soundlatch = 0;
-	BurnYM2151Reset();
-	SekOpen(0);
-	SekReset();
-	SekClose();
-
-	ZetOpen(0);
-	ZetReset();
-	ZetClose();
 }
 
 
@@ -539,6 +572,7 @@ int TmntFrame()
 				int nSegmentLength = nBurnSoundLen / nInterleave;
 				short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 				BurnYM2151Render(pSoundBuf, nSegmentLength);
+				UPD7759Update(pSoundBuf, nSegmentLength);
 				nSoundBufferPos += nSegmentLength;
 			}
 		}
@@ -551,12 +585,15 @@ int TmntFrame()
 			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			if (nSegmentLength) {
 				BurnYM2151Render(pSoundBuf, nSegmentLength);
+				UPD7759Update(pSoundBuf, nSegmentLength);
 			}
 		}
 	}
 //	
 	ZetClose();
 	SekClose();
+	
+//	UPD7759Update(pBurnSoundOut, nBurnSoundLen);
 
 	if (pBurnDraw) {
 		TmntDraw();														// Draw screen if needed
@@ -629,12 +666,28 @@ static int MiaLoadRoms()
 	nRet=BurnLoadRom(TmntTile+0x020000,4,2); 
 	nRet=BurnLoadRom(TmntTile+0x020001,5,2); 
 
-	shuffle((UINT16*)TmntTile,0x40000/2);
+	shuffle((UINT16*)TmntTile,0x20000);
 
 
 	BurnLoadRom(TmntSprite+0x000000,6,2);
 	BurnLoadRom(TmntSprite+0x000001,7,2);
-	shuffle((UINT16*)TmntSprite,0x100000/2);
+	//shuffle((UINT16*)TmntSprite,0x100000/2);
+
+	TmntSpriteTemp=(unsigned char *)malloc(0x80000*2);
+
+	Interleve2(TmntSpriteTemp+0x000000,6,0x80000);
+	Interleve2(TmntSpriteTemp+0x000002,7,0x80000);
+
+
+	for (int i = 0; i<0x100000;i++)
+	{
+		TmntSprite[i*2]=(TmntSpriteTemp[i^1] & 0x0F);//((TmntSpriteTemp[i] & 0xF0) >> 4);
+		TmntSprite[(i*2)+1]=((TmntSpriteTemp[i^1] & 0xF0) >> 4);//(TmntSpriteTemp[i] & 0x0F);
+
+	}
+
+	free(TmntSpriteTemp);
+
 
 	return 0;
 }
@@ -681,7 +734,8 @@ int MiaInit()
 	SekReset(); 
 	bInt5=0;
 	SekClose();
-
+	MiaReset();
+	GenericTilesInit();
 	TmntPalInit();
 	return 0;
 }
@@ -698,9 +752,39 @@ int MiaFrame()
 	SekRun(8000000/60); // 8mhz
 	SekClose();
 	if (pBurnDraw!=NULL)
+	{
 		TmntDraw();
+	}
 	 return 0;
 }
 
+
+void MiaReset()
+{
+	bInt5=0;
+	tmnt_soundlatch = 0;
+	SekOpen(0);
+	SekReset();
+	SekClose();
+}
+
+
+int MiaExit()
+{
+	GenericTilesExit();
+	TmntPalExit();
+	SekExit(); // Deallocate 68000
+	// Deallocate all used memory
+	if (Mem!=0)
+		free(Mem);
+	Mem=0;
+	if (TmntZ80Rom!=0)
+		free(TmntZ80Rom);
+	TmntZ80Rom=0;
+	if (TmntZ80Ram!=0)
+		free(TmntZ80Ram);
+	TmntZ80Ram=0;
+	return 0;
+}
 
 

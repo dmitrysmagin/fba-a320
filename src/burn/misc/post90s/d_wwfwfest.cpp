@@ -1160,42 +1160,205 @@ static int DrvScan(int nAction, int *pnMin)
 	return 0;
 }
 
+// Jukebox support
+static int JukeboxMemIndex()
+{
+	unsigned char *Next; Next = Mem;
+
+	DrvZ80Rom              = Next; Next += 0x10000;
+	MSM6295ROM             = Next; Next += 0x40000;
+	DrvMSM6295ROMSrc       = Next; Next += 0x80000;
+
+	RamStart               = Next;
+
+	DrvZ80Ram              = Next; Next += 0x00800;
+
+	RamEnd                 = Next;
+
+	MemEnd                 = Next;
+
+	return 0;
+}
+
+static int DrvJukeboxDoReset()
+{
+	ZetOpen(0);
+	ZetReset();
+	ZetClose();
+	
+	BurnYM2151Reset();
+	MSM6295Reset(0);
+	
+	DrvOkiBank = 0;
+	DrvSoundLatch = 0;
+	
+	return 0;
+}
+
+static int DrvJukeboxInit()
+{
+	int nRet = 0, nLen, RomOffset;
+	
+	RomOffset = 0;
+	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "wwfwfstb")) RomOffset = 2;
+
+	// Allocate and Blank all required memory
+	Mem = NULL;
+	JukeboxMemIndex();
+	nLen = MemEnd - (unsigned char *)0;
+	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	memset(Mem, 0, nLen);
+	JukeboxMemIndex();
+
+	// Load Z80 Program Roms
+	nRet = BurnLoadRom(DrvZ80Rom, 2, 1); if (nRet != 0) return 1;
+	
+	// Load Sample Roms
+	nRet = BurnLoadRom(DrvMSM6295ROMSrc + 0x00000, 14 + RomOffset, 1); if (nRet != 0) return 1;
+	memcpy(MSM6295ROM, DrvMSM6295ROMSrc, 0x40000);
+	
+	// Setup the Z80 emulation
+	ZetInit(1);
+	ZetOpen(0);
+	ZetSetReadHandler(WwfwfestZ80Read);
+	ZetSetWriteHandler(WwfwfestZ80Write);
+	ZetMapArea(0x0000, 0xbfff, 0, DrvZ80Rom                );
+	ZetMapArea(0x0000, 0xbfff, 2, DrvZ80Rom                );
+	ZetMapArea(0xc000, 0xc7ff, 0, DrvZ80Ram                );
+	ZetMapArea(0xc000, 0xc7ff, 1, DrvZ80Ram                );
+	ZetMapArea(0xc000, 0xc7ff, 2, DrvZ80Ram                );
+	ZetMemEnd();
+	ZetClose();
+	
+	// Setup the YM2151 emulation
+	BurnYM2151Init(3579545, 25.0);
+	BurnYM2151SetIrqHandler(&DrvYM2151IrqHandler);
+	
+	// Setup the OKIM6295 emulation
+	MSM6295Init(0, 1024188 / 132, 100.0, 1);
+	
+	DrvJukeboxDoReset();
+
+	return 0;
+}
+
+static int DrvJukeboxExit()
+{
+	ZetExit();
+	
+	BurnYM2151Exit();
+	MSM6295Exit(0);
+	
+	DrvOkiBank = 0;
+	DrvSoundLatch = 0;
+	
+	free(Mem);
+	Mem = NULL;
+
+	return 0;
+}
+
+static int DrvJukeboxFrame()
+{
+	int nInterleave = 10;
+	int nSoundBufferPos = 0;
+	int nFireNmi = 0;
+
+	nCyclesTotal[1] = 3579545 / 60;
+	nCyclesDone[1] = 0;
+	
+	ZetNewFrame();
+	
+	if (JukeboxSoundCommand == JUKEBOX_SOUND_STOP) {
+		DrvJukeboxDoReset();
+		
+		JukeboxSoundCommand = JUKEBOX_SOUND_NULL;
+	}
+
+	if (JukeboxSoundCommand == JUKEBOX_SOUND_PLAY) {
+		DrvJukeboxDoReset();
+		
+		DrvSoundLatch = JukeboxSoundLatch;
+		nFireNmi = 1;
+		
+		JukeboxSoundCommand = JUKEBOX_SOUND_NULL;
+	}
+	
+	for (int i = 0; i < nInterleave; i++) {
+		int nCurrentCPU, nNext;
+
+		// Run Z80
+		nCurrentCPU = 1;
+		ZetOpen(0);
+		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
+		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
+		nCyclesSegment = ZetRun(nCyclesSegment);
+		nCyclesDone[nCurrentCPU] += nCyclesSegment;
+		if (i == 8 && nFireNmi) {
+			ZetNmi();
+			nFireNmi = 0;
+		}
+		ZetClose();
+		
+		if (pBurnSoundOut) {
+			int nSegmentLength = nBurnSoundLen / nInterleave;
+			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			BurnYM2151Render(pSoundBuf, nSegmentLength);
+			MSM6295Render(0, pSoundBuf, nSegmentLength);
+			nSoundBufferPos += nSegmentLength;
+		}
+	}
+	
+	// Make sure the buffer is entirely filled.
+	if (pBurnSoundOut) {
+		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+
+		if (nSegmentLength) {
+			BurnYM2151Render(pSoundBuf, nSegmentLength);
+			MSM6295Render(0, pSoundBuf, nSegmentLength);
+		}
+	}
+	
+	return 0;
+}
+
 struct BurnDriver BurnDrvWwfwfest = {
 	"wwfwfest", NULL, NULL, "1991",
 	"WWF WrestleFest (US set 1)\0", NULL, "Technos Japan", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 4, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING, 4, HARDWARE_MISC_POST90S,
 	NULL, DrvRomInfo, DrvRomName, DrvInputInfo, DrvDIPInfo,
 	DrvInit, DrvExit, DrvFrame, NULL, DrvScan,
-	NULL, 320, 240, 4, 3
+	JBF_GAME_WORKING, DrvJukeboxInit, DrvJukeboxExit, DrvJukeboxFrame, NULL, 320, 240, 4, 3
 };
 
 struct BurnDriver BurnDrvWwfwfsta = {
 	"wwfwfsta", "wwfwfest", NULL, "1991",
 	"WWF WrestleFest (US Tecmo)\0", NULL, "Technos Japan (Tecmo License)", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 4, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_CLONE, 4, HARDWARE_MISC_POST90S,
 	NULL, DrvaRomInfo, DrvaRomName, DrvInputInfo, DrvDIPInfo,
 	DrvInit, DrvExit, DrvFrame, NULL, DrvScan,
-	NULL, 320, 240, 4, 3
+	0, NULL, NULL, NULL, NULL, 320, 240, 4, 3
 };
 
 struct BurnDriver BurnDrvWwfwfstb = {
 	"wwfwfstb", "wwfwfest", NULL, "1991",
 	"WWF WrestleFest (US bootleg)\0", NULL, "bootleg", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 4, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 4, HARDWARE_MISC_POST90S,
 	NULL, DrvbRomInfo, DrvbRomName, DrvInputInfo, DrvDIPInfo,
 	DrvInit, DrvExit, DrvFrame, NULL, DrvScan,
-	NULL, 320, 240, 4, 3
+	0, NULL, NULL, NULL, NULL, 320, 240, 4, 3
 };
 
 struct BurnDriver BurnDrvWwfwfstj = {
 	"wwfwfstj", "wwfwfest", NULL, "1991",
 	"WWF WrestleFest (Japan)\0", NULL, "Technos Japan", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 4, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_CLONE, 4, HARDWARE_MISC_POST90S,
 	NULL, DrvjRomInfo, DrvjRomName, DrvInputInfo, DrvDIPInfo,
 	DrvInit, DrvExit, DrvFrame, NULL, DrvScan,
-	NULL, 320, 240, 4, 3
+	0, NULL, NULL, NULL, NULL, 320, 240, 4, 3
 };

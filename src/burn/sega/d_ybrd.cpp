@@ -1234,7 +1234,9 @@ static void io_chip_w(unsigned int offset, unsigned short d)
 			}
 			
 			if (!(d & 0x10)) {
+				ZetOpen(0);
 				ZetReset();
+				ZetClose();
 			}
 			
 			return;
@@ -1329,7 +1331,9 @@ void __fastcall YBoardWriteByte(unsigned int a, unsigned char d)
 	switch (a) {
 		case 0x082001: {
 			System16SoundLatch = d & 0xff;
+			ZetOpen(0);
 			ZetNmi();
+			ZetClose();
 			return;
 		}
 	}
@@ -1356,15 +1360,6 @@ unsigned short __fastcall YBoard2ReadWord(unsigned int a)
 	return 0xffff;
 }
 
-unsigned char __fastcall YBoard2ReadByte(unsigned int a)
-{
-#if 0 && defined FBA_DEBUG
-	bprintf(PRINT_NORMAL, _T("68000 #2 Read Byte -> 0x%06X\n"), a);
-#endif
-
-	return 0xff;
-}
-
 void __fastcall YBoard2WriteWord(unsigned int a, unsigned short d)
 {
 	if (a >= 0x080000 && a <= 0x080007) {
@@ -1379,13 +1374,6 @@ void __fastcall YBoard2WriteWord(unsigned int a, unsigned short d)
 
 #if 0 && defined FBA_DEBUG
 	bprintf(PRINT_NORMAL, _T("68000 #2 Write Word -> 0x%06X, 0x%04X\n"), a, d);
-#endif
-}
-
-void __fastcall YBoard2WriteByte(unsigned int a, unsigned char d)
-{
-#if 0 && defined FBA_DEBUG
-	bprintf(PRINT_NORMAL, _T("68000 #2 Write Byte -> 0x%06X, 0x%02X\n"), a, d);
 #endif
 }
 
@@ -1448,13 +1436,6 @@ void __fastcall YBoard3WriteWord(unsigned int a, unsigned short d)
 
 #if 0 && defined FBA_DEBUG
 	bprintf(PRINT_NORMAL, _T("68000 #3 Write Word -> 0x%06X, 0x%04X\n"), a, d);
-#endif
-}
-
-void __fastcall YBoard3WriteByte(unsigned int a, unsigned char d)
-{
-#if 0 && defined FBA_DEBUG
-	bprintf(PRINT_NORMAL, _T("68000 #3 Write Byte -> 0x%06X, 0x%02X\n"), a, d);
 #endif
 }
 
@@ -1579,27 +1560,21 @@ unsigned char PdriftProcessAnalogControls(UINT16 value)
 
 unsigned char RchaseProcessAnalogControls(UINT16 value)
 {
-	float temp = 0;
-	
 	switch (value) {
 		case 0: {
-			temp = (float)((System16Gun1X >> 8) + 8) / 320.0 * 0xff;
-			return (unsigned char)temp;
+			return BurnGunReturnX(0);
 		}
 		
 		case 1: {
-			temp = (float)((System16Gun1Y >> 8) + 8) / 224.0 * 0xff;
-			return (unsigned char)temp;
+			return BurnGunReturnY(0);
 		}
 		
 		case 2: {
-			temp = (float)((System16Gun2X >> 8) + 8) / 320.0 * 0xff;
-			return (unsigned char)temp;
+			return BurnGunReturnX(1);
 		}
 		
 		case 3: {
-			temp = (float)((System16Gun2Y >> 8) + 8) / 224.0 * 0xff;
-			return (unsigned char)temp;
+			return BurnGunReturnY(1);
 		}
 	}
 	
@@ -1610,7 +1585,23 @@ static int Gforce2Init()
 {
 	System16ProcessAnalogControlsDo = Gforce2ProcessAnalogControls;
 	
+	System16PCMDataSizePreAllocate = 0x180000;
+	
 	int nRet = System16Init();
+	
+	unsigned char *pTemp = (unsigned char*)malloc(0x0c0000);
+	memcpy(pTemp, System16PCMData, 0x0c0000);
+	memset(System16PCMData, 0, 0x180000);
+	memcpy(System16PCMData + 0x000000, pTemp + 0x000000, 0x80000);
+	memcpy(System16PCMData + 0x080000, pTemp + 0x080000, 0x20000);
+	memcpy(System16PCMData + 0x0a0000, pTemp + 0x080000, 0x20000);
+	memcpy(System16PCMData + 0x0c0000, pTemp + 0x080000, 0x20000);
+	memcpy(System16PCMData + 0x0e0000, pTemp + 0x080000, 0x20000);
+	memcpy(System16PCMData + 0x100000, pTemp + 0x0a0000, 0x20000);
+	memcpy(System16PCMData + 0x120000, pTemp + 0x0a0000, 0x20000);
+	memcpy(System16PCMData + 0x140000, pTemp + 0x0a0000, 0x20000);
+	memcpy(System16PCMData + 0x160000, pTemp + 0x0a0000, 0x20000);
+	free(pTemp);
 	
 	return nRet;
 }
@@ -1639,18 +1630,34 @@ static int PdriftInit()
 	
 	System16HasGears = true;
 	
+	System16PCMDataSizePreAllocate = 0x180000;
+	
 	int nRet = System16Init();
 	
 	if (!nRet) YBoardIrq2Scanline = 0;
+	
+	unsigned char *pTemp = (unsigned char*)malloc(0x0c0000);
+	memcpy(pTemp, System16PCMData, 0x0c0000);
+	memset(System16PCMData, 0, 0x180000);
+	memcpy(System16PCMData + 0x000000, pTemp + 0x000000, 0x80000);
+	memcpy(System16PCMData + 0x080000, pTemp + 0x080000, 0x20000);
+	memcpy(System16PCMData + 0x0a0000, pTemp + 0x080000, 0x20000);
+	memcpy(System16PCMData + 0x0c0000, pTemp + 0x080000, 0x20000);
+	memcpy(System16PCMData + 0x0e0000, pTemp + 0x080000, 0x20000);
+	memcpy(System16PCMData + 0x100000, pTemp + 0x0a0000, 0x20000);
+	memcpy(System16PCMData + 0x120000, pTemp + 0x0a0000, 0x20000);
+	memcpy(System16PCMData + 0x140000, pTemp + 0x0a0000, 0x20000);
+	memcpy(System16PCMData + 0x160000, pTemp + 0x0a0000, 0x20000);
+	free(pTemp);
 
 	return nRet;
 }
 
 static int RchaseInit()
 {
-	System16ProcessAnalogControlsDo = RchaseProcessAnalogControls;
+	BurnGunInit(2, false);
 	
-	System16Gun = true;
+	System16ProcessAnalogControlsDo = RchaseProcessAnalogControls;
 	
 	int nRet = System16Init();
 	
@@ -1686,7 +1693,7 @@ struct BurnDriver BurnDrvGforce2 = {
 	BDF_GAME_WORKING, 2, HARDWARE_SEGA_SYSTEMY,
 	NULL, Gforce2RomInfo, Gforce2RomName, Gforce2InputInfo, Gforce2DIPInfo,
 	Gforce2Init, YBoardExit, YBoardFrame, NULL, YBoardScan,
-	NULL, 320, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 320, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvGforce2j = {
@@ -1696,7 +1703,7 @@ struct BurnDriver BurnDrvGforce2j = {
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEMY,
 	NULL, Gforce2jRomInfo, Gforce2jRomName, Gforce2InputInfo, Gforce2DIPInfo,
 	Gforce2Init, YBoardExit, YBoardFrame, NULL, YBoardScan,
-	NULL, 320, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 320, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvGloc = {
@@ -1706,7 +1713,7 @@ struct BurnDriver BurnDrvGloc = {
 	BDF_GAME_WORKING, 2, HARDWARE_SEGA_SYSTEMY,
 	NULL, GlocRomInfo, GlocRomName, GlocInputInfo, GlocDIPInfo,
 	GlocInit, YBoardExit, YBoardFrame, NULL, YBoardScan,
-	NULL, 320, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 320, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvGlocr360 = {
@@ -1716,7 +1723,7 @@ struct BurnDriver BurnDrvGlocr360 = {
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEMY,
 	NULL, Glocr360RomInfo, Glocr360RomName, Glocr360InputInfo, Glocr360DIPInfo,
 	Glocr360Init, YBoardExit, YBoardFrame, NULL, YBoardScan,
-	NULL, 320, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 320, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvPdrift = {
@@ -1726,7 +1733,7 @@ struct BurnDriver BurnDrvPdrift = {
 	BDF_GAME_WORKING, 2, HARDWARE_SEGA_SYSTEMY,
 	NULL, PdriftRomInfo, PdriftRomName, PdriftInputInfo, PdriftDIPInfo,
 	PdriftInit, YBoardExit, YBoardFrame, NULL, YBoardScan,
-	NULL, 320, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 320, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvPdrifta = {
@@ -1736,7 +1743,7 @@ struct BurnDriver BurnDrvPdrifta = {
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEMY,
 	NULL, PdriftaRomInfo, PdriftaRomName, PdriftInputInfo, PdriftDIPInfo,
 	PdriftInit, YBoardExit, YBoardFrame, NULL, YBoardScan,
-	NULL, 320, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 320, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvPdrifte = {
@@ -1746,7 +1753,7 @@ struct BurnDriver BurnDrvPdrifte = {
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEMY,
 	NULL, PdrifteRomInfo, PdrifteRomName, PdriftInputInfo, PdrifteDIPInfo,
 	PdriftInit, YBoardExit, YBoardFrame, NULL, YBoardScan,
-	NULL, 320, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 320, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvPdriftj = {
@@ -1756,7 +1763,7 @@ struct BurnDriver BurnDrvPdriftj = {
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEMY,
 	NULL, PdriftjRomInfo, PdriftjRomName, PdriftInputInfo, PdriftjDIPInfo,
 	PdriftInit, YBoardExit, YBoardFrame, NULL, YBoardScan,
-	NULL, 320, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 320, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvRchase = {
@@ -1766,7 +1773,7 @@ struct BurnDriver BurnDrvRchase = {
 	BDF_GAME_WORKING, 2, HARDWARE_SEGA_SYSTEMY,
 	NULL, RchaseRomInfo, RchaseRomName, RchaseInputInfo, RchaseDIPInfo,
 	RchaseInit, YBoardExit, YBoardFrame, NULL, YBoardScan,
-	NULL, 320, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 320, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvStrkfgtr = {
@@ -1776,5 +1783,5 @@ struct BurnDriver BurnDrvStrkfgtr = {
 	BDF_GAME_WORKING, 2, HARDWARE_SEGA_SYSTEMY,
 	NULL, StrkfgtrRomInfo, StrkfgtrRomName, GlocInputInfo, StrkfgtrDIPInfo,
 	GlocInit, YBoardExit, YBoardFrame, NULL, YBoardScan,
-	NULL, 320, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 320, 224, 4, 3
 };

@@ -537,7 +537,7 @@ static int DrvInit()
 	ToaPalSrc2 = RamPal2;
 	ToaPalInit();
 
-	BurnYM3812Init(28000000 / 8, &toaplan1FMIRQHandler, &toaplan1SynchroniseStream);
+	BurnYM3812Init(28000000 / 8, &toaplan1FMIRQHandler, &toaplan1SynchroniseStream, 0);
 	BurnTimerAttachZet(28000000 / 8);
 
 	bDrawScreen = true;
@@ -655,7 +655,7 @@ static int DrvFrame()
 
 	nToa1Cycles68KSync = SekTotalCycles();
 	BurnTimerEndFrame(nCyclesTotal[1]);
-	BurnYM3812Update(nBurnSoundLen);
+	BurnYM3812Update(pBurnSoundOut, nBurnSoundLen);
 
 	nCyclesDone[0] = SekTotalCycles() - nCyclesTotal[0];
 	nCyclesDone[1] = ZetTotalCycles() - nCyclesTotal[1];
@@ -676,6 +676,6 @@ struct BurnDriver BurnDrvTruxton = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_RAIZING,
 	NULL, truxtonRomInfo, truxtonRomName, truxtonInputInfo, truxtonDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &ToaRecalcPalette,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &ToaRecalcPalette,
 	240, 320, 3, 4
 };

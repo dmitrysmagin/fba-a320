@@ -394,7 +394,7 @@ unsigned short dw2_d80000_r(unsigned int /*sekAddress*/)
 {
 	// The value at 0x80EECE is computed in the routine at 0x107c18
 
-	unsigned short d = SekReadWord(0x80eece);
+	unsigned short d = SekReadWord(0x80EECE);
 	unsigned short d2 = 0;
 
 	d=(d>>8)|(d<<8);
@@ -485,12 +485,10 @@ void killbld_prot_w(unsigned int offset, unsigned short data)
 
 					if (mode == 1 || mode == 2 || mode == 3)
 					{
-#if 0
 FILE *fz;
 fz = fopen("ram.0", "wb");
 fwrite (USER0, 1, 0x2000, fz);
 fclose (fz);
-#endif
 						// for now, cheat -- the scramble isn't understood, it might be state based
 						int x;
 						for (x=0;x<size;x++)
@@ -503,11 +501,9 @@ fclose (fz);
 							dat = RAMDUMP[dst+x];
 							killbld_sharedprotram[dst+x] = dat;
 						}
-#if 0
 fz = fopen("ram.1", "wb");
 fwrite (USER0, 1, 0x2000, fz);
 fclose (fz);
-#endif
 					}
 					else if (mode == 5)
 					{
@@ -565,7 +561,7 @@ unsigned short killbld_prot_r(unsigned int offset)
 			return reg & 0x7f;
 
 		if(kb_cmd == 5)
-			return ((0x89911400 | (/*PgmInput[7] + */0x16)) >> (8 * (ptr - 1))) & 0xff; // region
+			return ((0x89911400 | PgmInput[7]) >> (8 * (ptr - 1))) & 0xff; // region
 	}
 
 	return 0;

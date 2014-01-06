@@ -2,7 +2,7 @@
 #include "burn_sound.h"
 #include "burn_ym2608.h"
 
-void (*BurnYM2608Update)(int nSegmentEnd);
+void (*BurnYM2608Update)(short* pSoundBuf, int nSegmentEnd);
 
 static int (*BurnYM2608StreamCallback)(int nSoundRate);
 
@@ -19,10 +19,12 @@ static int nAY8910Position;
 static unsigned int nSampleSize;
 static unsigned int nFractionalPosition;
 
+static int bYM2208AddSignal;
+
 // ----------------------------------------------------------------------------
 // Dummy functions
 
-static void YM2608UpdateDummy(int /* nSegmentEnd */)
+static void YM2608UpdateDummy(short*, int /* nSegmentEnd */)
 {
 	return;
 }
@@ -75,9 +77,8 @@ static void YM2608Render(int nSegmentLength)
 // ----------------------------------------------------------------------------
 // Update the sound buffer
 
-static void YM2608UpdateResample(int nSegmentEnd)
+static void YM2608UpdateResample(short* pSoundBuf, int nSegmentEnd)
 {
-	short* pSoundBuf = pBurnSoundOut;
 	int nSegmentLength = nSegmentEnd;
 	int nSamplesNeeded = nSegmentEnd * nBurnYM2608SoundRate / nBurnSoundRate + 1;
 
@@ -120,7 +121,11 @@ static void YM2608UpdateResample(int nSegmentEnd)
 									   pYM2608Buffer[0][(nFractionalPosition >> 16) - 2] + pYM2608Buffer[5][(nFractionalPosition >> 16) - 2],
 									   pYM2608Buffer[0][(nFractionalPosition >> 16) - 1] + pYM2608Buffer[5][(nFractionalPosition >> 16) - 1],
 									   pYM2608Buffer[0][(nFractionalPosition >> 16) - 0] + pYM2608Buffer[5][(nFractionalPosition >> 16) - 0]);
-		pSoundBuf[i + 0] = CLIP(nSample);
+		if (bYM2208AddSignal) {
+			pSoundBuf[i + 0] += CLIP(nSample);
+		} else {
+			pSoundBuf[i + 0] = CLIP(nSample);
+		}
 
 		// Right channel
 		nSample = INTERPOLATE4PS_16BIT((nFractionalPosition >> 4) & 0x0FFF,
@@ -128,7 +133,11 @@ static void YM2608UpdateResample(int nSegmentEnd)
 									   pYM2608Buffer[1][(nFractionalPosition >> 16) - 2] + pYM2608Buffer[5][(nFractionalPosition >> 16) - 2],
 									   pYM2608Buffer[1][(nFractionalPosition >> 16) - 1] + pYM2608Buffer[5][(nFractionalPosition >> 16) - 1],
 									   pYM2608Buffer[1][(nFractionalPosition >> 16) - 0] + pYM2608Buffer[5][(nFractionalPosition >> 16) - 0]);
-		pSoundBuf[i + 1] = CLIP(nSample);
+		if (bYM2208AddSignal) {
+			pSoundBuf[i + 1] += CLIP(nSample);
+		} else {
+			pSoundBuf[i + 1] = CLIP(nSample);
+		}
 
 #undef CLIP
 
@@ -156,9 +165,8 @@ static void YM2608UpdateResample(int nSegmentEnd)
 	}
 }
 
-static void YM2608UpdateNormal(int nSegmentEnd)
+static void YM2608UpdateNormal(short* pSoundBuf, int nSegmentEnd)
 {
-	short* pSoundBuf = pBurnSoundOut;
 	int nSegmentLength = nSegmentEnd;
 
 //	bprintf(PRINT_NORMAL, _T("    YM2608 update        -> %6i\n", nSegmentLength));
@@ -183,15 +191,14 @@ static void YM2608UpdateNormal(int nSegmentEnd)
 	pYM2608Buffer[3] = pBuffer + 4 + 3 * 4096;
 	pYM2608Buffer[4] = pBuffer + 4 + 4 * 4096;
 
-#ifndef OOPSWARE_FIX
+#ifdef BUILD_X86_ASM
 	if (bBurnUseMMX) {
 		for (int n = nFractionalPosition; n < nSegmentLength; n++) {
 			pAYBuffer[n] = pYM2608Buffer[2][n] + pYM2608Buffer[3][n] + pYM2608Buffer[4][n];
 		}
 		BurnSoundCopy_FM_OPN_A(pYM2608Buffer[0], pAYBuffer, pSoundBuf, nSegmentLength, 65536 * 60 / 100, 65536 * 60 / 100);
-	} else 
+	} else {
 #endif
-	{
 		for (int n = nFractionalPosition; n < nSegmentLength; n++) {
 			int nAYSample, nTotalSample;
 
@@ -210,7 +217,12 @@ static void YM2608UpdateNormal(int nSegmentEnd)
 					nTotalSample = 32767;
 				}
 			}
-			pSoundBuf[(n << 1) + 0] = nTotalSample;
+			
+			if (bYM2208AddSignal) {
+				pSoundBuf[(n << 1) + 0] += nTotalSample;
+			} else {
+				pSoundBuf[(n << 1) + 0] = nTotalSample;
+			}
 
 			nTotalSample = nAYSample + pYM2608Buffer[1][n];
 			if (nTotalSample < -32768) {
@@ -220,9 +232,16 @@ static void YM2608UpdateNormal(int nSegmentEnd)
 					nTotalSample = 32767;
 				}
 			}
-			pSoundBuf[(n << 1) + 1] = nTotalSample;
+			
+			if (bYM2208AddSignal) {
+				pSoundBuf[(n << 1) + 1] += nTotalSample;
+			} else {
+				pSoundBuf[(n << 1) + 1] = nTotalSample;
+			}
 		}
+#ifdef BUILD_X86_ASM
 	}
+#endif
 
 	nFractionalPosition = nSegmentLength;
 
@@ -278,9 +297,11 @@ void BurnYM2608Exit()
 
 	free(pBuffer);
 	free(pAYBuffer);
+	
+	bYM2208AddSignal = 0;
 }
 
-int BurnYM2608Init(int nClockFrequency, unsigned char* YM2608ADPCMROM, int* nYM2608ADPCMSize, FM_IRQHANDLER IRQCallback, int (*StreamCallback)(int), double (*GetTimeCallback)())
+int BurnYM2608Init(int nClockFrequency, unsigned char* YM2608ADPCMROM, int* nYM2608ADPCMSize, FM_IRQHANDLER IRQCallback, int (*StreamCallback)(int), double (*GetTimeCallback)(), int bAddSignal)
 {
 	BurnTimerInit(&YM2608TimerOver, GetTimeCallback);
 
@@ -325,6 +346,8 @@ int BurnYM2608Init(int nClockFrequency, unsigned char* YM2608ADPCMROM, int* nYM2
 
 	nYM2608Position = 0;
 	nAY8910Position = 0;
+	
+	bYM2208AddSignal = bAddSignal;
 
 	return 0;
 }

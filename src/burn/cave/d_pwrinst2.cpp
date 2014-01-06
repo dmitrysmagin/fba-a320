@@ -1143,8 +1143,9 @@ struct BurnDriver BurnDrvpwrinst2 = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_Z80,
 	NULL, pwrinst2RomInfo, pwrinst2RomName, pwrinst2InputInfo, NULL,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &CaveRecalcPalette,
-	320, 240, 4, 3
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 320, 240, 4, 3
 };
 
 struct BurnDriver BurnDrvpwrins2j = {
@@ -1153,8 +1154,9 @@ struct BurnDriver BurnDrvpwrins2j = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_Z80,
 	NULL, pwrins2jRomInfo, pwrins2jRomName, pwrinst2InputInfo, NULL,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &CaveRecalcPalette,
-	320, 240, 4, 3
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 320, 240, 4, 3
 };
 
 struct BurnDriver BurnDrvplegends = {
@@ -1163,8 +1165,9 @@ struct BurnDriver BurnDrvplegends = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_Z80,
 	NULL, plegendsRomInfo, plegendsRomName, pwrinst2InputInfo, NULL,
-	PlegendsInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &CaveRecalcPalette,
-	320, 240, 4, 3
+	PlegendsInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 320, 240, 4, 3
 };
 
 struct BurnDriver BurnDrvplegendj = {
@@ -1173,6 +1176,7 @@ struct BurnDriver BurnDrvplegendj = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_Z80,
 	NULL, plegendjRomInfo, plegendjRomName, pwrinst2InputInfo, NULL,
-	PlegendsInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &CaveRecalcPalette,
-	320, 240, 4, 3
+	PlegendsInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 320, 240, 4, 3
 };

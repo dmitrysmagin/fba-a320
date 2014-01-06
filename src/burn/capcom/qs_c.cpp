@@ -17,9 +17,9 @@ static int nPos;
 
 struct QChan {
 		unsigned char bKey;				// 1 if channel is playing
-		signed char nBank;						// Bank we are currently playing a sample from
+		char nBank;						// Bank we are currently playing a sample from
 
-		signed char * PlayBank;					// Pointer to current bank
+		char* PlayBank;					// Pointer to current bank
 
 		int nPlayStart;					// Start of being played
 		int nStart;						// Start of sample 16.12
@@ -33,7 +33,7 @@ struct QChan {
 
 		int nPitch;						// Playback frequency
 
-		signed char nEndBuffer[8];				// Buffer to enable correct cubic interpolation
+		char nEndBuffer[8];				// Buffer to enable correct cubic interpolation
 };
 
 static struct QChan QChan[16];
@@ -51,7 +51,7 @@ static void MapBank(struct QChan* pc)
 	if ((nBank + 0x10000) > nCpsQSamLen) {
 		nBank = 0;
 	}
-	pc->PlayBank = (signed char*)CpsQSam + nBank;
+	pc->PlayBank = (char*)CpsQSam + nBank;
 }
 
 static void UpdateEndBuffer(struct QChan* pc)
@@ -92,7 +92,7 @@ void QscReset()
 
 	// Point all to bank 0
 	for (int i = 0; i < 16; i++) {
-		QChan[i].PlayBank = (signed char*)CpsQSam;
+		QChan[i].PlayBank = (char*)CpsQSam;
 	}
 }
 
@@ -149,7 +149,6 @@ void QscWrite(int a, int d)
 {
 	struct QChan* pc;
 	int nChanNum, r;
-
 
 	// unknown
 	if (a >= 0x90) {
@@ -321,7 +320,7 @@ int QscUpdate(int nEnd)
 					// Add to the sound currently in the buffer
 					pTemp[0] += s * VolL;
 					pTemp[1] += s * VolR;
-					
+
 					pTemp += 2;
 
 					QChan[c].nPos += QChan[c].nAdvance;				// increment sample position based on pitch
@@ -329,23 +328,15 @@ int QscUpdate(int nEnd)
 			}
 		}
 
-#ifdef USE_IWMMXT
-		{
-			BurnSoundCopyClamp_iwMMXt(Qs_s, pBurnSoundOut + (nPos << 1), nLen);
-		}
-#else
-
-#ifndef OOPSWARE_FIX
+#ifdef BUILD_X86_ASM
 		if (bBurnUseMMX) {
 			BurnSoundCopyClamp_A(Qs_s, pBurnSoundOut + (nPos << 1), nLen);
-		} else 
+		} else {
 #endif
-		{
 			BurnSoundCopyClamp_C(Qs_s, pBurnSoundOut + (nPos << 1), nLen);
+#ifdef BUILD_X86_ASM
 		}
-
 #endif
-
 		nPos = nEnd;
 
 		return 0;
@@ -386,7 +377,7 @@ int QscUpdate(int nEnd)
 				}
 			}
 
-#ifndef OOPSWARE_FIX
+#ifdef BUILD_X86_ASM
 			if (bBurnUseMMX && i > 0) {
 				QChan[c].bKey = (unsigned char)ChannelMix_QS_A(pTemp, i,
 															   QChan[c].PlayBank,
@@ -397,9 +388,8 @@ int QscUpdate(int nEnd)
 															   QChan[c].nLoop,
 															   QChan[c].nAdvance,
 															   QChan[c].nEndBuffer);
-			} else 
-#endif			
-			{
+			} else {
+#endif
 				while (i > 0) {
 					int s, p;
 
@@ -446,18 +436,21 @@ int QscUpdate(int nEnd)
 
 					i--;
 				}
+#ifdef BUILD_X86_ASM
 			}
+#endif
 		}
 	}
 
-#ifndef OOPSWARE_FIX
+#ifdef BUILD_X86_ASM
 	if (bBurnUseMMX) {
 		BurnSoundCopyClamp_A(Qs_s, pBurnSoundOut + (nPos << 1), nLen);
-	} else 
+	} else {
 #endif
-	{
 		BurnSoundCopyClamp_C(Qs_s, pBurnSoundOut + (nPos << 1), nLen);
+#ifdef BUILD_X86_ASM
 	}
+#endif
 	nPos = nEnd;
 
 	return 0;

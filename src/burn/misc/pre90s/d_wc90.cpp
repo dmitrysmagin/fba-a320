@@ -3,9 +3,9 @@
 #include "tiles_generic.h"
 #include "burn_ym2608.h"
 
-static unsigned char Wc90InputPort0[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char Wc90InputPort1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char Wc90InputPort2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static unsigned char Wc90InputPort0[6] = {0, 0, 0, 0, 0, 0};
+static unsigned char Wc90InputPort1[6] = {0, 0, 0, 0, 0, 0};
+static unsigned char Wc90InputPort2[6] = {0, 0, 0, 0, 0, 0};
 static unsigned char Wc90Dip[2]        = {0, 0};
 static unsigned char Wc90Input[3]      = {0x00, 0x00, 0x00};
 static unsigned char Wc90Reset         = 0;
@@ -96,14 +96,19 @@ inline void Wc90ClearOpposites(unsigned char* nJoystickInputs)
 inline void Wc90MakeInputs()
 {
 	// Reset Inputs
-	Wc90Input[0] = Wc90Input[1] = Wc90Input[2] = 0x00;
+	Wc90Input[0] = Wc90Input[1] = 0x00;
+	Wc90Input[2] = 0x03;
 
 	// Compile Digital Inputs
-	for (int i = 0; i < 8; i++) {
+	for (int i = 0; i < 6; i++) {
 		Wc90Input[0] |= (Wc90InputPort0[i] & 1) << i;
 		Wc90Input[1] |= (Wc90InputPort1[i] & 1) << i;
-		Wc90Input[2] |= (Wc90InputPort2[i] & 1) << i;
 	}
+	
+	if (Wc90InputPort2[0]) Wc90Input[2] -= 0x01;
+	if (Wc90InputPort2[1]) Wc90Input[2] -= 0x02;
+	if (Wc90InputPort2[2]) Wc90Input[2] |= 0x04;
+	if (Wc90InputPort2[3]) Wc90Input[2] |= 0x08;
 
 	// Clear Opposites
 	Wc90ClearOpposites(&Wc90Input[0]);
@@ -260,115 +265,6 @@ static struct BurnRomInfo Wc90tRomDesc[] = {
 
 STD_ROM_PICK(Wc90t);
 STD_ROM_FN(Wc90t);
-
-// Gfx decode functions
-void Wc90Decode8x8Tiles(unsigned char *pTile, int Num)
-{
-	int c, y;
-
-	for (c= 0; c < Num; c++) {
-		for (y = 0; y < 8; y++) {
-			pTile[(c * 64) + (y * 8) + 0] = Wc90TempGfx[0x00000 + (y * 4) + (c * 32)] >> 4;
-			pTile[(c * 64) + (y * 8) + 1] = Wc90TempGfx[0x00000 + (y * 4) + (c * 32)] & 0x0f;
-			pTile[(c * 64) + (y * 8) + 2] = Wc90TempGfx[0x00001 + (y * 4) + (c * 32)] >> 4;
-			pTile[(c * 64) + (y * 8) + 3] = Wc90TempGfx[0x00001 + (y * 4) + (c * 32)] & 0x0f;
-			pTile[(c * 64) + (y * 8) + 4] = Wc90TempGfx[0x00002 + (y * 4) + (c * 32)] >> 4;
-			pTile[(c * 64) + (y * 8) + 5] = Wc90TempGfx[0x00002 + (y * 4) + (c * 32)] & 0x0f;
-			pTile[(c * 64) + (y * 8) + 6] = Wc90TempGfx[0x00003 + (y * 4) + (c * 32)] >> 4;
-			pTile[(c * 64) + (y * 8) + 7] = Wc90TempGfx[0x00003 + (y * 4) + (c * 32)] & 0x0f;
-		}
-	}
-}
-
-void Wc90Decode16x16Tiles(unsigned char *pTile, int Num)
-{
-	int c, y;
-
-	for (c = 0; c < Num; c++) {
-		for (y = 0; y < 8; y++) {
-			pTile[(c * 256) + (y * 16) +  0] = Wc90TempGfx[0x00000 + (y * 4) + (c * 128)] >> 4;
-			pTile[(c * 256) + (y * 16) +  1] = Wc90TempGfx[0x00000 + (y * 4) + (c * 128)] & 0x0f;
-			pTile[(c * 256) + (y * 16) +  2] = Wc90TempGfx[0x00001 + (y * 4) + (c * 128)] >> 4;
-			pTile[(c * 256) + (y * 16) +  3] = Wc90TempGfx[0x00001 + (y * 4) + (c * 128)] & 0x0f;
-			pTile[(c * 256) + (y * 16) +  4] = Wc90TempGfx[0x00002 + (y * 4) + (c * 128)] >> 4;
-			pTile[(c * 256) + (y * 16) +  5] = Wc90TempGfx[0x00002 + (y * 4) + (c * 128)] & 0x0f;
-			pTile[(c * 256) + (y * 16) +  6] = Wc90TempGfx[0x00003 + (y * 4) + (c * 128)] >> 4;
-			pTile[(c * 256) + (y * 16) +  7] = Wc90TempGfx[0x00003 + (y * 4) + (c * 128)] & 0x0f;
-			pTile[(c * 256) + (y * 16) +  8] = Wc90TempGfx[0x00020 + (y * 4) + (c * 128)] >> 4;
-			pTile[(c * 256) + (y * 16) +  9] = Wc90TempGfx[0x00020 + (y * 4) + (c * 128)] & 0x0f;
-			pTile[(c * 256) + (y * 16) + 10] = Wc90TempGfx[0x00021 + (y * 4) + (c * 128)] >> 4;
-			pTile[(c * 256) + (y * 16) + 11] = Wc90TempGfx[0x00021 + (y * 4) + (c * 128)] & 0x0f;
-			pTile[(c * 256) + (y * 16) + 12] = Wc90TempGfx[0x00022 + (y * 4) + (c * 128)] >> 4;
-			pTile[(c * 256) + (y * 16) + 13] = Wc90TempGfx[0x00022 + (y * 4) + (c * 128)] & 0x0f;
-			pTile[(c * 256) + (y * 16) + 14] = Wc90TempGfx[0x00023 + (y * 4) + (c * 128)] >> 4;
-			pTile[(c * 256) + (y * 16) + 15] = Wc90TempGfx[0x00023 + (y * 4) + (c * 128)] & 0x0f;
-		}
-
-		for (y = 8; y < 16; y++) {
-			pTile[(c * 256) + (y * 16) +  0] = Wc90TempGfx[0x00000 + ((y + 8) * 4) + (c * 128)] >> 4;
-			pTile[(c * 256) + (y * 16) +  1] = Wc90TempGfx[0x00000 + ((y + 8) * 4) + (c * 128)] & 0x0f;
-			pTile[(c * 256) + (y * 16) +  2] = Wc90TempGfx[0x00001 + ((y + 8) * 4) + (c * 128)] >> 4;
-			pTile[(c * 256) + (y * 16) +  3] = Wc90TempGfx[0x00001 + ((y + 8) * 4) + (c * 128)] & 0x0f;
-			pTile[(c * 256) + (y * 16) +  4] = Wc90TempGfx[0x00002 + ((y + 8) * 4) + (c * 128)] >> 4;
-			pTile[(c * 256) + (y * 16) +  5] = Wc90TempGfx[0x00002 + ((y + 8) * 4) + (c * 128)] & 0x0f;
-			pTile[(c * 256) + (y * 16) +  6] = Wc90TempGfx[0x00003 + ((y + 8) * 4) + (c * 128)] >> 4;
-			pTile[(c * 256) + (y * 16) +  7] = Wc90TempGfx[0x00003 + ((y + 8) * 4) + (c * 128)] & 0x0f;
-			pTile[(c * 256) + (y * 16) +  8] = Wc90TempGfx[0x00020 + ((y + 8) * 4) + (c * 128)] >> 4;
-			pTile[(c * 256) + (y * 16) +  9] = Wc90TempGfx[0x00020 + ((y + 8) * 4) + (c * 128)] & 0x0f;
-			pTile[(c * 256) + (y * 16) + 10] = Wc90TempGfx[0x00021 + ((y + 8) * 4) + (c * 128)] >> 4;
-			pTile[(c * 256) + (y * 16) + 11] = Wc90TempGfx[0x00021 + ((y + 8) * 4) + (c * 128)] & 0x0f;
-			pTile[(c * 256) + (y * 16) + 12] = Wc90TempGfx[0x00022 + ((y + 8) * 4) + (c * 128)] >> 4;
-			pTile[(c * 256) + (y * 16) + 13] = Wc90TempGfx[0x00022 + ((y + 8) * 4) + (c * 128)] & 0x0f;
-			pTile[(c * 256) + (y * 16) + 14] = Wc90TempGfx[0x00023 + ((y + 8) * 4) + (c * 128)] >> 4;
-			pTile[(c * 256) + (y * 16) + 15] = Wc90TempGfx[0x00023 + ((y + 8) * 4) + (c * 128)] & 0x0f;
-		}
-	}
-}
-
-void Wc90DecodeSprites(unsigned char *pTile, int Num)
-{
-	int c, y;
-
-	for (c = 0; c < Num; c++) {
-		for (y = 0; y < 8; y++) {
-			pTile[(c * 256) + (y * 16) +  0] = Wc90TempGfx[0x00000 + (y * 2) + (c * 64)] >> 4;
-			pTile[(c * 256) + (y * 16) +  1] = Wc90TempGfx[0x00000 + (y * 2) + (c * 64)] & 0x0f;
-			pTile[(c * 256) + (y * 16) +  2] = Wc90TempGfx[0x40000 + (y * 2) + (c * 64)] >> 4;
-			pTile[(c * 256) + (y * 16) +  3] = Wc90TempGfx[0x40000 + (y * 2) + (c * 64)] & 0x0f;
-			pTile[(c * 256) + (y * 16) +  4] = Wc90TempGfx[0x00001 + (y * 2) + (c * 64)] >> 4;
-			pTile[(c * 256) + (y * 16) +  5] = Wc90TempGfx[0x00001 + (y * 2) + (c * 64)] & 0x0f;
-			pTile[(c * 256) + (y * 16) +  6] = Wc90TempGfx[0x40001 + (y * 2) + (c * 64)] >> 4;
-			pTile[(c * 256) + (y * 16) +  7] = Wc90TempGfx[0x40001 + (y * 2) + (c * 64)] & 0x0f;
-			pTile[(c * 256) + (y * 16) +  8] = Wc90TempGfx[0x00010 + (y * 2) + (c * 64)] >> 4;
-			pTile[(c * 256) + (y * 16) +  9] = Wc90TempGfx[0x00010 + (y * 2) + (c * 64)] & 0x0f;
-			pTile[(c * 256) + (y * 16) + 10] = Wc90TempGfx[0x40010 + (y * 2) + (c * 64)] >> 4;
-			pTile[(c * 256) + (y * 16) + 11] = Wc90TempGfx[0x40010 + (y * 2) + (c * 64)] & 0x0f;
-			pTile[(c * 256) + (y * 16) + 12] = Wc90TempGfx[0x00011 + (y * 2) + (c * 64)] >> 4;
-			pTile[(c * 256) + (y * 16) + 13] = Wc90TempGfx[0x00011 + (y * 2) + (c * 64)] & 0x0f;
-			pTile[(c * 256) + (y * 16) + 14] = Wc90TempGfx[0x40011 + (y * 2) + (c * 64)] >> 4;
-			pTile[(c * 256) + (y * 16) + 15] = Wc90TempGfx[0x40011 + (y * 2) + (c * 64)] & 0x0f;
-		}
-
-		for (y = 8; y < 16; y++) {
-			pTile[(c * 256) + (y * 16) +  0] = Wc90TempGfx[0x00000 + ((y + 8) * 2) + (c * 64)] >> 4;
-			pTile[(c * 256) + (y * 16) +  1] = Wc90TempGfx[0x00000 + ((y + 8) * 2) + (c * 64)] & 0x0f;
-			pTile[(c * 256) + (y * 16) +  2] = Wc90TempGfx[0x40000 + ((y + 8) * 2) + (c * 64)] >> 4;
-			pTile[(c * 256) + (y * 16) +  3] = Wc90TempGfx[0x40000 + ((y + 8) * 2) + (c * 64)] & 0x0f;
-			pTile[(c * 256) + (y * 16) +  4] = Wc90TempGfx[0x00001 + ((y + 8) * 2) + (c * 64)] >> 4;
-			pTile[(c * 256) + (y * 16) +  5] = Wc90TempGfx[0x00001 + ((y + 8) * 2) + (c * 64)] & 0x0f;
-			pTile[(c * 256) + (y * 16) +  6] = Wc90TempGfx[0x40001 + ((y + 8) * 2) + (c * 64)] >> 4;
-			pTile[(c * 256) + (y * 16) +  7] = Wc90TempGfx[0x40001 + ((y + 8) * 2) + (c * 64)] & 0x0f;
-			pTile[(c * 256) + (y * 16) +  8] = Wc90TempGfx[0x00010 + ((y + 8) * 2) + (c * 64)] >> 4;
-			pTile[(c * 256) + (y * 16) +  9] = Wc90TempGfx[0x00010 + ((y + 8) * 2) + (c * 64)] & 0x0f;
-			pTile[(c * 256) + (y * 16) + 10] = Wc90TempGfx[0x40010 + ((y + 8) * 2) + (c * 64)] >> 4;
-			pTile[(c * 256) + (y * 16) + 11] = Wc90TempGfx[0x40010 + ((y + 8) * 2) + (c * 64)] & 0x0f;
-			pTile[(c * 256) + (y * 16) + 12] = Wc90TempGfx[0x00011 + ((y + 8) * 2) + (c * 64)] >> 4;
-			pTile[(c * 256) + (y * 16) + 13] = Wc90TempGfx[0x00011 + ((y + 8) * 2) + (c * 64)] & 0x0f;
-			pTile[(c * 256) + (y * 16) + 14] = Wc90TempGfx[0x40011 + ((y + 8) * 2) + (c * 64)] >> 4;
-			pTile[(c * 256) + (y * 16) + 15] = Wc90TempGfx[0x40011 + ((y + 8) * 2) + (c * 64)] & 0x0f;
-		}
-	}
-}
 
 // Driver reset
 int Wc90DoReset()
@@ -1153,7 +1049,7 @@ int Wc90Frame()
 
 	ZetOpen(2);
 	BurnTimerEndFrame(nCyclesTotal[2]);
-	BurnYM2608Update(nBurnSoundLen);
+	BurnYM2608Update(pBurnSoundOut, nBurnSoundLen);
 	nCyclesDone[2] = ZetTotalCycles() - nCyclesTotal[2];
 	ZetClose();
 
@@ -1163,6 +1059,16 @@ int Wc90Frame()
 
 	return 0;
 }
+
+static int CharPlaneOffsets[4]   = { 0, 1, 2, 3 };
+static int CharXOffsets[8]       = { 0, 4, 8, 12, 16, 20, 24, 28 };
+static int CharYOffsets[8]       = { 0, 32, 64, 96, 128, 160, 192, 224 };
+static int TilePlaneOffsets[4]   = { 0, 1, 2, 3 };
+static int TileXOffsets[16]      = { 0, 4, 8, 12, 16, 20, 24, 28, 256, 260, 264, 268, 272, 276, 280, 284 };
+static int TileYOffsets[16]      = { 0, 32, 64, 96, 128, 160, 192, 224, 512, 544, 576, 608, 640, 672, 704, 736 };
+static int SpritePlaneOffsets[4] = { 0, 1, 2, 3 };
+static int SpriteXOffsets[16]    = { 0, 4, 0x200000, 0x200004, 8, 12, 0x200008, 0x20000c, 128, 132, 0x200080, 0x200084, 136, 140, 0x200088, 0x20008c };
+static int SpriteYOffsets[16]    = { 0, 16, 32, 48, 64, 80, 96, 112, 256, 272, 288, 304, 320, 336, 352, 368 };
 
 // Driver Init function
 int Wc90Init()
@@ -1194,19 +1100,19 @@ int Wc90Init()
 	// Load and Decode Char Tile Rom
 	memset(Wc90TempGfx, 0, 0x80000);
 	nRet = BurnLoadRom(Wc90TempGfx + 0x00000,  5, 1); if (nRet != 0) return 1;
-	Wc90Decode8x8Tiles(Wc90CharTiles, 2048);
+	GfxDecode(2048, 4, 8, 8, CharPlaneOffsets, CharXOffsets, CharYOffsets, 0x100, Wc90TempGfx, Wc90CharTiles);
 
 	// Load and Decode Fg Tile Roms
 	memset(Wc90TempGfx, 0, 0x80000);
 	nRet = BurnLoadRom(Wc90TempGfx + 0x00000,  6, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(Wc90TempGfx + 0x20000,  7, 1); if (nRet != 0) return 1;
-	Wc90Decode16x16Tiles(Wc90FgTiles, 2048);
+	GfxDecode(2048, 4, 16, 16, TilePlaneOffsets, TileXOffsets, TileYOffsets, 0x400, Wc90TempGfx, Wc90FgTiles);
 
 	// Load and Decode Bg Tile Roms
 	memset(Wc90TempGfx, 0, 0x80000);
 	nRet = BurnLoadRom(Wc90TempGfx + 0x00000,  8, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(Wc90TempGfx + 0x20000,  9, 1); if (nRet != 0) return 1;
-	Wc90Decode16x16Tiles(Wc90BgTiles, 2048);
+	GfxDecode(2048, 4, 16, 16, TilePlaneOffsets, TileXOffsets, TileYOffsets, 0x400, Wc90TempGfx, Wc90BgTiles);
 
 	// Load and Decode Sprite Roms
 	memset(Wc90TempGfx, 0, 0x80000);
@@ -1214,7 +1120,7 @@ int Wc90Init()
 	nRet = BurnLoadRom(Wc90TempGfx + 0x20000, 11, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(Wc90TempGfx + 0x40000, 12, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(Wc90TempGfx + 0x60000, 13, 1); if (nRet != 0) return 1;
-	Wc90DecodeSprites(Wc90Sprites, 4096);
+	GfxDecode(4096, 4, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x200, Wc90TempGfx, Wc90Sprites);
 
 	free(Wc90TempGfx);
 
@@ -1298,7 +1204,7 @@ int Wc90Init()
 	}
 
 	int Wc90YM2608RomSize = 0x20000;
-	BurnYM2608Init(8000000, Wc90YM2608Rom, &Wc90YM2608RomSize, &wc90FMIRQHandler, wc90SynchroniseStream, wc90GetTime);
+	BurnYM2608Init(8000000, Wc90YM2608Rom, &Wc90YM2608RomSize, &wc90FMIRQHandler, wc90SynchroniseStream, wc90GetTime, 0);
 	BurnTimerAttachZet(4000000);
 
 	// Reset the driver
@@ -1368,28 +1274,28 @@ struct BurnDriver BurnDrvWc90 = {
 	"wc90", NULL, NULL, "1989",
 	"World Cup '90 (set 1)\0", NULL, "Tecmo", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S,
 	NULL, Wc90RomInfo, Wc90RomName, Wc90InputInfo, Wc90DIPInfo,
 	Wc90Init, Wc90Exit, Wc90Frame, NULL, Wc90Scan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvWc90a = {
 	"wc90a", "wc90", NULL, "1989",
 	"World Cup '90 (set 2)\0", NULL, "Tecmo", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S,
 	NULL, Wc90aRomInfo, Wc90aRomName, Wc90InputInfo, Wc90DIPInfo,
 	Wc90Init, Wc90Exit, Wc90Frame, NULL, Wc90Scan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvWc90t = {
 	"wc90t", "wc90", NULL, "1989",
 	"World Cup '90 (trackball)\0", NULL, "Tecmo", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S,
 	NULL, Wc90tRomInfo, Wc90tRomName, Wc90InputInfo, Wc90DIPInfo,
 	Wc90Init, Wc90Exit, Wc90Frame, NULL, Wc90Scan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 256, 224, 4, 3
 };

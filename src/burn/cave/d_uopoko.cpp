@@ -588,8 +588,9 @@ struct BurnDriver BurnDrvUoPoko = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_ONLY,
 	NULL, uopokoRomInfo, uopokoRomName, uopokoInputInfo, NULL,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &CaveRecalcPalette,
-	320, 240, 4, 3
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 320, 240, 4, 3
 };
 
 struct BurnDriver BurnDrvUoPokoj = {
@@ -598,8 +599,9 @@ struct BurnDriver BurnDrvUoPokoj = {
 	L"\u30D1\u30BA\u30EB - \u9B5A\u30DD\u30B3 (Japan, ver. 1998 Feb 06)\0Uo Poko (Japan, ver. 1998 Feb 06)\0", NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_ONLY,
 	NULL, uopokojRomInfo, uopokojRomName, uopokoInputInfo, NULL,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &CaveRecalcPalette,
-	320, 240, 4, 3
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 320, 240, 4, 3
 };
 
 

@@ -37,20 +37,21 @@ static struct BurnRomInfo MiaRomDesc[]=
 
   {"808a18.f16",0x0100, 0xeb95aede,    1}, //  7
  {"808d01.d4",0x20000, 0xfd4d37c0,    1}, //  7
-
+ 
+ {"808e03.f4",0x08000, 0x3d93a7cd,    1}, //  7
 };
 
 STD_ROM_PICK(Mia);
 STD_ROM_FN(Mia);
 
 
-struct BurnDriver BurnDrvMia={
+struct BurnDriverD BurnDrvMia={
 	"mia",NULL,NULL,"1989",
 	"Missing in Action (Version T)\0",NULL,"Konami","Konami 68000 based",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING,4,HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING,4,HARDWARE_MISC_PRE90S,
 	NULL,MiaRomInfo,MiaRomName,MIAInputInfo, NULL,
-	MiaInit,TmntExit,MiaFrame,NULL,TmntScan,
-	&bTmntRecalcPal,304,224,4,3  
+	MiaInit,MiaExit,MiaFrame,NULL,TmntScan,
+	0, NULL, NULL, NULL, &bTmntRecalcPal,304,224,4,3  
 };
 

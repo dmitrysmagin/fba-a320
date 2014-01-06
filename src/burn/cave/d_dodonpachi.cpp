@@ -642,8 +642,9 @@ struct BurnDriver BurnDrvDoDonpachi = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_ONLY,
 	NULL, ddonpachRomInfo, ddonpachRomName, ddonpachInputInfo, NULL,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &CaveRecalcPalette,
-	240, 320, 3, 4
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 240, 320, 3, 4
 };
 
 struct BurnDriver BurnDrvDoDonpachiJ = {
@@ -652,8 +653,9 @@ struct BurnDriver BurnDrvDoDonpachiJ = {
 	L"DoDonPachi (1997 2/5 master ver, Japan)\0\u6012\u9996\u9818\u8702 (1997 2/5 master ver, Japan)\0", NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_ONLY,
 	NULL, ddonpchjRomInfo, ddonpchjRomName, ddonpachInputInfo, NULL,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &CaveRecalcPalette,
-	240, 320, 3, 4
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 240, 320, 3, 4
 };
 
 

@@ -622,8 +622,8 @@ struct BurnDriver BurnDrv1945kiii = {
 	"1945kiii", NULL, NULL, "2000",
 	"1945k III\0", NULL, "Oriental", "misc",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_MISC_POST90S,
 	NULL, _1945kiiiRomInfo, _1945kiiiRomName, _1945kiiiInputInfo, _1945kiiiDIPInfo,
-	DrvInit, DrvExit, DrvFrame, NULL, DrvScan, &bRecalcPalette, 
+	DrvInit, DrvExit, DrvFrame, NULL, DrvScan, 0, NULL, NULL, NULL, &bRecalcPalette, 
 	224, 320, 3, 4
 };

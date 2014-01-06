@@ -681,7 +681,7 @@ struct BurnDriver BurnDrvShippuMD = {
 	L"\u75BE\u98A8\u9B54\u6CD5\u5927\u4F5C\u6226 - kingdom grandprix (Japan)\0Shippu Mahou Daisakusen (Japan)\0", NULL, NULL, NULL,
 	BDF_GAME_WORKING | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_RAIZING,
 	NULL, shippumdRomInfo, shippumdRomName, shippumdInputInfo, shippumdDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &ToaRecalcPalette,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &ToaRecalcPalette,
 	240, 320, 3, 4
 };
 
@@ -691,6 +691,6 @@ struct BurnDriver BurnDrvKingdmGP = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_RAIZING,
 	NULL, kingdmgpRomInfo, kingdmgpRomName, shippumdInputInfo, kingdmgpDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &ToaRecalcPalette,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &ToaRecalcPalette,
 	240, 320, 3, 4
 };

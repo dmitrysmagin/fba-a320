@@ -52,10 +52,10 @@ struct BurnDriverD BurnDrvEightballact = {
 	"8ballact", NULL, NULL, "1984",
 	"Eight Ball Action (DK conversion)\0", NULL, "Seatongrove Ltd (Magic Eletronics USA licence)", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	0, 2, HARDWARE_MISC_MISC,
+	0, 2, HARDWARE_MISC_PRE90S,
 	NULL, EightballactRomInfo, EightballactRomName, ParentInputInfo, NULL,
 	ParentInit, ParentExit, NULL, NULL, NULL,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 256, 224, 4, 3
 };
 
 static struct BurnRomInfo ManiacsqRomDesc[] = {
@@ -75,10 +75,10 @@ struct BurnDriverD BurnDrvManiacsq = {
 	"maniacsq", NULL, NULL, "1996",
 	"Maniac Square (unprotected)\0", NULL, "Gaelco", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	0, 2, HARDWARE_MISC_MISC,
+	0, 2, HARDWARE_MISC_POST90S,
 	NULL, ManiacsqRomInfo, ManiacsqRomName, ParentInputInfo, NULL,
 	ParentInit, ParentExit, NULL, NULL, NULL,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 256, 224, 4, 3
 };
 
 static struct BurnRomInfo TumblepRomDesc[] = {
@@ -102,8 +102,8 @@ struct BurnDriver BurnDrvTumblep = {
 	"tumblep", NULL, NULL, "1991",
 	"Tumble Pop (World)\0", NULL, "Data East Corporation", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	0, 2, HARDWARE_MISC_MISC,
+	0, 2, HARDWARE_MISC_POST90S,
 	NULL, TumblepRomInfo, TumblepRomName, ParentInputInfo, NULL,
 	ParentInit, ParentExit, NULL, NULL, NULL,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 256, 224, 4, 3
 };

@@ -875,7 +875,7 @@ struct BurnDriver BurnDrvBgaregga = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_RAIZING,
 	NULL, bgareggaRomInfo, bgareggaRomName, battlegInputInfo, bgareggaDIPInfo,
-	battlegInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &ToaRecalcPalette,
+	battlegInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &ToaRecalcPalette,
 	240, 320, 3, 4
 };
 
@@ -885,7 +885,7 @@ struct BurnDriver BurnDrvBgaregcn = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_RAIZING,
 	NULL, bgaregcnRomInfo, bgaregcnRomName, battlegInputInfo, bgaregcnDIPInfo,
-	battlegInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &ToaRecalcPalette,
+	battlegInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &ToaRecalcPalette,
 	240, 320, 3, 4
 };
 
@@ -895,7 +895,7 @@ struct BurnDriver BurnDrvBgaregt2 = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_RAIZING,
 	NULL, bgaregt2RomInfo, bgaregt2RomName, battlegInputInfo, bgareggaDIPInfo,
-	battlegInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &ToaRecalcPalette,
+	battlegInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &ToaRecalcPalette,
 	240, 320, 3, 4
 };
 
@@ -905,7 +905,7 @@ struct BurnDriver BurnDrvBgaregnv = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_RAIZING,
 	NULL, bgaregnvRomInfo, bgaregnvRomName, battlegInputInfo, bgareghkDIPInfo,
-	battlegInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &ToaRecalcPalette,
+	battlegInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &ToaRecalcPalette,
 	240, 320, 3, 4
 };
 
@@ -915,6 +915,6 @@ struct BurnDriver BurnDrvBgareghk = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_RAIZING,
 	NULL, bgareghkRomInfo, bgareghkRomName, battlegInputInfo, bgareghkDIPInfo,
-	battlegInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &ToaRecalcPalette,
+	battlegInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &ToaRecalcPalette,
 	240, 320, 3, 4
 };

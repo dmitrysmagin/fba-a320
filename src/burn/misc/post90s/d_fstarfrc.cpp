@@ -335,69 +335,6 @@ static struct BurnRomInfo RiotRomDesc[] = {
 STD_ROM_PICK(Riot);
 STD_ROM_FN(Riot);
 
-void FstarfrcDecode8x8Tiles(unsigned char *pTile, int Num)
-{
-	int c, y;
-
-	for (c = 0; c < Num; c++) {
-		for (y = 0; y < 8; y++) {
-			pTile[(c * 64) + (y * 8) + 0] = FstarfrcTempGfx[0x00000 + (y * 4) + (c * 32)] >> 4;
-			pTile[(c * 64) + (y * 8) + 1] = FstarfrcTempGfx[0x00000 + (y * 4) + (c * 32)] & 0x0f;
-			pTile[(c * 64) + (y * 8) + 2] = FstarfrcTempGfx[0x00001 + (y * 4) + (c * 32)] >> 4;
-			pTile[(c * 64) + (y * 8) + 3] = FstarfrcTempGfx[0x00001 + (y * 4) + (c * 32)] & 0x0f;
-			pTile[(c * 64) + (y * 8) + 4] = FstarfrcTempGfx[0x00002 + (y * 4) + (c * 32)] >> 4;
-			pTile[(c * 64) + (y * 8) + 5] = FstarfrcTempGfx[0x00002 + (y * 4) + (c * 32)] & 0x0f;
-			pTile[(c * 64) + (y * 8) + 6] = FstarfrcTempGfx[0x00003 + (y * 4) + (c * 32)] >> 4;
-			pTile[(c * 64) + (y * 8) + 7] = FstarfrcTempGfx[0x00003 + (y * 4) + (c * 32)] & 0x0f;
-		}
-	}
-}
-
-void FstarfrcDecode16x16Tiles(unsigned char *pTile, int Num)
-{
-	int c, y;
-
-	for (c = 0; c < Num; c++) {
-		for (y = 0; y < 8; y++) {
-			pTile[(c * 256) + (y * 16) +  0] = FstarfrcTempGfx[0x00000 + (y * 4) + (c * 128)] >> 4;
-			pTile[(c * 256) + (y * 16) +  1] = FstarfrcTempGfx[0x00000 + (y * 4) + (c * 128)] & 0x0f;
-			pTile[(c * 256) + (y * 16) +  2] = FstarfrcTempGfx[0x00001 + (y * 4) + (c * 128)] >> 4;
-			pTile[(c * 256) + (y * 16) +  3] = FstarfrcTempGfx[0x00001 + (y * 4) + (c * 128)] & 0x0f;
-			pTile[(c * 256) + (y * 16) +  4] = FstarfrcTempGfx[0x00002 + (y * 4) + (c * 128)] >> 4;
-			pTile[(c * 256) + (y * 16) +  5] = FstarfrcTempGfx[0x00002 + (y * 4) + (c * 128)] & 0x0f;
-			pTile[(c * 256) + (y * 16) +  6] = FstarfrcTempGfx[0x00003 + (y * 4) + (c * 128)] >> 4;
-			pTile[(c * 256) + (y * 16) +  7] = FstarfrcTempGfx[0x00003 + (y * 4) + (c * 128)] & 0x0f;
-			pTile[(c * 256) + (y * 16) +  8] = FstarfrcTempGfx[0x00020 + (y * 4) + (c * 128)] >> 4;
-			pTile[(c * 256) + (y * 16) +  9] = FstarfrcTempGfx[0x00020 + (y * 4) + (c * 128)] & 0x0f;
-			pTile[(c * 256) + (y * 16) + 10] = FstarfrcTempGfx[0x00021 + (y * 4) + (c * 128)] >> 4;
-			pTile[(c * 256) + (y * 16) + 11] = FstarfrcTempGfx[0x00021 + (y * 4) + (c * 128)] & 0x0f;
-			pTile[(c * 256) + (y * 16) + 12] = FstarfrcTempGfx[0x00022 + (y * 4) + (c * 128)] >> 4;
-			pTile[(c * 256) + (y * 16) + 13] = FstarfrcTempGfx[0x00022 + (y * 4) + (c * 128)] & 0x0f;
-			pTile[(c * 256) + (y * 16) + 14] = FstarfrcTempGfx[0x00023 + (y * 4) + (c * 128)] >> 4;
-			pTile[(c * 256) + (y * 16) + 15] = FstarfrcTempGfx[0x00023 + (y * 4) + (c * 128)] & 0x0f;
-		}
-
-		for (y = 8; y < 16; y++) {
-			pTile[(c * 256) + (y * 16) +  0] = FstarfrcTempGfx[0x00000 + ((y + 8) * 4) + (c * 128)] >> 4;
-			pTile[(c * 256) + (y * 16) +  1] = FstarfrcTempGfx[0x00000 + ((y + 8) * 4) + (c * 128)] & 0x0f;
-			pTile[(c * 256) + (y * 16) +  2] = FstarfrcTempGfx[0x00001 + ((y + 8) * 4) + (c * 128)] >> 4;
-			pTile[(c * 256) + (y * 16) +  3] = FstarfrcTempGfx[0x00001 + ((y + 8) * 4) + (c * 128)] & 0x0f;
-			pTile[(c * 256) + (y * 16) +  4] = FstarfrcTempGfx[0x00002 + ((y + 8) * 4) + (c * 128)] >> 4;
-			pTile[(c * 256) + (y * 16) +  5] = FstarfrcTempGfx[0x00002 + ((y + 8) * 4) + (c * 128)] & 0x0f;
-			pTile[(c * 256) + (y * 16) +  6] = FstarfrcTempGfx[0x00003 + ((y + 8) * 4) + (c * 128)] >> 4;
-			pTile[(c * 256) + (y * 16) +  7] = FstarfrcTempGfx[0x00003 + ((y + 8) * 4) + (c * 128)] & 0x0f;
-			pTile[(c * 256) + (y * 16) +  8] = FstarfrcTempGfx[0x00020 + ((y + 8) * 4) + (c * 128)] >> 4;
-			pTile[(c * 256) + (y * 16) +  9] = FstarfrcTempGfx[0x00020 + ((y + 8) * 4) + (c * 128)] & 0x0f;
-			pTile[(c * 256) + (y * 16) + 10] = FstarfrcTempGfx[0x00021 + ((y + 8) * 4) + (c * 128)] >> 4;
-			pTile[(c * 256) + (y * 16) + 11] = FstarfrcTempGfx[0x00021 + ((y + 8) * 4) + (c * 128)] & 0x0f;
-			pTile[(c * 256) + (y * 16) + 12] = FstarfrcTempGfx[0x00022 + ((y + 8) * 4) + (c * 128)] >> 4;
-			pTile[(c * 256) + (y * 16) + 13] = FstarfrcTempGfx[0x00022 + ((y + 8) * 4) + (c * 128)] & 0x0f;
-			pTile[(c * 256) + (y * 16) + 14] = FstarfrcTempGfx[0x00023 + ((y + 8) * 4) + (c * 128)] >> 4;
-			pTile[(c * 256) + (y * 16) + 15] = FstarfrcTempGfx[0x00023 + ((y + 8) * 4) + (c * 128)] & 0x0f;
-		}
-	}
-}
-
 int FstarfrcDoReset()
 {
 	CharScrollX = CharScrollY = Scroll1X = Scroll1Y = Scroll2X = Scroll2Y = 0;
@@ -703,6 +640,14 @@ static int FstarfrcMemIndex()
 	return 0;
 }
 
+static int TilePlaneOffsets[4] = { 0, 1, 2, 3 };
+static int TileXOffsets[16]    = { 0, 4, 8, 12, 16, 20, 24, 28, 256, 260, 264, 268, 272, 276, 280, 284 };
+static int TileYOffsets[16]    = { 0, 32, 64, 96, 128, 160, 192, 224, 512, 544, 576, 608, 640, 672, 704, 736 };
+static int CharPlaneOffsets[4] = { 0, 1, 2, 3 };
+static int CharXOffsets[8]     = { 0, 4, 8, 12, 16, 20, 24, 28 };
+static int CharYOffsets[8]     = { 0, 32, 64, 96, 128, 160, 192, 224 };
+	
+
 int FstarfrcInit()
 {
 	int nRet = 0, nLen;
@@ -728,19 +673,19 @@ int FstarfrcInit()
 	// Load and decode Char Tiles rom
 	memset(FstarfrcTempGfx, 0, 0x100000);
 	nRet = BurnLoadRom(FstarfrcTempGfx, 2, 1); if (nRet != 0) return 1;
-	FstarfrcDecode8x8Tiles(FstarfrcCharTiles, 4096);
+	GfxDecode(4096, 4, 8, 8, CharPlaneOffsets, CharXOffsets, CharYOffsets, 0x100, FstarfrcTempGfx, FstarfrcCharTiles);
 
 	// Load, byteswap and decode Bg and Fg Layer roms
 	memset(FstarfrcTempGfx, 0, 0x100000);
 	nRet = BurnLoadRom(FstarfrcTempGfx + 0x000000, 3, 2); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(FstarfrcTempGfx + 0x000001, 4, 2); if (nRet != 0) return 1;
-	FstarfrcDecode16x16Tiles(FstarfrcLayerTiles, 8192);
+	GfxDecode(8192, 4, 16, 16, TilePlaneOffsets, TileXOffsets, TileYOffsets, 0x400, FstarfrcTempGfx, FstarfrcLayerTiles);
 
 	// Load, byteswap and decode Sprite Tile roms
 	memset(FstarfrcTempGfx, 0, 0x100000);
 	nRet = BurnLoadRom(FstarfrcTempGfx + 0x000000, 5, 2); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(FstarfrcTempGfx + 0x000001, 6, 2); if (nRet != 0) return 1;
-	FstarfrcDecode8x8Tiles(FstarfrcSpriteTiles, 32768);
+	GfxDecode(32768, 4, 8, 8, CharPlaneOffsets, CharXOffsets, CharYOffsets, 0x100, FstarfrcTempGfx, FstarfrcSpriteTiles);
 
 	free(FstarfrcTempGfx);
 
@@ -1203,6 +1148,7 @@ int FstarfrcFrame()
 
 	SekSetIRQLine(5, SEK_IRQSTATUS_AUTO);
 	SekClose();
+
 	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
 		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
@@ -1269,28 +1215,28 @@ struct BurnDriver BurnDrvFstarfrc = {
 	"fstarfrc", NULL, NULL, "1992",
 	"Final Star Force (US)\0", NULL, "Tecmo", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_POST90S,
 	NULL, FstarfrcRomInfo, FstarfrcRomName, FstarfrcInputInfo, FstarfrcDIPInfo,
 	FstarfrcInit, FstarfrcExit, FstarfrcFrame, NULL, FstarfrcScan,
-	NULL, 224, 256, 3, 4
+	0, NULL, NULL, NULL, NULL, 224, 256, 3, 4
 };
 
 struct BurnDriver BurnDrvGinkun = {
 	"ginkun", NULL, NULL, "1995",
 	"Ganbare Ginkun\0", "Imperfect GFX", "Tecmo", "Miscellaneous",
 	L"\u304C\u3093\u3070\u308C \u30AE\u30F3\u304F\u3093\0Ganbare Ginkun\0", NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S,
 	NULL, GinkunRomInfo, GinkunRomName, FstarfrcInputInfo, GinkunDIPInfo,
 	FstarfrcInit, FstarfrcExit, FstarfrcFrame, NULL, FstarfrcScan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvRiot = {
 	"riot", NULL, NULL, "1992",
 	"Riot\0", NULL, "NMK", "Miscellaneous",
 	L"\u96F7\u8ECB\u6597 Riot\0", NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S,
 	NULL, RiotRomInfo, RiotRomName, RiotInputInfo, RiotDIPInfo,
 	FstarfrcInit, FstarfrcExit, FstarfrcFrame, NULL, FstarfrcScan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 256, 224, 4, 3
 };

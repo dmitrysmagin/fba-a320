@@ -85,7 +85,7 @@ static void YM2151RenderNormal(short* pSoundBuf, int nSegmentLength)
 
 	YM2151UpdateOne(0, pYM2151Buffer, nSegmentLength);
 
-#ifndef OOPSWARE_FIX
+#ifdef BUILD_X86_ASM
 	if (bBurnUseMMX) {
 		BurnSoundCopy_FM_A(pYM2151Buffer[0], pYM2151Buffer[1], pSoundBuf, nSegmentLength, nYM2151Volume, nYM2151Volume);
 	} else {
@@ -101,7 +101,7 @@ static void YM2151RenderNormal(short* pSoundBuf, int nSegmentLength)
 				pSoundBuf[(n << 1) + i] = nSample;
 			}
 		}
-#ifndef OOPSWARE_FIX
+#ifdef BUILD_X86_ASM
 	}
 #endif
 }
@@ -141,7 +141,7 @@ int BurnYM2151Init(int nClockFrequency, float nVolume)
 		BurnYM2151Render = YM2151RenderNormal;
 
 		nYM2151Volume = (int)((double)65536.0 * 100.0 / nVolume);
-	} 
+	}
 
 	YM2151Init(1, nClockFrequency, nBurnYM2151SoundRate);
 

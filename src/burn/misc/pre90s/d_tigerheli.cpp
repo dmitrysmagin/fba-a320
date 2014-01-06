@@ -2,7 +2,6 @@
 
 #include "burnint.h"
 
-
 #include "driver.h"
 extern "C" {
  #include "ay8910.h"
@@ -1932,9 +1931,9 @@ struct BurnDriver BurnDrvTigerH = {
 	"tigerh", NULL, NULL, "1985",
 	"Tiger Heli (US)\0", "Protection MCU not emulated", "Taito", "Early Toaplan",
 	NULL, NULL, NULL, NULL,
-	BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_MISC,
+	BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S,
 	NULL, tigerhRomInfo, tigerhRomName, tigerhInputInfo, tigerhDIPInfo,
-	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, &tigerhRecalcPalette,
+	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, 0, NULL, NULL, NULL, &tigerhRecalcPalette,
 	240, 280, 3, 4
 };
 
@@ -1942,9 +1941,9 @@ struct BurnDriver BurnDrvTigerHB1 = {
 	"tigerhb1", "tigerh", NULL, "1985",
 	"Tiger Heli (bootleg, set 1)\0", NULL, "Taito", "Early Toaplan",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S,
 	NULL, tigerhb1RomInfo, tigerhb1RomName, tigerhInputInfo, tigerhDIPInfo,
-	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, &tigerhRecalcPalette,
+	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, 0, NULL, NULL, NULL, &tigerhRecalcPalette,
 	240, 280, 3, 4
 };
 
@@ -1952,9 +1951,9 @@ struct BurnDriver BurnDrvTigerHB2 = {
 	"tigerhb2", "tigerh", NULL, "1985",
 	"Tiger Heli (bootleg, set 2)\0", NULL, "Taito", "Early Toaplan",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S,
 	NULL, tigerhb2RomInfo, tigerhb2RomName, tigerhInputInfo, tigerhDIPInfo,
-	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, &tigerhRecalcPalette,
+	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, 0, NULL, NULL, NULL, &tigerhRecalcPalette,
 	240, 280, 3, 4
 };
 
@@ -1962,9 +1961,9 @@ struct BurnDriver BurnDrvGetStar = {
 	"getstar", NULL, NULL, "1986",
 	"Guardian\0", "Protection MCU not emulated", "Taito", "Early Toaplan",
 	NULL, NULL, NULL, NULL,
-	0, 2, HARDWARE_MISC_MISC,
+	0, 2, HARDWARE_MISC_PRE90S,
 	NULL, getstarRomInfo, getstarRomName, tigerhInputInfo, getstarDIPInfo,
-	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, &tigerhRecalcPalette,
+	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, 0, NULL, NULL, NULL, &tigerhRecalcPalette,
 	280, 240, 4, 3
 };
 
@@ -1972,9 +1971,9 @@ struct BurnDriver BurnDrvGetStarB = {
 	"getstarb", "getstar", NULL, "1986",
 	"Get Star (bootleg, set 1)\0", NULL, "Taito", "Early Toaplan",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_MISC_PRE90S,
 	NULL, getstarbRomInfo, getstarbRomName, tigerhInputInfo, getstarDIPInfo,
-	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, &tigerhRecalcPalette,
+	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, 0, NULL, NULL, NULL, &tigerhRecalcPalette,
 	280, 240, 4, 3
 };
 
@@ -1982,9 +1981,9 @@ struct BurnDriver BurnDrvGetStarBa = {
 	"gtstarba", "getstar", NULL, "1986",
 	"Get Star (bootleg, set 2)\0", NULL, "Taito", "Early Toaplan",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_MISC_PRE90S,
 	NULL, gtstarbaRomInfo, gtstarbaRomName, gtstarbaInputInfo, gtstarbaDIPInfo,
-	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, &tigerhRecalcPalette,
+	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, 0, NULL, NULL, NULL, &tigerhRecalcPalette,
 	280, 240, 4, 3
 };
 
@@ -1992,9 +1991,9 @@ struct BurnDriver BurnDrvSlapFigh = {
 	"slapfigh", NULL, NULL, "1986",
 	"Slap Fight (set 1)\0", "Protection MCU not emulated", "Taito", "Early Toaplan",
 	NULL, NULL, NULL, NULL,
-	BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_MISC,
+	BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S,
 	NULL, slapfighRomInfo, slapfighRomName, tigerhInputInfo, slapfighDIPInfo,
-	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, &tigerhRecalcPalette,
+	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, 0, NULL, NULL, NULL, &tigerhRecalcPalette,
 	240, 280, 3, 4
 };
 
@@ -2002,9 +2001,9 @@ struct BurnDriver BurnDrvSlapBtJP = {
 	"slapbtjp", "slapfigh", NULL, "1986",
 	"Slap Fight (Japan bootleg)\0", NULL, "Taito", "Early Toaplan",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S,
 	NULL, slapbtjpRomInfo, slapbtjpRomName, tigerhInputInfo, slapfighDIPInfo,
-	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, &tigerhRecalcPalette,
+	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, 0, NULL, NULL, NULL, &tigerhRecalcPalette,
 	240, 280, 3, 4
 };
 
@@ -2012,9 +2011,9 @@ struct BurnDriver BurnDrvSlapBtUK = {
 	"slapbtuk", "slapfigh", NULL, "1986",
 	"Slap Fight (English bootleg)\0", NULL, "Taito", "Early Toaplan",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S,
 	NULL, slapbtukRomInfo, slapbtukRomName, tigerhInputInfo, slapfighDIPInfo,
-	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, &tigerhRecalcPalette,
+	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, 0, NULL, NULL, NULL, &tigerhRecalcPalette,
 	240, 280, 3, 4
 };
 
@@ -2022,8 +2021,8 @@ struct BurnDriver BurnDrvSlapFghtr = {
 	"slapfgtr", "slapfigh", NULL, "1986",
 	"Slap Fight (bootleg)\0", NULL, "Taito", "Early Toaplan",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S,
 	NULL, slapfgtrRomInfo, slapfgtrRomName, tigerhInputInfo, slapfighDIPInfo,
-	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, &tigerhRecalcPalette,
+	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, 0, NULL, NULL, NULL, &tigerhRecalcPalette,
 	240, 280, 3, 4
 };

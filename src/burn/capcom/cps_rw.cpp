@@ -7,7 +7,7 @@ CPSINPSET
 #undef  INP
 
 // Bytes to return from ports
-#define INP(nnn) static unsigned char Inp##nnn;
+#define INP(nnn) unsigned char Inp##nnn;
 CPSINPSET
 #undef  INP
 
@@ -25,10 +25,13 @@ static int nDial055, nDial05d;
 int PangEEP = 0;
 int Forgottn = 0;
 int Cps1QsHack = 0;
+int Kodh = 0;
 int Cawingb = 0;
 int Wofh = 0;
 int Pzloop2 = 0;
 int Ssf2tb = 0;
+int Dinopic = 0;
+int Port6SoundWrite = 0;
 
 static int nCalc[2] = {0, 0};
 
@@ -48,6 +51,8 @@ CPSINPEX
 static unsigned char CpsReadPort(const unsigned int ia)
 {
 	unsigned char d = 0xFF;
+	
+//	bprintf(PRINT_NORMAL, _T("Read Port %x\n"), ia);
 	
 	if (ia == 0x000) {
 		d = (unsigned char)~Inp000;
@@ -79,17 +84,18 @@ static unsigned char CpsReadPort(const unsigned int ia)
 		d = (unsigned char)~Inp011;
 		return d;
 	}
-
+	if (ia == 0x012) {
+		d = (unsigned char)~Inp012;
+		return d;
+	}
 	if (ia == 0x018) {
 		d = (unsigned char)~Inp018;
 		return d;
 	}
-
 	if (ia == 0x019) {
 		d = (unsigned char)~Inp019;
 		return d;
 	}
-
 	if (ia == 0x01A) {
 		d = (unsigned char)~Cpi01A;
 		return d;
@@ -102,7 +108,6 @@ static unsigned char CpsReadPort(const unsigned int ia)
 		d = (unsigned char)~Cpi01E;
 		return d;
 	}
-
 
 	if (Cps == 2) {
 		// Used on CPS2 only I think
@@ -155,7 +160,6 @@ static unsigned char CpsReadPort(const unsigned int ia)
 			}
 
 		}
-
 	} else {
 		// Board ID
 		if (ia == 0x100 + CpsBID[0]) {
@@ -166,86 +170,100 @@ static unsigned char CpsReadPort(const unsigned int ia)
 			d = (unsigned char)CpsBID[2];
 			return d;
 		}
-
-		// used mainly by non-Q-Sound games - but also by dinoh
-		if (ia == 0x177) {
-			d = (unsigned char)~Inp177;
-			return d;
+		
+		// CPS1 EEPROM read
+		if (ia == 0xC007) {
+			return EEPROMRead();
 		}
-
-		if (Cps1Qs == 1) {
-			// CPS1 EEPROM read
-			if (ia == 0xC007) {
-				return EEPROMRead();
-			}
-			// CPS1 Player 3
-			if (ia == 0xC000) {
-				d = (unsigned char)~Inpc000;
-				return d;
-			}
-			if (ia == 0xC001) {
-				d = (unsigned char)~Inpc001;
-				return d;
-			}
-			// CPS1 Player 4
-			if (ia == 0xC002) {
-				d = (unsigned char)~Inpc002;
-				return d;
-			}
-			if (ia == 0xC003) {
-				d = (unsigned char)~Inpc003;
-				return d;
-			}
-
-			// used by wofh
-			if (ia == 0x006) {
-				d = (unsigned char)~Inp006;
-				return d;
-			}
-			if (ia == 0x007) {
-				d = (unsigned char)~Inp007;
-				return d;
-			}
-		} else {
-			if (Forgottn) {
-				if (ia == 0x053) {
-					return (nDial055 >>  8) & 0xFF;
-				}
-				if (ia == 0x055) {
-					return (nDial055 >> 16) & 0xFF;
-				}
-				if (ia == 0x05B) {
-					return (nDial05d >>  8) & 0xFF;
-				}
-				if (ia == 0x05D) {
-					return (nDial05d >> 16) & 0xFF;
-				}
-			}
-
-			// used by cawingb
-			if (ia == 0x008) {
-				d = (unsigned char)~Inp008;
-				return d;
-			}
-
-			if (ia == 0x176) {
-				d = (unsigned char)~Inp176;
-				return d;
-			}
-			if (ia == 0x179) {
-				d = (unsigned char)~Inp179;
-				return d;
-			}
-			if (ia == 0x1FD) {
-				d=(unsigned char)~Inp1fd;
-				return d;
-			}
-		}
+		
+		// Pang3 EEPROM
 		if (PangEEP == 1) {
-			// Pang3 EEPROM
 			if (ia == 0x17B) {
 				return EEPROMRead();
 			}
+		}
+		
+		// Extra Input ports (move from game-to-game)
+		if (ia == 0x006) {
+			d = (unsigned char)~Inp006;
+			return d;
+		}
+		if (ia == 0x007) {
+			d = (unsigned char)~Inp007;
+			return d;
+		}
+		if (ia == 0x008) {
+			d = (unsigned char)~Inp008;
+			return d;
+		}
+		if (ia == 0x029) {
+			d = (unsigned char)~Inp029;
+			return d;
+		}		
+		if (ia == 0x176) {
+			d = (unsigned char)~Inp176;
+			return d;
+		}
+		if (ia == 0x177) {
+			d = (unsigned char)~Inp177;
+			return d;
+		}		
+		if (ia == 0x179) {
+			d = (unsigned char)~Inp179;
+			return d;
+		}
+		if (ia == 0x186) {
+			d = (unsigned char)~Inp186;
+			return d;
+		}		
+		if (ia == 0x1fd) {
+			d = (unsigned char)~Inp1fd;
+			return d;
+		}		
+		if (ia == 0xC000) {
+			d = (unsigned char)~Inpc000;
+			return d;
+		}
+		if (ia == 0xC001) {
+			d = (unsigned char)~Inpc001;
+			return d;
+		}
+		if (ia == 0xC002) {
+			d = (unsigned char)~Inpc002;
+			return d;
+		}
+		if (ia == 0xC003) {
+			d = (unsigned char)~Inpc003;
+			return d;
+		}
+		
+		// Forgotten Worlds Dial
+		if (Forgottn) {
+			if (ia == 0x053) {
+				return (nDial055 >>  8) & 0xFF;
+			}
+			if (ia == 0x055) {
+				return (nDial055 >> 16) & 0xFF;
+			}
+			if (ia == 0x05B) {
+				return (nDial05d >>  8) & 0xFF;
+			}
+			if (ia == 0x05D) {
+				return (nDial05d >> 16) & 0xFF;
+			}
+		}	
+		
+		if (ia == 0x02A) {
+			d = (unsigned char)~Cpi01A;
+			return d;
+		}
+		if (ia == 0x02C) {
+			d = (unsigned char)~Cpi01C;
+			return d;
+		}
+		if (ia == 0x02E) {
+			d = (unsigned char)~Cpi01E;
+			return d;
 		}
 	}
 
@@ -255,18 +273,12 @@ static unsigned char CpsReadPort(const unsigned int ia)
 // Write output port 0x000-0x1ff
 static void CpsWritePort(const unsigned int ia, unsigned char d)
 {
+//	if (d) bprintf(PRINT_NORMAL, _T("Write Port %x, %x\n"), ia, d);
+	
 	if ((Cps & 1) && Cps1Qs == 0) {
-		if (Cawingb && ia == 0x006) {
-			PsndSyncZ80((long long)SekTotalCycles() * nCpsZ80Cycles / nCpsCycles);
-
-			PsndCode = d;
-			return;
-		}
-
 		// CPS1 sound code
-		if (ia == 0x181) {
+		if (ia == 0x181 || (Port6SoundWrite && (ia == 0x006 || ia == 0x007))) {
 			PsndSyncZ80((long long)SekTotalCycles() * nCpsZ80Cycles / nCpsCycles);
-//			bprintf(PRINT_NORMAL, (T" -- Sound latch -> %i\n"), d);
 
 			PsndCode = d;
 			return;
@@ -303,10 +315,6 @@ static void CpsWritePort(const unsigned int ia, unsigned char d)
 			return;
 		}
 		CpsReg[(ia ^ 1) & 0xFF] = d;
-//		int aa = ia & 0xfe;
-//		if (aa == 0x0e || aa == 0x12 || aa == 0x16) {
-//			bprintf(PRINT_NORMAL, _T("  - sc (%3i)\n"), SekCurrentScanline());
-//		}
 		return;
 	}
 
@@ -343,8 +351,6 @@ static void CpsWritePort(const unsigned int ia, unsigned char d)
 
 unsigned char __fastcall CpsReadByte(unsigned int a)
 {
-//	a &= 0xFFFFFF;
-
 	// Input ports mirrored between 0x800000 and 0x807fff
 	if ((a & 0xFF8000) == 0x800000) {
 		return CpsReadPort(a & 0x1FF);
@@ -360,20 +366,11 @@ unsigned char __fastcall CpsReadByte(unsigned int a)
 		return 0x00;
 	}
 
-	if (Cps1Qs == 1) {
-		// CPS1 EEPROM & Player 3/4
-		if (a >= 0xF1C000 && a <= 0xF1C007) {
-			return CpsReadPort(a & 0xC00F);
-		}
-
-		return 0x00;
+	if (a >= 0xF1C000 && a <= 0xF1C007) {
+		return CpsReadPort(a & 0xC00F);
 	}
-
-	if (Cawingb || Wofh) {
-		if ((a & 0xFF8000) == 0x880000) {
-			return CpsReadPort(a & 0x1FF);
-		}
-	}
+	
+//	bprintf(PRINT_NORMAL, _T("Read Byte %x\n"), a);
 	
 	return 0x00;
 }
@@ -385,7 +382,7 @@ void __fastcall CpsWriteByte(unsigned int a,unsigned char d)
 		CpsWritePort(a & 0x1FF, d);
 		return;
 	}
-
+	
 	if (Cps == 2) {
 		// 0x400000 registers
 		if ((a & 0xFFFFF0) == 0x400000)	{
@@ -403,29 +400,20 @@ void __fastcall CpsWriteByte(unsigned int a,unsigned char d)
 
 		return;
 	}
-
+	
 	if (Cps1Qs == 1) {
 		// CPS1 EEPROM
 		if (a == 0xf1c007) {
 			CpsWritePort(a & 0xC00F, d);
 			return;
 		}
-
-		return;
 	}
-
-	if (Cawingb || Wofh) {
-		if ((a & 0xFF8000) == 0x880000) {
-			CpsWritePort(a & 0x1FF, d);
-			return;
-		}
-	}
+	
+//	if (a <= 0x990000 || a >= 0x993fff) bprintf(PRINT_NORMAL, _T("Write Byte %x, %x\n"), a, d);
 }
 
 unsigned short __fastcall CpsReadWord(unsigned int a)
 {
-//	a &= 0xFFFFFF;
-
 	if ((a & 0xFF8FFF) == 0x800100 + CpsMProt[3]) {
 		return (unsigned short)((nCalc[0] * nCalc[1]) >> 16);
 	}
@@ -433,6 +421,8 @@ unsigned short __fastcall CpsReadWord(unsigned int a)
 	if ((a & 0xFF8FFF) == 0x800100 + CpsMProt[2]) {
 		return (unsigned short)((nCalc[0] * nCalc[1]));
 	}
+	
+//	bprintf(PRINT_NORMAL, _T("Read Word %x\n"), a);
 	
 	SEK_DEF_READ_WORD(0, a);
 }
@@ -450,6 +440,14 @@ void __fastcall CpsWriteWord(unsigned int a, unsigned short d)
 			ZetReset();
 		}
 	}
+	
+	if (Dinopic && a == 0x800222) {
+		CpsReg[6] = d & 0xff;
+		CpsReg[7] = d >> 8;
+		return;
+	}
+	
+//	bprintf(PRINT_NORMAL, _T("Write Word %x, %x\n"), a, d);
 	
 	SEK_DEF_WRITE_WORD(0, a, d);
 }

@@ -1,5 +1,4 @@
 
-
 #ifndef FASTCALL
  #undef __fastcall
  #define __fastcall
@@ -21,6 +20,7 @@ int Sh2Exit();
 
 void Sh2Open(const int i);
 void Sh2Close();
+int Sh2GetActive();
 
 void Sh2Reset(unsigned int pc, unsigned r15);
 int Sh2Run(int cycles);

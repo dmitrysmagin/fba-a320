@@ -501,90 +501,90 @@ STD_ROM_FN(Tmnt2po);
 
 struct BurnDriverD BurnDrvTmnt={
 	"tmnt",NULL,NULL,"1989",
-	"Teenage Mutant Ninja Turtles (World 4 Players)\0","Preliminary driver","Konami","Konami 68000 bassed",
+	"Teenage Mutant Ninja Turtles (World 4 Players)\0","Preliminary driver","Konami","Konami 68000 based",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING,4,HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING,4,HARDWARE_MISC_PRE90S,
 	NULL,TmntRomInfo,TmntRomName,TmntInputInfo, TmntDIPInfo,
 	TmntInit,TmntExit,TmntFrame,NULL,TmntScan,
-	&bTmntRecalcPal,304,224,4,3
+	0, NULL, NULL, NULL, &bTmntRecalcPal,304,224,4,3
 };
 
 struct BurnDriverD BurnDrvTmntu={
 	"tmntu","tmnt",NULL,"1989",
-	"Teenage Mutant Ninja Turtles (US 4 Players, set 1)\0","Preliminary driver","Konami","Konami 68000 bassed",
+	"Teenage Mutant Ninja Turtles (US 4 Players, set 1)\0","Preliminary driver","Konami","Konami 68000 based",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE,4,HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_CLONE,4,HARDWARE_MISC_PRE90S,
 	NULL,TmntuRomInfo,TmntuRomName,TmntInputInfo, TmntDIPInfo,
 	TmntInit,TmntExit,TmntFrame,NULL,TmntScan,
-	&bTmntRecalcPal,304,224,4,3
+	0, NULL, NULL, NULL, &bTmntRecalcPal,304,224,4,3
 };
 
 struct BurnDriverD BurnDrvTmntua={
 	"tmntua","tmnt",NULL,"1989",
-	"Teenage Mutant Ninja Turtles (US 4 Players, set 2)\0","Preliminary driver","Konami","Konami 68000 bassed",
+	"Teenage Mutant Ninja Turtles (US 4 Players, set 2)\0","Preliminary driver","Konami","Konami 68000 based",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE,4,HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_CLONE,4,HARDWARE_MISC_PRE90S,
 	NULL,TmntuaRomInfo,TmntuaRomName,TmntInputInfo, TmntDIPInfo,
 	TmntInit,TmntExit,TmntFrame,NULL,TmntScan,
-	&bTmntRecalcPal,304,224,4,3
+	0, NULL, NULL, NULL, &bTmntRecalcPal,304,224,4,3
 };
 
 struct BurnDriverD BurnDrvTmht={
 	"tmht","tmnt",NULL,"1989",
-	"Teenage Mutant Hero Turtles (UK 4 Players)\0","Preliminary driver","Konami","Konami 68000 bassed",
+	"Teenage Mutant Hero Turtles (UK 4 Players)\0","Preliminary driver","Konami","Konami 68000 based",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE,4,HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_CLONE,4,HARDWARE_MISC_PRE90S,
 	NULL,TmhtRomInfo,TmhtRomName,TmntInputInfo, TmntDIPInfo,
 	TmntInit,TmntExit,TmntFrame,NULL,TmntScan,
-	&bTmntRecalcPal,304,224,4,3
+	0, NULL, NULL, NULL, &bTmntRecalcPal,304,224,4,3
 };
 
 struct BurnDriverD BurnDrvTmntj={
 	"tmntj","tmnt",NULL,"1990",
-	"Teenage Mutant Ninja Turtles (Japan 4 Players) \0","Preliminary driver","Konami","Konami 68000 bassed",
+	"Teenage Mutant Ninja Turtles (Japan 4 Players) \0","Preliminary driver","Konami","Konami 68000 based",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE,4,HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_CLONE,4,HARDWARE_MISC_PRE90S,
 	NULL,TmntjRomInfo,TmntjRomName,TmntInputInfo, TmntDIPInfo,
 	TmntInit,TmntExit,TmntFrame,NULL,TmntScan,
-	&bTmntRecalcPal,304,224,4,3
+	0, NULL, NULL, NULL, &bTmntRecalcPal,304,224,4,3
 };
 
 struct BurnDriverD BurnDrvTmht2p={
 	"tmht2p","tmnt",NULL,"1989",
-	"Teenage Mutant Hero Turtles (UK 2 Players, set 1)\0","Preliminary driver","Konami","Konami 68000 bassed",
+	"Teenage Mutant Hero Turtles (UK 2 Players, set 1)\0","Preliminary driver","Konami","Konami 68000 based",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE,2,HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_CLONE,2,HARDWARE_MISC_PRE90S,
 	NULL,Tmht2pRomInfo,Tmht2pRomName,Tmnt2pInputInfo, Tmnt2pDIPInfo,
 	TmntInit,TmntExit,TmntFrame,NULL,TmntScan,
-	&bTmntRecalcPal,304,224,4,3
+	0, NULL, NULL, NULL, &bTmntRecalcPal,304,224,4,3
 };
 
 struct BurnDriverD BurnDrvTmht2pa={
 	"tmht2pa","tmnt",NULL,"1989",
-	"Teenage Mutant Hero Turtles (UK 2 Players, set 2)\0","Preliminary driver","Konami","Konami 68000 bassed",
+	"Teenage Mutant Hero Turtles (UK 2 Players, set 2)\0","Preliminary driver","Konami","Konami 68000 based",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE,2,HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_CLONE,2,HARDWARE_MISC_PRE90S,
 	NULL,Tmht2paRomInfo,Tmht2paRomName,Tmnt2pInputInfo, Tmnt2pDIPInfo,
 	TmntInit,TmntExit,TmntFrame,NULL,TmntScan,
-	&bTmntRecalcPal,304,224,4,3
+	0, NULL, NULL, NULL, &bTmntRecalcPal,304,224,4,3
 };
 
 struct BurnDriverD BurnDrvTmnt2pj={
 	"tmnt2pj","tmnt",NULL,"1990",
-	"Teenage Mutant Ninja Turtles (Japan 2 Players)\0","Preliminary driver","Konami","Konami 68000 bassed",
+	"Teenage Mutant Ninja Turtles (Japan 2 Players)\0","Preliminary driver","Konami","Konami 68000 based",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE,2,HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_CLONE,2,HARDWARE_MISC_PRE90S,
 	NULL,Tmnt2pjRomInfo,Tmnt2pjRomName,Tmnt2pInputInfo, Tmnt2pDIPInfo,
 	TmntInit,TmntExit,TmntFrame,NULL,TmntScan,
-	&bTmntRecalcPal,304,224,4,3
+	0, NULL, NULL, NULL, &bTmntRecalcPal,304,224,4,3
 };
 
 struct BurnDriverD BurnDrvTmnt2po={
 	"tmnt2po","tmnt",NULL,"1989",
-	"Teenage Mutant Ninja Turtles (Oceania 2 Players)\0","Preliminary driver","Konami","Konami 68000 bassed",
+	"Teenage Mutant Ninja Turtles (Oceania 2 Players)\0","Preliminary driver","Konami","Konami 68000 based",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE,2,HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_CLONE,2,HARDWARE_MISC_PRE90S,
 	NULL,Tmnt2poRomInfo,Tmnt2poRomName,Tmnt2pInputInfo, Tmnt2pDIPInfo,
 	TmntInit,TmntExit,TmntFrame,NULL,TmntScan,
-	&bTmntRecalcPal,304,224,4,3
+	0, NULL, NULL, NULL, &bTmntRecalcPal,304,224,4,3
 };

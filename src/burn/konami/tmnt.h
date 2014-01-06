@@ -1,4 +1,4 @@
-#include "burnint.h"
+#include "tiles_generic.h"
 #include "burn_ym2151.h"
 // TMNT ------------------------------------------------
 // Based on DTMNT and MAME
@@ -9,6 +9,14 @@ int TmntInit();
 int TmntExit();
 int TmntFrame();
 int TmntScan(int nAction,int *pnMin);
+
+
+//MIA defines
+int MiaInit();
+int MiaFrame();
+int MiaExit();
+void MiaReset();
+
 
 // tmnt_pal.cpp
 extern unsigned int TmntPal[0x400];
@@ -23,10 +31,14 @@ int TmntTileDraw();
 struct K051960Sprite {
 	unsigned int number;
 	int x,y,w,h;
-	int flipx,flipy;
-	int pal_offset;
+	int flip;
+	short pal_offset;
 	int zoomy,zoomx;
 };
+
+#define SPRITEFLIPX 1
+#define SPRITEFLIPY 2
+
 void K051960Reset();
 
 // tmnt_inp.cpp
@@ -37,8 +49,6 @@ int TmntInpMake();
 extern unsigned char TmntDip[3];
 
 
-//MIA defines
-int MiaInit();
-int MiaFrame();
+
 
 extern unsigned char DrvReset;

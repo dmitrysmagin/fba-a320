@@ -681,8 +681,9 @@ struct BurnDriver BurnDrvEsprade = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_ONLY,
 	NULL, espradeRomInfo, espradeRomName, espradeInputInfo, NULL,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &CaveRecalcPalette,
-	240, 320, 3, 4
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 240, 320, 3, 4
 };
 
 struct BurnDriver BurnDrvEspradej = {
@@ -691,8 +692,9 @@ struct BurnDriver BurnDrvEspradej = {
 	L"ESP Ra.De. (Japan, 1998 4/21 master ver.)\0\u30A8\u30B9\u30D7\u30EC\u30A4\u30C9 (Japan, 1998 4/21 master ver.)\0", NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_ONLY,
 	NULL, espradejRomInfo, espradejRomName, espradeInputInfo, NULL,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &CaveRecalcPalette,
-	240, 320, 3, 4
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 240, 320, 3, 4
 };
 
 struct BurnDriver BurnDrvEspradeo = {
@@ -701,7 +703,8 @@ struct BurnDriver BurnDrvEspradeo = {
 	L"ESP Ra.De. (Japan, 1998 4/14 master ver.)\0\u30A8\u30B9\u30D7\u30EC\u30A4\u30C9 (Japan, 1998 4/14 master ver.)\0", NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_ONLY,
 	NULL, espradeoRomInfo, espradeoRomName, espradeInputInfo, NULL,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &CaveRecalcPalette,
-	240, 320, 3, 4
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 240, 320, 3, 4
 };
 

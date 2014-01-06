@@ -37,7 +37,7 @@ static struct BurnRomInfo galpani4RomDesc[] = {
 	{ "sknsj1.u10",	  0x080000, 0x7e2b836c, BRF_ESS | BRF_PRG },	// SH-2 Code
 	 
 	{ "gp4j1.u10",	  0x080000, 0x919a3893, BRF_ESS | BRF_PRG },	// SH-2 Code mapped at 0x04000000
-	{ "gp4j1.u8",	  0x080000, 0x94cb1fb7, BRF_ESS | BRF_PRG }, 
+	{ "gp4j1.u10",	  0x080000, 0x94cb1fb7, BRF_ESS | BRF_PRG }, 
 	
 //	{ "32j4-0.12", 	  0x200000, 0x1ebea5b6, BRF_GRA }, 				// gfx 2 sprite
 //	{ "32j9-0.76",    0x080000, 0x16001e81, BRF_SND },				// PCM

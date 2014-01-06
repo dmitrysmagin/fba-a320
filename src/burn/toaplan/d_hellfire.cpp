@@ -626,7 +626,7 @@ static int DrvInit()
 	ToaPalSrc2 = RamPal2;
 	ToaPalInit();
 
-	BurnYM3812Init(28000000 / 8, &toaplan1FMIRQHandler, &toaplan1SynchroniseStream);
+	BurnYM3812Init(28000000 / 8, &toaplan1FMIRQHandler, &toaplan1SynchroniseStream, 0);
 	BurnTimerAttachZet(28000000 / 8);
 
 	bDrawScreen = true;
@@ -747,7 +747,7 @@ static int DrvFrame()
 
 	nToa1Cycles68KSync = SekTotalCycles();
 	BurnTimerEndFrame(nCyclesTotal[1]);
-	BurnYM3812Update(nBurnSoundLen);
+	BurnYM3812Update(pBurnSoundOut, nBurnSoundLen);
 
 	nCyclesDone[0] = SekTotalCycles() - nCyclesTotal[0];
 	nCyclesDone[1] = ZetTotalCycles() - nCyclesTotal[1];
@@ -768,7 +768,7 @@ struct BurnDriver BurnDrvHellfire = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_TOAPLAN_RAIZING,
 	NULL, hellfireRomInfo, hellfireRomName, hellfireInputInfo, hellfireDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &ToaRecalcPalette,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &ToaRecalcPalette,
 	320, 240, 4, 3
 };
 
@@ -778,7 +778,7 @@ struct BurnDriver BurnDrvHellfir1 = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TOAPLAN_RAIZING,
 	NULL, hellfir1RomInfo, hellfir1RomName, hellfireInputInfo, hellfir1DIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &ToaRecalcPalette,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &ToaRecalcPalette,
 	320, 240, 4, 3
 };
 
@@ -788,6 +788,6 @@ struct BurnDriver BurnDrvHellfir2 = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TOAPLAN_RAIZING,
 	NULL, hellfir2RomInfo, hellfir2RomName, hellfireInputInfo, hellfireDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &ToaRecalcPalette,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &ToaRecalcPalette,
 	320, 240, 4, 3
 };

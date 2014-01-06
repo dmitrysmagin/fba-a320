@@ -486,7 +486,7 @@ static int LoadRoms()
 {
 	// Load 68000 ROM
 	BurnLoadRom(Rom01, 0, 1);
-
+	
 	// Load GP9001 tile data
 	ToaLoadGP9001Tiles(GP9001ROM[0], 1, 2, nGP9001ROMSize[0]);
 
@@ -618,7 +618,7 @@ struct BurnDriver BurnDrvTruxton2 = {
 	L"Truxton II\0\u9054\u4EBA\u738B\0", NULL, NULL, NULL,
 	BDF_GAME_WORKING | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_68K_ONLY,
 	NULL, truxton2RomInfo, truxton2RomName, truxton2InputInfo, truxton2DIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &ToaRecalcPalette,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &ToaRecalcPalette,
 	240, 320, 3, 4
 };
 
