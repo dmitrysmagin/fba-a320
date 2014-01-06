@@ -58,12 +58,14 @@ alldir	=	burn \
 			burn/cps3 \
 			burn/misc \
 			burn/misc/dec0 \
-			burn/misc/taito_68k \
-			burn/misc/tmnt \
+			burn/misc/post90s \
+			burn/misc/pre90s \
+			burn/konami \
 			burn/neogeo \
 			burn/pgm \
 			burn/psikyo \
 			burn/sega \
+			burn/taito \
 			burn/toaplan \
 			cpu/a68k \
 			cpu/c68k \
