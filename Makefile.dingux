@@ -67,7 +67,7 @@ alldir	=	burn \
 			burn/sega \
 			burn/taito \
 			burn/toaplan \
-			cpu/a68k \
+			cpu/a68k/mips32r1 \
 			cpu/c68k \
 			cpu/cz80 \
 			cpu/i8039 \
