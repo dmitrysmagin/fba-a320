@@ -22,7 +22,7 @@ void BurnPathsInit()
 	mkdir(szAppHomePath, 0777);
 	if(!errno) {
 		getcwd(szAppHomePath, MAX_PATH);
-		strcat(szAppHomePath, "/.fba");
+		strcat(szAppHomePath, "./.fba");
 		mkdir(szAppHomePath, 0777);
 	}
 
@@ -39,7 +39,7 @@ void BurnPathsInit()
 	mkdir(szAppSamplesPath, 0777);
 #else
 	getcwd(szAppHomePath, MAX_PATH);
-	strcat(szAppHomePath, "/.fba");
+	strcat(szAppHomePath, "./.fba");
 	mkdir(szAppHomePath);
 
 	sprintf(szAppSavePath, "%s/saves", szAppHomePath);
