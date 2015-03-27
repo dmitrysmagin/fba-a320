@@ -63,16 +63,6 @@
 
 #define OPTION_GUI_LAST			OPTION_GUI_RETURN
 
-typedef struct selector
-{
-	int y;
-	int x;
-	int rom;
-	int ofs;
-} SELECTOR;
-
-extern SELECTOR sel;
-
 void GuiRun();
 
 #endif // _GUI_MAIN_H_

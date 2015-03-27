@@ -40,7 +40,6 @@ extern char **environ;
 
 SDL_Event event;
 
-SDL_Surface *screen2 = NULL;
 SDL_Surface *gui_screen = NULL;
 SDL_Surface *bg = NULL;
 SDL_Surface *bgs = NULL;
@@ -62,6 +61,13 @@ unsigned char flag_preview;
 char g_string[255];
 unsigned char offset_x, offset_y;
 
+typedef struct selector {
+	int y;
+	int x;
+	int rom;
+	int ofs;
+} SELECTOR;
+
 SELECTOR sel;
 
 unsigned char joy_speed[4]={0,1,3,7};
@@ -82,19 +88,13 @@ void save_lastsel();
 
 void redraw_screen(void)
 {
-	SDL_Rect dstRect;
-	dstRect.x = (screen2->w - gui_screen->w) / 2;
-	dstRect.y = (screen2->h - gui_screen->h) / 2;
-
 	SDL_Delay(16);
-	SDL_BlitSurface(gui_screen, NULL, screen2, &dstRect);
-	SDL_Flip(screen2);
+	SDL_Flip(gui_screen);
 }
 
 void free_memory(void)
 {
 	printf("Freeing surfaces\n");
-	if (screen2) SDL_FreeSurface(screen2);
 	SDL_FreeSurface(gui_screen);
 	SDL_FreeSurface(bg);
 	SDL_FreeSurface(bgs);
@@ -593,8 +593,8 @@ void ss_prg_options(void)
 			put_option_line(y, option_start);
 			option_start += 9;
 		}
+
 		redraw_screen();
-		//SDL_Flip(gui_screen);
 
 		SDL_PollEvent(&event);
 		if(event.type == SDL_KEYDOWN) {
@@ -808,7 +808,6 @@ void ss_prog_run(void)
 		}
 
 		redraw_screen();
-		//SDL_Flip(gui_screen);
 
 		SDL_PollEvent(&event);
 		if(event.type == SDL_KEYDOWN) {
@@ -904,7 +903,7 @@ void ss_prog_run(void)
 						SDL_InitSubSystem(SDL_INIT_VIDEO);
 					}
 
-					screen2 = SDL_SetVideoMode(320, 240, 16, SDL_SWSURFACE);
+					gui_screen = SDL_SetVideoMode(320, 240, 16, SDL_SWSURFACE);
 					SDL_ShowCursor(0);
 
 					prep_bg();
@@ -1022,7 +1021,6 @@ void gui_menu_main()
 		}
 
 		redraw_screen();
-		//SDL_Flip(gui_screen);
 
 		SDL_PollEvent(&event);
 		if(event.type == SDL_KEYDOWN) {
@@ -1154,8 +1152,7 @@ void GuiRun()
 	// fill data with data
 	gui_sort_romlist();
 
-	screen2 = SDL_SetVideoMode(320, 240, 16, SDL_SWSURFACE);
-	gui_screen = SDL_CreateRGBSurface(SDL_SWSURFACE, 320, 240, 16, 0xf800, 0x07e0, 0x001f, 0x0000);
+	gui_screen = SDL_SetVideoMode(320, 240, 16, SDL_SWSURFACE);
 
 	SDL_ShowCursor(0);
 	SDL_JoystickOpen(0);
