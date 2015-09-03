@@ -14,37 +14,31 @@ FB Alpha is an arcade emulator supporting the following hardware platforms;
  - Psikyo 68EC020 based hardware
  - misc stuff we like
 
+
 Supported games
 ---------------
 
-Refer to gamelist.txt for information
+Refer to gamelist.txt for the list of supported roms
 
 
-Versions
---------
+Version
+-------
 
-FB Alpha SDL comes in two versions.
+FBA SDL is based on FBA 0.2.96.86 and is intended for both Dingux/OpenDingux.
+It can be run on Dingoo a320, Dingoo a380 and Ritmix rzx50. Screen size is
+detected automatically.
 
- - Legacy based on FBA 0.2.96.71 is intended for both Dingux/OpenDingux and
-   can be run on Dingoo a320, Dingoo a380 and Ritmix rzx50. Screen size is
-   detected automatically.
- - Current version based on FBA 0.2.97.24 is intended for GCW-Zero.
+Romset is synchronized with MAME 0.126
 
 
 How to use FB Alpha
 -------------------
 
-FBA SDL is better be used in conjuction with fba-capex but it's not
-obligatory. If you are using fba-capex make sure these files are present
-in the same directory:
+FBA SDL is now merged with the frontend based on Capex in one application. Just
+run it, press START and choose Rom Show mode: all, available or non-available.
+If needed, supplementary rom paths could be set.
 
- ./roms       - put your roms here
- fbacapex.dge - frontend executable
- fbasdl.dge
- rominfo.fba
- zipname.fba
-
-If you are using FBA SDL as standalone application then invoke it with
+FBA SDL could be used as a standalone application when invoked with
 rom zip with full path as a parameter:
 
 ./fbasdl.dge ./roms/dino.zip
@@ -55,25 +49,23 @@ Full path and extension are obligatory.
 Commandline interface
 ---------------------
 
-FB Alpha can also be invoked with command line options. 
+FBA SDL can also be invoked with command line options.
 The options are as follows;
 
 ./fbasdl.dge <game> [<parameters>]
 
 <game>                  - The game's romname with full path and extension.
 --sound-sdl             - Use SDL for sound
+--sound-sdl-old         - Use SDL for sound (old mutex sync)
+--sound-ao              - Use libao for sound (OpenDingux only)
 --no-sound              - Just be silent
 --samplerate=<Hz>       - Valid values are: 11025, 22050 and 44100
---sense=<value>         - (GCW-Zero) analog sensitivity: 0..100
 --showfps               - Show frames per second while play
---68kcore=<value>       - (GCW-Zero) Choose Motorola 68000 emulation core.
-                          0 - C68k, 1 - Musashi M68k
---z80core=<value>       - (Legacy) Choose Z80 emulation core.
+--68kcore=<value>       - Choose Motorola 68000 emulation core.
+                          0 - C68k, 1 - Musashi M68k, 2 - A68k
+--z80core=<value>       - Choose Z80 emulation core.
                           0 - cz80, 1 - mame_z80
---use-swap              - (Legacy) Swap memory to file. Use only on legacy
-                          Dinguxes and on Dingoo a380 and Ritmix rzx50
---frontend=<name>       - Frontend to run on exit, capex sets this parameter
-                          to '--frontend=fbacapex.dge'
+--vsync                 - Use vertical sync for video
 
 Example:
 
@@ -109,15 +101,30 @@ Usage/optimisation tips
 
 If you are running on OpenDingux on Dingoo a320 you should do the following:
 
- - Overclock fba-capex/fbasdl to 408MHz (link properties)
+ - Overclock fbasdl to 408MHz (link properties)
  - Enable swap support:
-   Create or edit the config file local/etc/swap.conf and add a line containing 
+   Create or edit the config file local/etc/swap.conf and add a line containing
    SWAP_SD_SIZE_MB=megabytes. The path can be changed by adding a line
    containing SWAP_SD_FILE=path.
 
 If you are running on legacy Dingux on Dingoo a320/a380 or Ritmix rzx50
+you can use the following bash script to enable swap
 
- - Use '--use-swap' command switch
+<<<< - cut here
+    #! /bin/sh
+
+    if [ ! -e ./fba.swp ]; then
+        dd if=/dev/zero of=./.fba/fba.swp bs=2048 count=65536
+    fi
+
+    mkswap ./fba.swp
+    swapon ./fba.swp
+
+    # start actual emulator
+    ./fbasdl.dge "$1" --sound-sdl --samplerate=22050
+
+    swapoff ./fba.swp
+<<<< - cut here
 
 
 Thanks go to
@@ -130,7 +137,6 @@ replicate his work. :)
 Source code
 -----------
 
-https://github.com/dmitrysmagin/fba-capex-a320
 https://github.com/dmitrysmagin/fba-a320
 https://github.com/dmitrysmagin/fba-sdl
 
@@ -138,7 +144,7 @@ Dmitry Smagin
 exmortis [at] yandex [dot] ru
 
 FB Alpha is written by FB Alpha Team
-http://www.barryharris.me.uk/
+http://fbalpha.com/
 
 Acknowledgements
 ----------------
@@ -149,4 +155,3 @@ Thanks to: Dave, ElSemi, Gangta, OG, Razoola, Logiqx, TRAC, CrashTest,
 
 Thanks also to everyone who has made suggestions, submitted code, or helped
 in any other way.
-
